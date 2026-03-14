@@ -9,8 +9,9 @@ const plans = [
   {
     id: 'starter',
     name: 'Starter',
-    price: '₦5,000',
-    period: '/month',
+    monthlyPrice: '₦5,000',
+    yearlyPrice: '₦48,000',
+    yearlySavings: 'Save ₦12,000',
     icon: Zap,
     features: ['1 Store', 'Up to 100 Products', '2 Staff Accounts', 'Basic Reports', 'Email Support'],
     popular: false,
@@ -18,8 +19,9 @@ const plans = [
   {
     id: 'business',
     name: 'Business',
-    price: '₦15,000',
-    period: '/month',
+    monthlyPrice: '₦15,000',
+    yearlyPrice: '₦144,000',
+    yearlySavings: 'Save ₦36,000',
     icon: Crown,
     features: ['1 Store', 'Unlimited Products', '10 Staff Accounts', 'Advanced Reports', 'Priority Support', 'Inventory Alerts'],
     popular: true,
@@ -27,8 +29,9 @@ const plans = [
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: '₦50,000',
-    period: '/month',
+    monthlyPrice: '₦50,000',
+    yearlyPrice: '₦480,000',
+    yearlySavings: 'Save ₦120,000',
     icon: Building2,
     features: ['Multiple Stores', 'Unlimited Products', 'Unlimited Staff', 'Custom Reports', 'Dedicated Support', 'API Access', 'White Label'],
     popular: false,
@@ -38,6 +41,7 @@ const plans = [
 export default function SubscriptionPage() {
   const { storeId, user } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const { data: subscription, refetch } = useQuery({
     queryKey: ['subscription', storeId],
@@ -101,7 +105,7 @@ export default function SubscriptionPage() {
       const callbackUrl = `${window.location.origin}/subscription`;
 
       const { data, error } = await supabase.functions.invoke('paystack-initialize', {
-        body: { plan, store_id: storeId, callback_url: callbackUrl },
+        body: { plan, store_id: storeId, callback_url: callbackUrl, billing_cycle: billingCycle },
       });
 
       if (error) throw error;
@@ -127,9 +131,34 @@ export default function SubscriptionPage() {
     <div className="h-full overflow-y-auto">
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Subscription</h1>
-          <p className="text-muted-foreground mt-1">Manage your store's subscription plan</p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Subscription</h1>
+            <p className="text-muted-foreground mt-1">Manage your store's subscription plan</p>
+          </div>
+          {/* Billing Toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                billingCycle === 'monthly'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                billingCycle === 'yearly'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Yearly
+            </button>
+          </div>
         </div>
 
         {/* Current Status */}
@@ -183,8 +212,19 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div className="mb-5">
-                  <span className="text-3xl font-extrabold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground text-sm">{plan.period}</span>
+                  <span className="text-3xl font-extrabold text-foreground">
+                    {billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    {billingCycle === 'monthly' ? '/month' : '/year'}
+                  </span>
+                  {billingCycle === 'yearly' && (
+                    <div className="mt-1">
+                      <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
+                        {plan.yearlySavings}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <ul className="space-y-2.5 mb-6 flex-1">

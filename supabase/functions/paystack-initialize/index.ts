@@ -7,10 +7,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PLAN_PRICES: Record<string, number> = {
-  starter: 500000,   // ₦5,000 in kobo
-  business: 1500000,  // ₦15,000 in kobo
-  enterprise: 5000000, // ₦50,000 in kobo
+const PLAN_PRICES: Record<string, Record<string, number>> = {
+  starter:    { monthly: 500000,   yearly: 4800000 },
+  business:   { monthly: 1500000,  yearly: 14400000 },
+  enterprise: { monthly: 5000000,  yearly: 48000000 },
 };
 
 serve(async (req) => {
@@ -45,7 +45,7 @@ serve(async (req) => {
     const userId = claimsData.claims.sub;
     const userEmail = claimsData.claims.email;
 
-    const { plan, store_id, callback_url } = await req.json();
+    const { plan, store_id, callback_url, billing_cycle = 'monthly' } = await req.json();
 
     if (!plan || !store_id || !callback_url) {
       return new Response(JSON.stringify({ error: "Missing required fields: plan, store_id, callback_url" }), {
@@ -54,13 +54,16 @@ serve(async (req) => {
       });
     }
 
-    const amount = PLAN_PRICES[plan];
-    if (!amount) {
+    const planPrices = PLAN_PRICES[plan];
+    if (!planPrices) {
       return new Response(JSON.stringify({ error: "Invalid plan" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const cycle = billing_cycle === 'yearly' ? 'yearly' : 'monthly';
+    const amount = planPrices[cycle];
 
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!PAYSTACK_SECRET_KEY) {
@@ -88,6 +91,7 @@ serve(async (req) => {
           store_id,
           plan,
           user_id: userId,
+          billing_cycle: cycle,
         },
       }),
     });

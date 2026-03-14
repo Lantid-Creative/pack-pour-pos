@@ -43,8 +43,9 @@ serve(async (req) => {
       const reference = data.reference;
 
       if (storeId && plan) {
+        const billingCycle = data.metadata?.billing_cycle || 'monthly';
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 30);
+        expiresAt.setDate(expiresAt.getDate() + (billingCycle === 'yearly' ? 365 : 30));
 
         await adminClient.from("subscriptions").update({
           status: "active",
