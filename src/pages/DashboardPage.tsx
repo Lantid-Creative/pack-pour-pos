@@ -2,10 +2,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar, Percent, Users } from 'lucide-react';
+import { format } from 'date-fns';
+import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, CalendarIcon, Percent, Users } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 
-type TimeRange = 'today' | 'week' | 'month' | 'all';
+type TimeRange = 'today' | 'week' | 'month' | 'all' | 'custom';
 
 function getDateRange(range: TimeRange): Date | null {
   const now = new Date();
@@ -23,6 +28,7 @@ function getDateRange(range: TimeRange): Date | null {
       return d;
     }
     case 'all':
+    case 'custom':
       return null;
   }
 }
@@ -58,6 +64,8 @@ function getPreviousDateRange(range: TimeRange): { start: Date | null; end: Date
 export default function DashboardPage() {
   const { storeId, role } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>('today');
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
 
   const { data: allSales = [] } = useQuery({
     queryKey: ['sales', storeId],
@@ -87,10 +95,18 @@ export default function DashboardPage() {
 
   // Filter sales by time range
   const sales = useMemo(() => {
+    if (timeRange === 'custom' && customStart && customEnd) {
+      const end = new Date(customEnd);
+      end.setHours(23, 59, 59, 999);
+      return allSales.filter((s: any) => {
+        const d = new Date(s.created_at);
+        return d >= customStart && d <= end;
+      });
+    }
     const rangeStart = getDateRange(timeRange);
     if (!rangeStart) return allSales;
     return allSales.filter((s: any) => new Date(s.created_at) >= rangeStart);
-  }, [allSales, timeRange]);
+  }, [allSales, timeRange, customStart, customEnd]);
 
   // Previous period sales for comparison
   const prevSales = useMemo(() => {
@@ -264,30 +280,62 @@ export default function DashboardPage() {
     week: 'This Week',
     month: 'This Month',
     all: 'All Time',
+    custom: customStart && customEnd
+      ? `${format(customStart, 'MMM d')} – ${format(customEnd, 'MMM d')}`
+      : 'Custom',
   };
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
+    <div className="p-4 md:p-6 space-y-6 overflow-y-auto h-full">
       {/* Header with time range selector */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Overview of your store performance</p>
         </div>
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-          {(['today', 'week', 'month', 'all'] as TimeRange[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setTimeRange(r)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                timeRange === r
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {rangeLabels[r]}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+            {(['today', 'week', 'month', 'all', 'custom'] as TimeRange[]).map((r) => (
+              <button
+                key={r}
+                onClick={() => setTimeRange(r)}
+                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  timeRange === r
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {r === 'custom' ? 'Custom' : rangeLabels[r]}
+              </button>
+            ))}
+          </div>
+          {timeRange === 'custom' && (
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("text-xs gap-1.5 h-8", !customStart && "text-muted-foreground")}>
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    {customStart ? format(customStart, 'MMM d, yyyy') : 'Start date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={customStart} onSelect={setCustomStart} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+              <span className="text-xs text-muted-foreground">to</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("text-xs gap-1.5 h-8", !customEnd && "text-muted-foreground")}>
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    {customEnd ? format(customEnd, 'MMM d, yyyy') : 'End date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
         </div>
       </div>
 

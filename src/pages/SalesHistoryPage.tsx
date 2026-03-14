@@ -2,10 +2,15 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { Download, FileText, FileSpreadsheet, Calendar, Filter } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, CalendarIcon, Filter } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-type ReportRange = 'today' | 'week' | 'month' | 'custom';
+type ReportRange = 'today' | 'week' | 'month' | 'all' | 'custom';
 
 function getDateRange(range: ReportRange): Date {
   const now = new Date();
@@ -23,6 +28,7 @@ function getDateRange(range: ReportRange): Date {
       return d;
     }
     case 'custom':
+    case 'all':
       return new Date(0);
   }
 }
@@ -30,8 +36,9 @@ function getDateRange(range: ReportRange): Date {
 export default function SalesHistoryPage() {
   const { storeId } = useAuth();
   const [reportRange, setReportRange] = useState<ReportRange>('today');
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
+  
 
   const { data: allSales = [] } = useQuery({
     queryKey: ['sales-history', storeId],
@@ -50,14 +57,14 @@ export default function SalesHistoryPage() {
 
   const filteredSales = useMemo(() => {
     if (reportRange === 'custom' && customStart && customEnd) {
-      const start = new Date(customStart);
       const end = new Date(customEnd);
       end.setHours(23, 59, 59, 999);
       return allSales.filter((s: any) => {
         const d = new Date(s.created_at);
-        return d >= start && d <= end;
+        return d >= customStart && d <= end;
       });
     }
+    if (reportRange === 'all') return allSales;
     const rangeStart = getDateRange(reportRange);
     return allSales.filter((s: any) => new Date(s.created_at) >= rangeStart);
   }, [allSales, reportRange, customStart, customEnd]);
@@ -71,10 +78,11 @@ export default function SalesHistoryPage() {
   }, [filteredSales]);
 
   const rangeLabel = reportRange === 'custom' && customStart && customEnd
-    ? `${customStart} to ${customEnd}`
+    ? `${format(customStart, 'MMM d, yyyy')} to ${format(customEnd, 'MMM d, yyyy')}`
     : reportRange === 'today' ? 'Today'
     : reportRange === 'week' ? 'Last 7 Days'
-    : 'Last 30 Days';
+    : reportRange === 'month' ? 'Last 30 Days'
+    : 'All Time';
 
   const exportCSV = () => {
     if (filteredSales.length === 0) { toast.error('No sales to export'); return; }
@@ -364,7 +372,8 @@ export default function SalesHistoryPage() {
     { value: 'today', label: 'Today' },
     { value: 'week', label: 'This Week' },
     { value: 'month', label: 'This Month' },
-    { value: 'custom', label: 'Custom Range' },
+    { value: 'all', label: 'All Time' },
+    { value: 'custom', label: 'Custom' },
   ];
 
   return (
@@ -410,19 +419,29 @@ export default function SalesHistoryPage() {
         </div>
         {reportRange === 'custom' && (
           <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={customStart}
-              onChange={(e) => setCustomStart(e.target.value)}
-              className="px-3 py-1.5 rounded-md border border-input bg-card text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("text-xs gap-1.5 h-8", !customStart && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customStart ? format(customStart, 'MMM d, yyyy') : 'Start date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={customStart} onSelect={setCustomStart} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
             <span className="text-xs text-muted-foreground">to</span>
-            <input
-              type="date"
-              value={customEnd}
-              onChange={(e) => setCustomEnd(e.target.value)}
-              className="px-3 py-1.5 rounded-md border border-input bg-card text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("text-xs gap-1.5 h-8", !customEnd && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customEnd ? format(customEnd, 'MMM d, yyyy') : 'End date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </div>
