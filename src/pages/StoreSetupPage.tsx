@@ -55,6 +55,9 @@ export default function StoreSetupPage() {
 
       await supabase.from('products').insert(productInserts);
 
+      // Seed default role permissions
+      await supabase.rpc('seed_role_permissions', { p_store_id: store.id });
+
       toast.success('Store created successfully!');
       // Force a page reload to re-fetch auth data
       window.location.href = '/dashboard';
