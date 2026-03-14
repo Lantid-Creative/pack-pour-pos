@@ -45,7 +45,7 @@ serve(async (req) => {
     const userId = claimsData.claims.sub;
     const userEmail = claimsData.claims.email;
 
-    const { plan, store_id, callback_url } = await req.json();
+    const { plan, store_id, callback_url, billing_cycle = 'monthly' } = await req.json();
 
     if (!plan || !store_id || !callback_url) {
       return new Response(JSON.stringify({ error: "Missing required fields: plan, store_id, callback_url" }), {
@@ -54,13 +54,16 @@ serve(async (req) => {
       });
     }
 
-    const amount = PLAN_PRICES[plan];
-    if (!amount) {
+    const planPrices = PLAN_PRICES[plan];
+    if (!planPrices) {
       return new Response(JSON.stringify({ error: "Invalid plan" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const cycle = billing_cycle === 'yearly' ? 'yearly' : 'monthly';
+    const amount = planPrices[cycle];
 
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!PAYSTACK_SECRET_KEY) {
