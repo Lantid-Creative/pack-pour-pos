@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar, Percent } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar, Percent, Users } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 
 type TimeRange = 'today' | 'week' | 'month' | 'all';
@@ -183,50 +183,79 @@ export default function DashboardPage() {
     { name: 'Transfer', value: stats.transferRevenue, color: 'hsl(38, 92%, 50%)' },
   ];
 
-  // Build chart data based on time range
-  const chartData = useMemo(() => {
-    const grouped: Record<string, number> = {};
-    const salesForChart = timeRange === 'today' ? sales : sales.slice(0, 100);
 
-    salesForChart.forEach((s: any) => {
-      let key: string;
-      if (timeRange === 'today') {
-        key = new Date(s.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
-      } else {
-        key = new Date(s.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
-      }
-      grouped[key] = (grouped[key] || 0) + Number(s.total);
-    });
-    return Object.entries(grouped).map(([label, total]) => ({ label, total })).reverse();
-  }, [sales, timeRange]);
 
-  // Top 5 selling products
-  const topProducts = useMemo(() => {
-    const counts: Record<string, { qty: number; revenue: number }> = {};
+
+  // Top 5 products with profit margins
+  const topProductsWithMargin = useMemo(() => {
+    const counts: Record<string, { qty: number; revenue: number; cost: number }> = {};
     sales.forEach((sale: any) =>
       (sale.sale_items || []).forEach((item: any) => {
-        if (!counts[item.product_name]) counts[item.product_name] = { qty: 0, revenue: 0 };
+        if (!counts[item.product_name]) counts[item.product_name] = { qty: 0, revenue: 0, cost: 0 };
         counts[item.product_name].qty += item.quantity;
         counts[item.product_name].revenue += item.quantity * Number(item.unit_price);
+        counts[item.product_name].cost += item.quantity * Number(item.cost_price || 0);
       })
     );
     return Object.entries(counts)
-      .map(([name, data]) => ({ name, ...data }))
+      .map(([name, data]) => ({
+        name: name.length > 18 ? name.slice(0, 16) + '…' : name,
+        fullName: name,
+        ...data,
+        profit: data.revenue - data.cost,
+        margin: data.revenue > 0 ? ((data.revenue - data.cost) / data.revenue) * 100 : 0,
+      }))
       .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
+      .slice(0, 8);
   }, [sales]);
+
+  // Cashier performance
+  const cashierPerformance = useMemo(() => {
+    const cashiers: Record<string, { name: string; sales: number; revenue: number; avgOrder: number }> = {};
+    sales.forEach((sale: any) => {
+      const key = sale.cashier_id || sale.cashier_name;
+      if (!cashiers[key]) cashiers[key] = { name: sale.cashier_name, sales: 0, revenue: 0, avgOrder: 0 };
+      cashiers[key].sales += 1;
+      cashiers[key].revenue += Number(sale.total);
+    });
+    return Object.values(cashiers)
+      .map(c => ({ ...c, avgOrder: c.sales > 0 ? c.revenue / c.sales : 0 }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [sales]);
+
+  // Daily revenue trend (for week/month/all)
+  const dailyTrendData = useMemo(() => {
+    if (timeRange === 'today') return [];
+    const grouped: Record<string, { revenue: number; cost: number }> = {};
+    sales.forEach((s: any) => {
+      const key = new Date(s.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+      if (!grouped[key]) grouped[key] = { revenue: 0, cost: 0 };
+      grouped[key].revenue += Number(s.total);
+      (s.sale_items || []).forEach((item: any) => {
+        grouped[key].cost += item.quantity * Number(item.cost_price || 0);
+      });
+    });
+    return Object.entries(grouped)
+      .map(([label, data]) => ({ label, revenue: data.revenue, profit: data.revenue - data.cost }))
+      .reverse();
+  }, [sales, timeRange]);
 
   // Hourly breakdown for today
   const hourlyData = useMemo(() => {
     if (timeRange !== 'today') return [];
-    const hours: Record<number, number> = {};
+    const hours: Record<number, { revenue: number; cost: number }> = {};
     sales.forEach((s: any) => {
       const h = new Date(s.created_at).getHours();
-      hours[h] = (hours[h] || 0) + Number(s.total);
+      if (!hours[h]) hours[h] = { revenue: 0, cost: 0 };
+      hours[h].revenue += Number(s.total);
+      (s.sale_items || []).forEach((item: any) => {
+        hours[h].cost += item.quantity * Number(item.cost_price || 0);
+      });
     });
     return Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i.toString().padStart(2, '0')}:00`,
-      total: hours[i] || 0,
+      label: `${i.toString().padStart(2, '0')}:00`,
+      revenue: hours[i]?.revenue || 0,
+      profit: (hours[i]?.revenue || 0) - (hours[i]?.cost || 0),
     }));
   }, [sales, timeRange]);
 
@@ -348,29 +377,34 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Revenue Trend */}
+        {/* Revenue & Profit Trend */}
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="font-semibold mb-4 text-foreground">
-            {timeRange === 'today' ? 'Hourly Revenue' : 'Revenue Trend'}
+            {timeRange === 'today' ? 'Hourly Revenue & Profit' : 'Revenue & Profit Trend'}
           </h3>
-          {(timeRange === 'today' ? hourlyData : chartData).length > 0 ? (
+          {(timeRange === 'today' ? hourlyData : dailyTrendData).length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={timeRange === 'today' ? hourlyData : chartData}>
+                <AreaChart data={timeRange === 'today' ? hourlyData : dailyTrendData}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                     </linearGradient>
+                    <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
+                    </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey={timeRange === 'today' ? 'hour' : 'label'} fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                  <XAxis dataKey="label" fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                   <YAxis fontSize={10} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                   <Tooltip
-                    formatter={(value: number) => [`₦${value.toLocaleString()}`, 'Revenue']}
-                    contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
+                    formatter={(value: number, name: string) => [`₦${value.toLocaleString()}`, name === 'revenue' ? 'Revenue' : 'Profit']}
+                    contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                   />
-                  <Area type="monotone" dataKey="total" stroke="hsl(var(--primary))" fill="url(#revenueGradient)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revenueGradient)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="profit" stroke="hsl(142, 71%, 45%)" fill="url(#profitGradient)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -379,6 +413,10 @@ export default function DashboardPage() {
               No sales data for this period.
             </div>
           )}
+          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Revenue</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} /> Profit</span>
+          </div>
         </div>
 
         {/* Payment Breakdown */}
@@ -404,33 +442,91 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Top Products Table (Owner/Manager) */}
-      {(role === 'owner' || role === 'manager') && topProducts.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5">
-          <h3 className="font-semibold mb-4 text-foreground">Top Selling Products ({rangeLabels[timeRange]})</h3>
-          <div className="space-y-2">
-            {topProducts.map((p, i) => {
-              const maxRevenue = topProducts[0]?.revenue || 1;
-              return (
-                <div key={p.name} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-5 text-right font-bold">#{i + 1}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-foreground">{p.name}</span>
-                      <span className="text-sm font-mono-numbers font-bold text-foreground">₦{p.revenue.toLocaleString()}</span>
-                    </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${(p.revenue / maxRevenue) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{p.qty} packs sold</p>
+      {/* Top Products & Cashier Performance Row */}
+      {(role === 'owner' || role === 'manager') && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Top Products Bar Chart with Profit Margin */}
+          {topProductsWithMargin.length > 0 && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold mb-4 text-foreground">Top Products — Revenue & Profit ({rangeLabels[timeRange]})</h3>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topProductsWithMargin} layout="vertical" margin={{ left: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                    <XAxis type="number" fontSize={10} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis type="category" dataKey="name" width={120} fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`₦${value.toLocaleString()}`, name === 'revenue' ? 'Revenue' : 'Profit']}
+                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                    />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={14} />
+                    <Bar dataKey="profit" fill="hsl(142, 71%, 45%)" radius={[0, 4, 4, 0]} barSize={14} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Revenue</span>
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: 'hsl(142, 71%, 45%)' }} /> Profit</span>
+              </div>
+              {/* Margin list */}
+              <div className="mt-4 space-y-1.5">
+                {topProductsWithMargin.map((p, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground truncate flex-1">{p.fullName}</span>
+                    <span className="flex items-center gap-3">
+                      <span className="text-muted-foreground">{p.qty} sold</span>
+                      <span className={`font-bold ${p.margin > 20 ? 'text-green-500' : p.margin > 0 ? 'text-yellow-500' : 'text-destructive'}`}>
+                        {p.margin.toFixed(1)}% margin
+                      </span>
+                    </span>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Cashier Performance */}
+          {cashierPerformance.length > 0 && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" /> Cashier Performance ({rangeLabels[timeRange]})
+              </h3>
+              <div className="h-56 mb-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={cashierPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis fontSize={10} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <Tooltip
+                      formatter={(value: number) => [`₦${value.toLocaleString()}`, 'Revenue']}
+                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                    />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={32} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              {/* Cashier stats table */}
+              <div className="space-y-2">
+                {cashierPerformance.map((c, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                        {c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{c.name}</p>
+                        <p className="text-xs text-muted-foreground">{c.sales} sale{c.sales !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold font-mono-numbers text-foreground">₦{c.revenue.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">Avg: ₦{Math.round(c.avgOrder).toLocaleString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
