@@ -12,10 +12,18 @@ export default function InventoryPage() {
   const queryClient = useQueryClient();
   const [showRestock, setShowRestock] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [search, setSearch] = useState('');
 
+  // Create product form state
+  const [newName, setNewName] = useState('');
+  const [newCategory, setNewCategory] = useState('Soft Drink');
+  const [newPackSize, setNewPackSize] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+  const [newCostPrice, setNewCostPrice] = useState('');
+  const [creatingProduct, setCreatingProduct] = useState(false);
   const { data: products = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
