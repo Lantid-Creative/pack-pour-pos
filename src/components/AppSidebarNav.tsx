@@ -14,6 +14,17 @@ const allNavItems = [
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true },
 ];
 
+function ThemeToggle({ collapsed }: { collapsed: boolean }) {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button onClick={toggleTheme}
+      className="flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
+      {theme === 'dark' ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+      {!collapsed && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+    </button>
+  );
+}
+
 export function AppSidebarNav() {
   const { role, profile, signOut } = useAuth();
   const { hasPermission } = usePermissions();
