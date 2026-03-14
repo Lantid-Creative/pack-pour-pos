@@ -40,6 +40,7 @@ const plans = [
 
 export default function SubscriptionPage() {
   const { storeId, user, refetchSubscription } = useAuth();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const { data: subscription, refetch } = useQuery({
