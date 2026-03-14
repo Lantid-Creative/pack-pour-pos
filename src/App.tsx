@@ -1,17 +1,68 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import LoginPage from "./pages/LoginPage";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import AuthPage from "./pages/AuthPage";
+import StoreSetupPage from "./pages/StoreSetupPage";
 import AppLayout from "./layouts/AppLayout";
 import POSPage from "./pages/POSPage";
 import DashboardPage from "./pages/DashboardPage";
 import InventoryPage from "./pages/InventoryPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
+import StaffPage from "./pages/StaffPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+function AppRoutes() {
+  const { user, role, storeId, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center mx-auto mb-3 animate-pulse" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/" element={<AuthPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  }
+
+  // User is authenticated but has no store/role — needs store setup
+  if (!storeId || !role) {
+    return (
+      <Routes>
+        <Route path="/setup" element={<StoreSetupPage />} />
+        <Route path="*" element={<Navigate to="/setup" replace />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/pos" element={<POSPage />} />
+        <Route path="/inventory" element={role === 'manager' || role === 'owner' ? <InventoryPage /> : <Navigate to="/pos" replace />} />
+        <Route path="/sales" element={<SalesHistoryPage />} />
+        <Route path="/staff" element={role === 'owner' ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
+      </Route>
+      <Route path="/" element={<Navigate to={role === 'cashier' ? '/pos' : '/dashboard'} replace />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -19,16 +70,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/pos" element={<POSPage />} />
-            <Route path="/inventory" element={<InventoryPage />} />
-            <Route path="/sales" element={<SalesHistoryPage />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
