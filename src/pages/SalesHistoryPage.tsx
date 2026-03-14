@@ -372,7 +372,8 @@ export default function SalesHistoryPage() {
     { value: 'today', label: 'Today' },
     { value: 'week', label: 'This Week' },
     { value: 'month', label: 'This Month' },
-    { value: 'custom', label: 'Custom Range' },
+    { value: 'all', label: 'All Time' },
+    { value: 'custom', label: 'Custom' },
   ];
 
   return (
