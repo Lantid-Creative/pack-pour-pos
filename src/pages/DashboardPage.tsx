@@ -109,17 +109,36 @@ export default function DashboardPage() {
     const posSales = sales.filter((s: any) => s.payment_method === 'pos');
     const transferSales = sales.filter((s: any) => s.payment_method === 'transfer');
 
+    // Profit calculation from sale_items
+    let totalCOGS = 0;
+    let prevCOGS = 0;
     const productCounts: Record<string, number> = {};
+
     sales.forEach((sale: any) =>
       (sale.sale_items || []).forEach((item: any) => {
         productCounts[item.product_name] = (productCounts[item.product_name] || 0) + item.quantity;
+        totalCOGS += item.quantity * Number(item.cost_price || 0);
       })
     );
+
+    prevSales.forEach((sale: any) =>
+      (sale.sale_items || []).forEach((item: any) => {
+        prevCOGS += item.quantity * Number(item.cost_price || 0);
+      })
+    );
+
+    const totalProfit = totalRevenue - totalCOGS;
+    const prevProfit = prevRevenue - prevCOGS;
+    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+    const profitChange = prevProfit > 0 ? ((totalProfit - prevProfit) / prevProfit) * 100 : 0;
+
     const topProduct = Object.entries(productCounts).sort((a, b) => b[1] - a[1])[0];
     const lowStock = products.filter((p: any) => p.stock <= p.low_stock_threshold);
 
-    // Inventory value = sum of (stock * price) for each product
-    const inventoryValue = products.reduce((sum: number, p: any) => sum + (p.stock * Number(p.price)), 0);
+    // Inventory values
+    const inventoryRetailValue = products.reduce((sum: number, p: any) => sum + (p.stock * Number(p.price)), 0);
+    const inventoryCostValue = products.reduce((sum: number, p: any) => sum + (p.stock * Number(p.cost_price || 0)), 0);
+    const inventoryProfit = inventoryRetailValue - inventoryCostValue;
     const totalProducts = products.length;
     const totalUnits = products.reduce((sum: number, p: any) => sum + p.stock, 0);
 
@@ -135,6 +154,10 @@ export default function DashboardPage() {
     return {
       totalSales: sales.length,
       totalRevenue,
+      totalCOGS,
+      totalProfit,
+      profitMargin,
+      profitChange,
       prevRevenue,
       revenueChange,
       salesCountChange,
@@ -144,7 +167,9 @@ export default function DashboardPage() {
       topProduct: topProduct ? topProduct[0] : 'N/A',
       topProductQty: topProduct ? topProduct[1] : 0,
       lowStock,
-      inventoryValue,
+      inventoryRetailValue,
+      inventoryCostValue,
+      inventoryProfit,
       totalProducts,
       totalUnits,
       avgOrderValue,
