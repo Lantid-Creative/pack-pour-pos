@@ -77,6 +77,7 @@ function AppRoutes() {
         <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
       </Route>
       <Route path="/setup" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
+      <Route path="/login" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
       <Route path="/" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
