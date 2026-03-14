@@ -75,10 +75,11 @@ serve(async (req) => {
     if (txData.status === "success") {
       const storeId = txData.metadata?.store_id;
       const plan = txData.metadata?.plan;
+      const billingCycle = txData.metadata?.billing_cycle || 'monthly';
 
-      // Calculate expiry: 30 days from now
+      // Calculate expiry based on billing cycle
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      expiresAt.setDate(expiresAt.getDate() + (billingCycle === 'yearly' ? 365 : 30));
 
       await adminClient.from("subscriptions").update({
         status: "active",
