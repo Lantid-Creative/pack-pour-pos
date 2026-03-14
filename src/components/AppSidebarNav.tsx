@@ -12,6 +12,7 @@ const allNavItems = [
   { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission },
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true },
+  { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true },
 ];
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
