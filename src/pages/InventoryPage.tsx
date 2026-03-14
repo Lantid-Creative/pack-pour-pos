@@ -244,6 +244,10 @@ export default function InventoryPage() {
               <div className="flex items-center gap-2 pt-1">
                 {isQuickRestock ? (
                   <div className="flex items-center gap-1 flex-1">
+                    <div className="flex rounded overflow-hidden border border-input">
+                      <button onClick={() => setQuickMode('+')} className={`px-2 py-1 text-xs font-bold ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>+</button>
+                      <button onClick={() => setQuickMode('-')} className={`px-2 py-1 text-xs font-bold ${quickMode === '-' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>−</button>
+                    </div>
                     <input
                       type="number"
                       min="1"
@@ -253,14 +257,18 @@ export default function InventoryPage() {
                       autoFocus
                       className="flex-1 px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                     />
-                    <button onClick={() => handleQuickRestock(product.id)} className="p-1.5 rounded bg-primary text-primary-foreground"><Check className="h-4 w-4" /></button>
+                    <button onClick={() => handleQuickStockChange(product.id)} className={`p-1.5 rounded ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-destructive text-destructive-foreground'}`}><Check className="h-4 w-4" /></button>
                     <button onClick={() => { setQuickRestockId(null); setQuickRestockQty(''); }} className="p-1.5 rounded bg-muted text-muted-foreground"><X className="h-4 w-4" /></button>
                   </div>
                 ) : (
                   <>
-                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); }}
+                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('+'); }}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
-                      <Plus className="h-3 w-3" /> Restock
+                      <Plus className="h-3 w-3" /> Add
+                    </button>
+                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('-'); }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-destructive/10 text-destructive text-xs font-medium hover:bg-destructive/20 transition-colors">
+                      <Minus className="h-3 w-3" /> Remove
                     </button>
                     <button onClick={() => openEditDialog(product)}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-medium hover:text-foreground transition-colors">
