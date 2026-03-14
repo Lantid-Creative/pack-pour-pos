@@ -36,7 +36,8 @@ function getDateRange(range: ReportRange): Date {
 export default function SalesHistoryPage() {
   const { storeId } = useAuth();
   const [reportRange, setReportRange] = useState<ReportRange>('today');
-  const [customStart, setCustomStart] = useState('');
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState('');
 
   const { data: allSales = [] } = useQuery({
