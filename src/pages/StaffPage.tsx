@@ -13,6 +13,7 @@ export default function StaffPage() {
   const { storeId } = useAuth();
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
+  const [activeTab, setActiveTab] = useState<'staff' | 'permissions'>('staff');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<AppRole>('cashier');
