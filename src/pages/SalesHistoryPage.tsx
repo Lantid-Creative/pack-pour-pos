@@ -426,7 +426,7 @@ export default function SalesHistoryPage() {
                   {customStart ? format(customStart, 'MMM d, yyyy') : 'Start date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 z-50" align="start">
                 <Calendar mode="single" selected={customStart} onSelect={setCustomStart} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
@@ -438,7 +438,7 @@ export default function SalesHistoryPage() {
                   {customEnd ? format(customEnd, 'MMM d, yyyy') : 'End date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 z-50" align="start">
                 <Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
@@ -458,7 +458,7 @@ export default function SalesHistoryPage() {
       {/* Sales Table */}
       {filteredSales.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
-          <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+          <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-50" />
           <p className="text-lg font-medium">No sales for this period</p>
           <p className="text-sm">Try selecting a different date range</p>
         </div>
