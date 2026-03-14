@@ -57,6 +57,8 @@ function getPreviousDateRange(range: TimeRange): { start: Date | null; end: Date
       return { start, end };
     }
     case 'all':
+    case 'custom':
+    default:
       return { start: null, end: new Date(0) };
   }
 }
