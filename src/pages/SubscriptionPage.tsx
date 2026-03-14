@@ -105,7 +105,7 @@ export default function SubscriptionPage() {
       const callbackUrl = `${window.location.origin}/subscription`;
 
       const { data, error } = await supabase.functions.invoke('paystack-initialize', {
-        body: { plan, store_id: storeId, callback_url: callbackUrl },
+        body: { plan, store_id: storeId, callback_url: callbackUrl, billing_cycle: billingCycle },
       });
 
       if (error) throw error;
