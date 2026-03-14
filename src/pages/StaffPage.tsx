@@ -158,6 +158,8 @@ export default function StaffPage() {
           </table>
         )}
       </div>
+      </>
+      )}
 
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="max-w-md">
@@ -176,9 +178,7 @@ export default function StaffPage() {
                 placeholder="Staff member name"
                 className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
-      </div>
-        </>
-      )}
+            </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Email</label>
               <input
