@@ -270,6 +270,11 @@ export type Database = {
           name: string
           owner_id: string
           phone: string | null
+          printer_type: string
+          receipt_footer: string
+          receipt_header: string
+          receipt_show_address: boolean
+          receipt_show_phone: boolean
           trial_ends_at: string
         }
         Insert: {
@@ -279,6 +284,11 @@ export type Database = {
           name: string
           owner_id: string
           phone?: string | null
+          printer_type?: string
+          receipt_footer?: string
+          receipt_header?: string
+          receipt_show_address?: boolean
+          receipt_show_phone?: boolean
           trial_ends_at?: string
         }
         Update: {
@@ -288,6 +298,11 @@ export type Database = {
           name?: string
           owner_id?: string
           phone?: string | null
+          printer_type?: string
+          receipt_footer?: string
+          receipt_header?: string
+          receipt_show_address?: boolean
+          receipt_show_phone?: boolean
           trial_ends_at?: string
         }
         Relationships: []

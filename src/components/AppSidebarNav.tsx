@@ -1,7 +1,7 @@
 import { useLocation, useNavigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
-import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -12,6 +12,7 @@ const allNavItems = [
   { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission },
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true },
+  { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true },
 ];
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {

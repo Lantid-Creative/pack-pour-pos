@@ -15,6 +15,7 @@ import InventoryPage from "./pages/InventoryPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
 import StaffPage from "./pages/StaffPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
+import StoreSettingsPage from "./pages/StoreSettingsPage";
 import NotFound from "./pages/NotFound";
 import PaywallPage from "./pages/PaywallPage";
 
@@ -75,6 +76,7 @@ function AppRoutes() {
         <Route path="/sales" element={hasPermission('page:sales_history') ? <SalesHistoryPage /> : <Navigate to="/dashboard" replace />} />
         <Route path="/staff" element={hasPermission('page:staff') ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
         <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/settings" element={role === 'owner' ? <StoreSettingsPage /> : <Navigate to="/dashboard" replace />} />
       </Route>
       <Route path="/setup" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
       <Route path="/login" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
