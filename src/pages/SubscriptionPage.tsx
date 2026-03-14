@@ -212,8 +212,19 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div className="mb-5">
-                  <span className="text-3xl font-extrabold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground text-sm">{plan.period}</span>
+                  <span className="text-3xl font-extrabold text-foreground">
+                    {billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    {billingCycle === 'monthly' ? '/month' : '/year'}
+                  </span>
+                  {billingCycle === 'yearly' && (
+                    <div className="mt-1">
+                      <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
+                        {plan.yearlySavings}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <ul className="space-y-2.5 mb-6 flex-1">
