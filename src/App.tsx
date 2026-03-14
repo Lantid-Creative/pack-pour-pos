@@ -13,6 +13,7 @@ import DashboardPage from "./pages/DashboardPage";
 import InventoryPage from "./pages/InventoryPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
 import StaffPage from "./pages/StaffPage";
+import SubscriptionPage from "./pages/SubscriptionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
