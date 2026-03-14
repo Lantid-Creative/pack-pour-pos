@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserPlus, Users, Trash2, Shield, Settings } from 'lucide-react';
+import { UserPlus, Users, Trash2, Shield, Settings, Lock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import RolePermissionsEditor from '@/components/RolePermissionsEditor';
@@ -32,6 +32,26 @@ export default function StaffPage() {
     },
     enabled: !!storeId,
   });
+
+  // Check current subscription plan
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription-plan', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('store_id', storeId)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
+  const isStarterPlan = !subscription || subscription.plan === 'starter';
+  const nonOwnerStaffCount = staff.filter((s: any) => s.role !== 'owner').length;
 
   const handleAddStaff = async () => {
     if (!email || !fullName || !storeId) return;
@@ -80,12 +100,18 @@ export default function StaffPage() {
           <h1 className="text-2xl font-bold text-foreground">Staff Management</h1>
           <p className="text-sm text-muted-foreground">Manage staff accounts and role permissions</p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
-        >
-          <UserPlus className="h-4 w-4" /> Add Staff
-        </button>
+        {isStarterPlan ? (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-muted text-muted-foreground text-sm font-medium cursor-not-allowed">
+            <Lock className="h-4 w-4" /> Upgrade to Add Staff
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            <UserPlus className="h-4 w-4" /> Add Staff
+          </button>
+        )}
       </div>
 
       {/* Tab selector */}
