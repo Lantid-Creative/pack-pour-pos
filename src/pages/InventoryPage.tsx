@@ -11,6 +11,7 @@ export default function InventoryPage() {
   const { storeId, user, profile } = useAuth();
   const queryClient = useQueryClient();
   const [showRestock, setShowRestock] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [search, setSearch] = useState('');
