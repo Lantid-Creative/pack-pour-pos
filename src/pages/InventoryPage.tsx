@@ -203,6 +203,113 @@ export default function InventoryPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Create Product Dialog */}
+      <Dialog open={showCreateProduct} onOpenChange={setShowCreateProduct}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PlusCircle className="h-5 w-5" /> Create New Product
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground -mt-1">
+            Add a product that's not in the Product Library.
+          </p>
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Product Name</label>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Fanta Apple 50cl"
+                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Category</label>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {['Soft Drink', 'Beer', 'Stout', 'Malt', 'Energy', 'Water', 'Juice', 'Spirit', 'Other'].map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Pack Size</label>
+                <input
+                  type="text"
+                  value={newPackSize}
+                  onChange={(e) => setNewPackSize(e.target.value)}
+                  placeholder="e.g. Crate (24 bottles)"
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Cost Price (₦)</label>
+                <input
+                  type="number"
+                  value={newCostPrice}
+                  onChange={(e) => setNewCostPrice(e.target.value)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Sell Price (₦)</label>
+                <input
+                  type="number"
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(e.target.value)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                if (!newName.trim() || !newPackSize.trim() || !storeId) {
+                  toast.error('Name and pack size are required');
+                  return;
+                }
+                setCreatingProduct(true);
+                const { error } = await supabase.from('products').insert({
+                  store_id: storeId,
+                  name: newName.trim(),
+                  category: newCategory,
+                  pack_size: newPackSize.trim(),
+                  price: parseFloat(newPrice) || 0,
+                  cost_price: parseFloat(newCostPrice) || 0,
+                  stock: 0,
+                  low_stock_threshold: 10,
+                } as any);
+                if (error) {
+                  toast.error(error.message);
+                } else {
+                  toast.success(`${newName.trim()} added to inventory!`);
+                  setNewName('');
+                  setNewPackSize('');
+                  setNewPrice('');
+                  setNewCostPrice('');
+                  setShowCreateProduct(false);
+                  queryClient.invalidateQueries({ queryKey: ['products'] });
+                }
+                setCreatingProduct(false);
+              }}
+              disabled={creatingProduct || !newName.trim() || !newPackSize.trim()}
+              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {creatingProduct ? 'Creating...' : 'Create Product'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {storeId && (
         <ProductLibraryDialog
           open={showLibrary}
