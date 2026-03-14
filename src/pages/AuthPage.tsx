@@ -104,14 +104,14 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
+              className="w-full py-3 rounded-lg bg-landing-purple text-white font-bold text-sm hover:bg-landing-purple-hover active:scale-[0.98] transition-all disabled:opacity-40"
             >
               {submitting ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Create Account & Store'}
             </button>
           </form>
 
           {mode === 'login' && (
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-landing-muted">
               Staff? Your store owner creates your account.
             </p>
           )}
