@@ -2,8 +2,13 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { Download, FileText, FileSpreadsheet, Calendar, Filter } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, CalendarIcon, Filter } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type ReportRange = 'today' | 'week' | 'month' | 'custom';
 
