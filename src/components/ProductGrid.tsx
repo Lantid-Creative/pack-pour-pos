@@ -1,14 +1,41 @@
 import { useState } from 'react';
-import { useAppStore } from '@/lib/store';
-import { Product } from '@/lib/types';
-import { categories } from '@/lib/products';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 import { Package, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { categories } from '@/lib/products';
 
-export function ProductGrid() {
+interface ProductRow {
+  id: string;
+  name: string;
+  category: string;
+  pack_size: string;
+  price: number;
+  stock: number;
+  low_stock_threshold: number;
+}
+
+export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [search, setSearch] = useState('');
-  const { products, addToCart } = useAppStore();
+  const { storeId } = useAuth();
+
+  const { data: products = [] } = useQuery({
+    queryKey: ['products', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('store_id', storeId)
+        .order('category')
+        .order('name');
+      if (error) throw error;
+      return data as ProductRow[];
+    },
+    enabled: !!storeId,
+  });
 
   const filtered = products.filter((p) => {
     const matchCat = activeCategory === 'All' || p.category === activeCategory;
@@ -18,7 +45,6 @@ export function ProductGrid() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Search */}
       <div className="p-3 border-b border-border">
         <input
           type="text"
@@ -29,16 +55,13 @@ export function ProductGrid() {
         />
       </div>
 
-      {/* Categories */}
       <div className="flex gap-1.5 p-3 overflow-x-auto border-b border-border">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-              activeCategory === cat
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              activeCategory === cat ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
             }`}
           >
             {cat}
@@ -46,11 +69,10 @@ export function ProductGrid() {
         ))}
       </div>
 
-      {/* Grid */}
       <div className="flex-1 overflow-y-auto p-3">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
           {filtered.map((product) => (
-            <ProductTile key={product.id} product={product} onAdd={addToCart} />
+            <ProductTile key={product.id} product={product} onAdd={() => onAdd(product)} />
           ))}
         </div>
       </div>
@@ -58,15 +80,15 @@ export function ProductGrid() {
   );
 }
 
-function ProductTile({ product, onAdd }: { product: Product; onAdd: (p: Product) => void }) {
-  const isLowStock = product.stock <= product.lowStockThreshold;
+function ProductTile({ product, onAdd }: { product: ProductRow; onAdd: () => void }) {
+  const isLowStock = product.stock <= product.low_stock_threshold;
   const isOutOfStock = product.stock <= 0;
 
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
       transition={{ duration: 0.05 }}
-      onClick={() => !isOutOfStock && onAdd(product)}
+      onClick={() => !isOutOfStock && onAdd()}
       disabled={isOutOfStock}
       className={`relative flex flex-col items-center p-3 rounded-lg border border-border bg-card text-card-foreground transition-colors ${
         isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary hover:bg-primary/5 active:bg-primary/10 cursor-pointer'
@@ -81,7 +103,7 @@ function ProductTile({ product, onAdd }: { product: Product; onAdd: (p: Product)
         <Package className="h-5 w-5 text-primary" />
       </div>
       <span className="text-sm font-semibold text-center leading-tight">{product.name}</span>
-      <span className="text-xs text-muted-foreground mt-0.5">{product.packSize}</span>
+      <span className="text-xs text-muted-foreground mt-0.5">{product.pack_size}</span>
       <span className="font-mono-numbers text-sm font-bold text-primary mt-1">
         ₦{product.price.toLocaleString()}
       </span>
