@@ -242,6 +242,59 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          expires_at: string | null
+          id: string
+          paystack_reference: string | null
+          paystack_subscription_code: string | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          paystack_reference?: string | null
+          paystack_subscription_code?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          paystack_reference?: string | null
+          paystack_subscription_code?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -314,6 +367,8 @@ export type Database = {
     Enums: {
       app_role: "owner" | "manager" | "cashier"
       payment_method: "cash" | "pos" | "transfer"
+      subscription_plan: "starter" | "business" | "enterprise"
+      subscription_status: "active" | "expired" | "cancelled" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -443,6 +498,8 @@ export const Constants = {
     Enums: {
       app_role: ["owner", "manager", "cashier"],
       payment_method: ["cash", "pos", "transfer"],
+      subscription_plan: ["starter", "business", "enterprise"],
+      subscription_status: ["active", "expired", "cancelled", "pending"],
     },
   },
 } as const
