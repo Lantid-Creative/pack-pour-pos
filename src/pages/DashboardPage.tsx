@@ -263,13 +263,21 @@ export default function DashboardPage() {
       </div>
 
       {/* Key Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
           icon={DollarSign}
           label={`Revenue (${rangeLabels[timeRange]})`}
           value={`₦${stats.totalRevenue.toLocaleString()}`}
           change={timeRange !== 'all' ? stats.revenueChange : undefined}
           isMoney
+        />
+        <MetricCard
+          icon={Percent}
+          label={`Profit (${rangeLabels[timeRange]})`}
+          value={`₦${stats.totalProfit.toLocaleString()}`}
+          change={timeRange !== 'all' ? stats.profitChange : undefined}
+          isMoney
+          sub={`${stats.profitMargin.toFixed(1)}% margin`}
         />
         <MetricCard
           icon={ShoppingCart}
@@ -292,18 +300,28 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Inventory Value Cards (Owner/Manager only) */}
+      {/* Profit & Inventory Cards (Owner/Manager only) */}
       {(role === 'owner' || role === 'manager') && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-xl border border-primary/20 bg-primary/5">
             <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Warehouse className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">Total Inventory Worth</p>
+              <p className="text-sm text-muted-foreground">Inventory (Retail Value)</p>
             </div>
-            <p className="text-3xl font-extrabold font-mono-numbers text-foreground">₦{stats.inventoryValue.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.totalProducts} products · {stats.totalUnits.toLocaleString()} total units</p>
+            <p className="text-2xl font-extrabold font-mono-numbers text-foreground">₦{stats.inventoryRetailValue.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">{stats.totalProducts} products · {stats.totalUnits.toLocaleString()} units</p>
+          </div>
+          <div className="p-5 rounded-xl border border-border bg-card">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground">Inventory (Cost Value)</p>
+            </div>
+            <p className="text-2xl font-extrabold font-mono-numbers text-foreground">₦{stats.inventoryCostValue.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">Potential profit: ₦{stats.inventoryProfit.toLocaleString()}</p>
           </div>
           <div className="p-5 rounded-xl border border-border bg-card">
             <div className="flex items-center gap-3 mb-2">
@@ -318,12 +336,12 @@ export default function DashboardPage() {
           <div className="p-5 rounded-xl border border-border bg-card">
             <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-primary" />
+                <Percent className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">Period Summary</p>
+              <p className="text-sm text-muted-foreground">Cost of Goods Sold</p>
             </div>
-            <p className="text-xl font-bold text-foreground">₦{stats.totalRevenue.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.totalSales} transactions · {rangeLabels[timeRange].toLowerCase()}</p>
+            <p className="text-xl font-bold font-mono-numbers text-foreground">₦{stats.totalCOGS.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">{rangeLabels[timeRange].toLowerCase()} · {stats.totalSales} transactions</p>
           </div>
         </div>
       )}
