@@ -57,14 +57,14 @@ export default function SalesHistoryPage() {
 
   const filteredSales = useMemo(() => {
     if (reportRange === 'custom' && customStart && customEnd) {
-      const start = new Date(customStart);
       const end = new Date(customEnd);
       end.setHours(23, 59, 59, 999);
       return allSales.filter((s: any) => {
         const d = new Date(s.created_at);
-        return d >= start && d <= end;
+        return d >= customStart && d <= end;
       });
     }
+    if (reportRange === 'all') return allSales;
     const rangeStart = getDateRange(reportRange);
     return allSales.filter((s: any) => new Date(s.created_at) >= rangeStart);
   }, [allSales, reportRange, customStart, customEnd]);
