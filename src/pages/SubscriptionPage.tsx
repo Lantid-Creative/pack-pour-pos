@@ -9,8 +9,9 @@ const plans = [
   {
     id: 'starter',
     name: 'Starter',
-    price: '₦5,000',
-    period: '/month',
+    monthlyPrice: '₦5,000',
+    yearlyPrice: '₦48,000',
+    yearlySavings: 'Save ₦12,000',
     icon: Zap,
     features: ['1 Store', 'Up to 100 Products', '2 Staff Accounts', 'Basic Reports', 'Email Support'],
     popular: false,
@@ -18,8 +19,9 @@ const plans = [
   {
     id: 'business',
     name: 'Business',
-    price: '₦15,000',
-    period: '/month',
+    monthlyPrice: '₦15,000',
+    yearlyPrice: '₦144,000',
+    yearlySavings: 'Save ₦36,000',
     icon: Crown,
     features: ['1 Store', 'Unlimited Products', '10 Staff Accounts', 'Advanced Reports', 'Priority Support', 'Inventory Alerts'],
     popular: true,
@@ -27,8 +29,9 @@ const plans = [
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: '₦50,000',
-    period: '/month',
+    monthlyPrice: '₦50,000',
+    yearlyPrice: '₦480,000',
+    yearlySavings: 'Save ₦120,000',
     icon: Building2,
     features: ['Multiple Stores', 'Unlimited Products', 'Unlimited Staff', 'Custom Reports', 'Dedicated Support', 'API Access', 'White Label'],
     popular: false,
@@ -38,6 +41,7 @@ const plans = [
 export default function SubscriptionPage() {
   const { storeId, user } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const { data: subscription, refetch } = useQuery({
     queryKey: ['subscription', storeId],
