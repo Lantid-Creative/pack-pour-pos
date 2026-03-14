@@ -39,7 +39,7 @@ const plans = [
 ];
 
 export default function SubscriptionPage() {
-  const { storeId, user } = useAuth();
+  const { storeId, user, refetchSubscription } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
@@ -85,6 +85,7 @@ export default function SubscriptionPage() {
       if (data.success) {
         toast.success('Payment successful! Your subscription is now active.');
         refetch();
+        await refetchSubscription();
       } else {
         toast.error('Payment was not successful. Please try again.');
       }
