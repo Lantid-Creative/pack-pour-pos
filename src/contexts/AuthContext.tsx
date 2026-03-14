@@ -124,9 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(sessionUser);
-      setProfile(null);
-      setRole(null);
-      setStoreId(null);
+      // Don't reset profile/role/storeId to null here — it causes a flash
+      // of the unauthenticated UI during token refreshes.
 
       try {
         await fetchUserData(sessionUser.id);
