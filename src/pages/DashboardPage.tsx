@@ -200,33 +200,76 @@ export default function DashboardPage() {
     return Object.entries(grouped).map(([label, total]) => ({ label, total })).reverse();
   }, [sales, timeRange]);
 
-  // Top 5 selling products
-  const topProducts = useMemo(() => {
-    const counts: Record<string, { qty: number; revenue: number }> = {};
+  // Top 5 products with profit margins
+  const topProductsWithMargin = useMemo(() => {
+    const counts: Record<string, { qty: number; revenue: number; cost: number }> = {};
     sales.forEach((sale: any) =>
       (sale.sale_items || []).forEach((item: any) => {
-        if (!counts[item.product_name]) counts[item.product_name] = { qty: 0, revenue: 0 };
+        if (!counts[item.product_name]) counts[item.product_name] = { qty: 0, revenue: 0, cost: 0 };
         counts[item.product_name].qty += item.quantity;
         counts[item.product_name].revenue += item.quantity * Number(item.unit_price);
+        counts[item.product_name].cost += item.quantity * Number(item.cost_price || 0);
       })
     );
     return Object.entries(counts)
-      .map(([name, data]) => ({ name, ...data }))
+      .map(([name, data]) => ({
+        name: name.length > 18 ? name.slice(0, 16) + '…' : name,
+        fullName: name,
+        ...data,
+        profit: data.revenue - data.cost,
+        margin: data.revenue > 0 ? ((data.revenue - data.cost) / data.revenue) * 100 : 0,
+      }))
       .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
+      .slice(0, 8);
   }, [sales]);
+
+  // Cashier performance
+  const cashierPerformance = useMemo(() => {
+    const cashiers: Record<string, { name: string; sales: number; revenue: number; avgOrder: number }> = {};
+    sales.forEach((sale: any) => {
+      const key = sale.cashier_id || sale.cashier_name;
+      if (!cashiers[key]) cashiers[key] = { name: sale.cashier_name, sales: 0, revenue: 0, avgOrder: 0 };
+      cashiers[key].sales += 1;
+      cashiers[key].revenue += Number(sale.total);
+    });
+    return Object.values(cashiers)
+      .map(c => ({ ...c, avgOrder: c.sales > 0 ? c.revenue / c.sales : 0 }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [sales]);
+
+  // Daily revenue trend (for week/month/all)
+  const dailyTrendData = useMemo(() => {
+    if (timeRange === 'today') return [];
+    const grouped: Record<string, { revenue: number; cost: number }> = {};
+    sales.forEach((s: any) => {
+      const key = new Date(s.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+      if (!grouped[key]) grouped[key] = { revenue: 0, cost: 0 };
+      grouped[key].revenue += Number(s.total);
+      (s.sale_items || []).forEach((item: any) => {
+        grouped[key].cost += item.quantity * Number(item.cost_price || 0);
+      });
+    });
+    return Object.entries(grouped)
+      .map(([label, data]) => ({ label, revenue: data.revenue, profit: data.revenue - data.cost }))
+      .reverse();
+  }, [sales, timeRange]);
 
   // Hourly breakdown for today
   const hourlyData = useMemo(() => {
     if (timeRange !== 'today') return [];
-    const hours: Record<number, number> = {};
+    const hours: Record<number, { revenue: number; cost: number }> = {};
     sales.forEach((s: any) => {
       const h = new Date(s.created_at).getHours();
-      hours[h] = (hours[h] || 0) + Number(s.total);
+      if (!hours[h]) hours[h] = { revenue: 0, cost: 0 };
+      hours[h].revenue += Number(s.total);
+      (s.sale_items || []).forEach((item: any) => {
+        hours[h].cost += item.quantity * Number(item.cost_price || 0);
+      });
     });
     return Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i.toString().padStart(2, '0')}:00`,
-      total: hours[i] || 0,
+      label: `${i.toString().padStart(2, '0')}:00`,
+      revenue: hours[i]?.revenue || 0,
+      profit: (hours[i]?.revenue || 0) - (hours[i]?.cost || 0),
     }));
   }, [sales, timeRange]);
 
