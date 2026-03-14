@@ -84,6 +84,7 @@ export default function SubscriptionPage() {
       if (data.success) {
         toast.success('Payment successful! Your subscription is now active.');
         refetch();
+        await refetchSubscription();
       } else {
         toast.error('Payment was not successful. Please try again.');
       }
