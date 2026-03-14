@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
+import LandingPage from "./pages/LandingPage";
 import StoreSetupPage from "./pages/StoreSetupPage";
 import AppLayout from "./layouts/AppLayout";
 import POSPage from "./pages/POSPage";
@@ -33,7 +34,8 @@ function AppRoutes() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/" element={<AuthPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<AuthPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );

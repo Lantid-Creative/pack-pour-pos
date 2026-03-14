@@ -59,6 +59,18 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        landing: {
+          bg: "hsl(var(--landing-bg))",
+          fg: "hsl(var(--landing-fg))",
+          card: "hsl(var(--landing-card))",
+          border: "hsl(var(--landing-border))",
+          muted: "hsl(var(--landing-muted))",
+          purple: {
+            DEFAULT: "hsl(var(--landing-purple))",
+            hover: "hsl(var(--landing-purple-hover))",
+            light: "hsl(var(--landing-purple-light))",
+          },
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
