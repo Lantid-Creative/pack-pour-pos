@@ -134,17 +134,18 @@ export default function SalesHistoryPage() {
     });
 
     rows.push([]);
-    rows.push(['=== TOP SELLING PRODUCTS ===']);
-    rows.push(['Product', 'Pack Size', 'Total Qty Sold', 'Total Revenue (₦)']);
+    rows.push(['=== TOP SELLING PRODUCTS — PROFIT ANALYSIS ===']);
+    rows.push(['Product', 'Pack Size', 'Qty Sold', 'Cost (₦)', 'Revenue (₦)', 'Profit (₦)', 'Margin (%)']);
 
-    // Aggregate top products
-    const productMap = new Map<string, { packSize: string; qty: number; revenue: number }>();
+    // Aggregate top products with cost
+    const productMap = new Map<string, { packSize: string; qty: number; revenue: number; cost: number }>();
     filteredSales.forEach((sale: any) => {
       (sale.sale_items || []).forEach((item: any) => {
         const key = `${item.product_name}||${item.pack_size || ''}`;
-        const existing = productMap.get(key) || { packSize: item.pack_size || '', qty: 0, revenue: 0 };
+        const existing = productMap.get(key) || { packSize: item.pack_size || '', qty: 0, revenue: 0, cost: 0 };
         existing.qty += item.quantity;
         existing.revenue += item.quantity * Number(item.unit_price);
+        existing.cost += item.quantity * Number(item.cost_price || 0);
         productMap.set(key, existing);
       });
     });
@@ -153,7 +154,9 @@ export default function SalesHistoryPage() {
       .sort((a, b) => b[1].revenue - a[1].revenue)
       .forEach(([key, val]) => {
         const name = key.split('||')[0];
-        rows.push([name, val.packSize, val.qty.toString(), `₦${val.revenue.toLocaleString()}`]);
+        const profit = val.revenue - val.cost;
+        const margin = val.revenue > 0 ? ((profit / val.revenue) * 100).toFixed(1) : '0';
+        rows.push([name, val.packSize, val.qty.toString(), `₦${val.cost.toLocaleString()}`, `₦${val.revenue.toLocaleString()}`, `₦${profit.toLocaleString()}`, `${margin}%`]);
       });
 
     const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
