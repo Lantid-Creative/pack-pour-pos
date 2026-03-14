@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard, ArrowRight, Check, Zap, Globe, Star } from 'lucide-react';
-import heroDashboard from '@/assets/hero-dashboard.png';
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
