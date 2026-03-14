@@ -21,6 +21,7 @@ const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user, role, storeId, loading } = useAuth();
+  const { hasPermission } = usePermissions();
 
   if (loading) {
     return (
