@@ -191,12 +191,24 @@ export default function SalesHistoryPage() {
 
     // ─── SUMMARY CARDS ────────────────────────────────────────
     const cardY = 44;
-    const cardW = (pageWidth - 28 - 12) / 4; // 4 cards with gaps
+    const cardW = (pageWidth - 28 - 16) / 5; // 5 cards with gaps
+
+    // Calculate total cost & profit
+    let totalCost = 0;
+    filteredSales.forEach((sale: any) => {
+      (sale.sale_items || []).forEach((item: any) => {
+        totalCost += item.quantity * Number(item.cost_price || 0);
+      });
+    });
+    const totalProfit = summary.totalRevenue - totalCost;
+    const overallMargin = summary.totalRevenue > 0 ? ((totalProfit / summary.totalRevenue) * 100).toFixed(1) : '0';
+
     const cards = [
       { label: 'Total Sales', value: summary.count.toString() },
       { label: 'Revenue', value: `₦${summary.totalRevenue.toLocaleString()}` },
-      { label: 'Cash', value: `₦${summary.cashRevenue.toLocaleString()}` },
-      { label: 'POS / Transfer', value: `₦${(summary.posRevenue + summary.transferRevenue).toLocaleString()}` },
+      { label: 'Total Cost', value: `₦${totalCost.toLocaleString()}` },
+      { label: 'Profit', value: `₦${totalProfit.toLocaleString()}` },
+      { label: 'Margin', value: `${overallMargin}%` },
     ];
 
     cards.forEach((card, i) => {
