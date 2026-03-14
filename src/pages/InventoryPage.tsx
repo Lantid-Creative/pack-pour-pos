@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Package, Plus, History, AlertTriangle, Library } from 'lucide-react';
+import { Package, Plus, History, AlertTriangle, Library, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ProductLibraryDialog from '@/components/ProductLibraryDialog';
 import { toast } from 'sonner';
@@ -12,10 +12,18 @@ export default function InventoryPage() {
   const queryClient = useQueryClient();
   const [showRestock, setShowRestock] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
   const [search, setSearch] = useState('');
 
+  // Create product form state
+  const [newName, setNewName] = useState('');
+  const [newCategory, setNewCategory] = useState('Soft Drink');
+  const [newPackSize, setNewPackSize] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+  const [newCostPrice, setNewCostPrice] = useState('');
+  const [creatingProduct, setCreatingProduct] = useState(false);
   const { data: products = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
@@ -77,6 +85,9 @@ export default function InventoryPage() {
         <div className="flex items-center gap-2">
           <button onClick={() => setShowLibrary(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-primary/10 active:scale-[0.98] transition-all">
             <Library className="h-4 w-4" /> Product Library
+          </button>
+          <button onClick={() => setShowCreateProduct(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border text-foreground font-semibold text-sm hover:bg-muted active:scale-[0.98] transition-all">
+            <PlusCircle className="h-4 w-4" /> Create Product
           </button>
           <button onClick={() => setShowRestock(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all">
             <Plus className="h-4 w-4" /> Restock
@@ -187,6 +198,113 @@ export default function InventoryPage() {
             <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0}
               className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
               Add Stock
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Product Dialog */}
+      <Dialog open={showCreateProduct} onOpenChange={setShowCreateProduct}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PlusCircle className="h-5 w-5" /> Create New Product
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground -mt-1">
+            Add a product that's not in the Product Library.
+          </p>
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Product Name</label>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Fanta Apple 50cl"
+                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Category</label>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {['Soft Drink', 'Beer', 'Stout', 'Malt', 'Energy', 'Water', 'Juice', 'Spirit', 'Other'].map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Pack Size</label>
+                <input
+                  type="text"
+                  value={newPackSize}
+                  onChange={(e) => setNewPackSize(e.target.value)}
+                  placeholder="e.g. Crate (24 bottles)"
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Cost Price (₦)</label>
+                <input
+                  type="number"
+                  value={newCostPrice}
+                  onChange={(e) => setNewCostPrice(e.target.value)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Sell Price (₦)</label>
+                <input
+                  type="number"
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(e.target.value)}
+                  placeholder="0"
+                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                if (!newName.trim() || !newPackSize.trim() || !storeId) {
+                  toast.error('Name and pack size are required');
+                  return;
+                }
+                setCreatingProduct(true);
+                const { error } = await supabase.from('products').insert({
+                  store_id: storeId,
+                  name: newName.trim(),
+                  category: newCategory,
+                  pack_size: newPackSize.trim(),
+                  price: parseFloat(newPrice) || 0,
+                  cost_price: parseFloat(newCostPrice) || 0,
+                  stock: 0,
+                  low_stock_threshold: 10,
+                } as any);
+                if (error) {
+                  toast.error(error.message);
+                } else {
+                  toast.success(`${newName.trim()} added to inventory!`);
+                  setNewName('');
+                  setNewPackSize('');
+                  setNewPrice('');
+                  setNewCostPrice('');
+                  setShowCreateProduct(false);
+                  queryClient.invalidateQueries({ queryKey: ['products'] });
+                }
+                setCreatingProduct(false);
+              }}
+              disabled={creatingProduct || !newName.trim() || !newPackSize.trim()}
+              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {creatingProduct ? 'Creating...' : 'Create Product'}
             </button>
           </div>
         </DialogContent>
