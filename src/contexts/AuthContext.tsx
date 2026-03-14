@@ -11,7 +11,7 @@ interface AuthContextType {
   storeId: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -84,12 +84,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message || null };
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, fullName: string, phone?: string) => {
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } }
+      options: { data: { full_name: fullName, phone } }
     });
+
+    // Save phone to profile after signup
+    if (!error && data.user && phone) {
+      await supabase
+        .from('profiles')
+        .update({ phone: phone.trim() })
+        .eq('user_id', data.user.id);
+    }
+
     return { error: error?.message || null };
   };
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { defaultProducts } from '@/lib/products';
-import { Package, Store } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -12,18 +12,25 @@ export default function StoreSetupPage() {
   const navigate = useNavigate();
   const [storeName, setStoreName] = useState('');
   const [address, setAddress] = useState('');
+  const [storePhone, setStorePhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !storeName.trim()) return;
+    if (!address.trim()) { toast.error('Store address is required'); return; }
     setSubmitting(true);
 
     try {
       // Create store
       const { data: store, error: storeError } = await supabase
         .from('stores')
-        .insert({ name: storeName.trim(), address: address.trim() || null, owner_id: user.id })
+        .insert({
+          name: storeName.trim(),
+          address: address.trim(),
+          phone: storePhone.trim() || null,
+          owner_id: user.id,
+        })
         .select()
         .single();
 
@@ -59,7 +66,6 @@ export default function StoreSetupPage() {
       await supabase.rpc('seed_role_permissions', { p_store_id: store.id });
 
       toast.success('Store created successfully!');
-      // Force a page reload to re-fetch auth data
       window.location.href = '/dashboard';
     } catch (err: any) {
       toast.error(err.message || 'Failed to create store');
@@ -67,6 +73,8 @@ export default function StoreSetupPage() {
       setSubmitting(false);
     }
   };
+
+  const inputClass = "w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple";
 
   return (
     <div className="min-h-screen bg-landing-bg flex items-center justify-center p-4 relative">
@@ -85,24 +93,35 @@ export default function StoreSetupPage() {
         <div className="bg-landing-card rounded-xl border border-landing-border p-6">
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-white mb-1 block">Store Name</label>
+              <label className="text-sm font-medium text-white mb-1 block">Store Name *</label>
               <input
                 type="text"
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
                 placeholder="e.g. ChiefDrinks Wholesale"
                 required
-                className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-white mb-1 block">Address (optional)</label>
+              <label className="text-sm font-medium text-white mb-1 block">Store Address *</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Store location"
-                className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
+                placeholder="e.g. 12 Market Road, Lagos"
+                required
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-white mb-1 block">Store Phone (optional)</label>
+              <input
+                type="tel"
+                value={storePhone}
+                onChange={(e) => setStorePhone(e.target.value)}
+                placeholder="e.g. 08012345678"
+                className={inputClass}
               />
             </div>
             <p className="text-xs text-landing-muted">

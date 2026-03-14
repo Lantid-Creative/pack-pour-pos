@@ -111,6 +111,7 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          phone: string | null
           store_id: string | null
           user_id: string
         }
@@ -118,6 +119,7 @@ export type Database = {
           created_at?: string
           full_name: string
           id?: string
+          phone?: string | null
           store_id?: string | null
           user_id: string
         }
@@ -125,6 +127,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          phone?: string | null
           store_id?: string | null
           user_id?: string
         }
@@ -266,6 +269,7 @@ export type Database = {
           id: string
           name: string
           owner_id: string
+          phone: string | null
         }
         Insert: {
           address?: string | null
@@ -273,6 +277,7 @@ export type Database = {
           id?: string
           name: string
           owner_id: string
+          phone?: string | null
         }
         Update: {
           address?: string | null
@@ -280,6 +285,7 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+          phone?: string | null
         }
         Relationships: []
       }
