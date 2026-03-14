@@ -1,8 +1,9 @@
 import { useLocation, useNavigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
-import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 
 const allNavItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'page:dashboard' as Permission },
@@ -12,6 +13,17 @@ const allNavItems = [
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true },
 ];
+
+function ThemeToggle({ collapsed }: { collapsed: boolean }) {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button onClick={toggleTheme}
+      className="flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
+      {theme === 'dark' ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+      {!collapsed && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+    </button>
+  );
+}
 
 export function AppSidebarNav() {
   const { role, profile, signOut } = useAuth();
@@ -61,13 +73,14 @@ export function AppSidebarNav() {
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-t border-sidebar-border p-3 space-y-1">
         {!collapsed && (
           <div className="mb-2">
             <p className="text-xs font-medium truncate">{profile?.full_name}</p>
             <p className="text-xs text-sidebar-foreground/50 capitalize">{role}</p>
           </div>
         )}
+        <ThemeToggle collapsed={collapsed} />
         <button onClick={handleSignOut}
           className="flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
           <LogOut className="h-4 w-4 shrink-0" />
