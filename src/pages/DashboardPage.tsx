@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar, Percent } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar, Percent, Users } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 
 type TimeRange = 'today' | 'week' | 'month' | 'all';
