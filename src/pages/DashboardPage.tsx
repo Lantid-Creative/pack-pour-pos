@@ -64,6 +64,8 @@ function getPreviousDateRange(range: TimeRange): { start: Date | null; end: Date
 export default function DashboardPage() {
   const { storeId, role } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>('today');
+  const [customStart, setCustomStart] = useState<Date | undefined>();
+  const [customEnd, setCustomEnd] = useState<Date | undefined>();
 
   const { data: allSales = [] } = useQuery({
     queryKey: ['sales', storeId],
