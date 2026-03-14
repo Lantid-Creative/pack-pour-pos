@@ -1,5 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Printer } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { ReceiptPreview, getReceiptPrintHTML, PRINTER_CONFIGS, type PrinterType } from '@/components/ReceiptPreview';
 
 interface SaleItem {
   product: { id: string; name: string; pack_size: string; price: number };
@@ -22,17 +26,44 @@ interface Props {
 }
 
 export function ReceiptDialog({ sale, open, onClose }: Props) {
-  const handlePrint = () => {
-    const printContent = document.getElementById('receipt-content');
-    if (!printContent) return;
+  const { storeId } = useAuth();
 
-    // Use a hidden iframe to avoid popup blockers
+  const { data: store } = useQuery({
+    queryKey: ['store-settings', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data, error } = await supabase.from('stores').select('*').eq('id', storeId).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
+  const storeName = store?.name || 'BULKDRINK STORE';
+  const printerType: PrinterType = (store as any)?.printer_type || '80mm';
+  const header = (store as any)?.receipt_header || '';
+  const footer = (store as any)?.receipt_footer || 'Thank you for your patronage!';
+  const address = (store as any)?.receipt_show_address ? (store?.address || '') : '';
+  const phone = (store as any)?.receipt_show_phone ? (store?.phone || '') : '';
+  const config = PRINTER_CONFIGS[printerType];
+
+  const handlePrint = () => {
+    const html = getReceiptPrintHTML({
+      sale,
+      storeName,
+      address,
+      phone,
+      header,
+      footer,
+      printerType,
+    });
+
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.top = '-10000px';
     iframe.style.left = '-10000px';
-    iframe.style.width = '300px';
-    iframe.style.height = '600px';
+    iframe.style.width = `${config.bodyWidth + 40}px`;
+    iframe.style.height = '800px';
     document.body.appendChild(iframe);
 
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -42,33 +73,7 @@ export function ReceiptDialog({ sale, open, onClose }: Props) {
     }
 
     doc.open();
-    doc.write(`
-      <html><head><title>Receipt</title>
-      <style>
-        body { font-family: 'Courier New', monospace; font-size: 12px; padding: 10px; width: 280px; margin: 0 auto; }
-        .center, .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-        .text-base { font-size: 14px; }
-        .text-xs { font-size: 11px; }
-        .text-sm { font-size: 12px; }
-        .border-t { border-top: 1px dashed #000; margin: 8px 0; }
-        .flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .space-y-1\\.5 > * + * { margin-top: 6px; }
-        .mb-1 { margin-bottom: 4px; }
-        .mb-2 { margin-bottom: 8px; }
-        .mb-3 { margin-bottom: 12px; }
-        .mt-2 { margin-top: 8px; }
-        .my-2 { margin: 8px 0; }
-        .font-medium { font-weight: 500; }
-        .uppercase { text-transform: uppercase; }
-        @media print {
-          body { padding: 0; }
-        }
-      </style></head><body>
-      ${printContent.innerHTML}
-      </body></html>
-    `);
+    doc.write(html);
     doc.close();
 
     iframe.onload = () => {
@@ -80,11 +85,8 @@ export function ReceiptDialog({ sale, open, onClose }: Props) {
       }, 250);
     };
 
-    // Fallback if onload doesn't fire (some browsers)
     setTimeout(() => {
-      try {
-        iframe.contentWindow?.print();
-      } catch {}
+      try { iframe.contentWindow?.print(); } catch {}
       setTimeout(() => {
         if (iframe.parentNode) document.body.removeChild(iframe);
       }, 500);
@@ -99,38 +101,16 @@ export function ReceiptDialog({ sale, open, onClose }: Props) {
             <Printer className="h-5 w-5" /> Receipt
           </DialogTitle>
         </DialogHeader>
-        <div id="receipt-content" className="receipt-font bg-card p-4 rounded-md border border-border">
-          <div className="text-center mb-3">
-            <div className="font-bold text-base">BULKDRINK STORE</div>
-            <div className="text-xs text-muted-foreground">Wholesale Drinks & Beverages</div>
-            <div className="text-xs text-muted-foreground">Lagos, Nigeria</div>
-          </div>
-          <div className="border-t border-dashed border-border my-2" />
-          <div className="flex justify-between text-xs mb-1">
-            <span>Date: {sale.date}</span>
-            <span>#{sale.id.slice(-6)}</span>
-          </div>
-          <div className="text-xs mb-2">Cashier: {sale.cashier}</div>
-          <div className="border-t border-dashed border-border my-2" />
-          <div className="space-y-1.5">
-            {sale.items.map((item, i) => (
-              <div key={i}>
-                <div className="text-xs font-medium">{item.product.name}</div>
-                <div className="flex justify-between text-xs">
-                  <span>{item.quantity} x ₦{item.product.price.toLocaleString()}</span>
-                  <span className="font-bold">₦{(item.quantity * item.product.price).toLocaleString()}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-dashed border-border my-2" />
-          <div className="flex justify-between font-bold text-sm">
-            <span>TOTAL</span>
-            <span>₦{sale.total.toLocaleString()}</span>
-          </div>
-          <div className="text-xs text-center mt-2 uppercase">Paid via: {sale.paymentMethod}</div>
-          <div className="border-t border-dashed border-border my-2" />
-          <div className="text-center text-xs text-muted-foreground">Thank you for your patronage!</div>
+        <div className="bg-white rounded-md border border-border overflow-hidden" style={{ maxWidth: `${config.previewWidth}px`, margin: '0 auto' }}>
+          <ReceiptPreview
+            sale={sale}
+            storeName={storeName}
+            address={address}
+            phone={phone}
+            header={header}
+            footer={footer}
+            printerType={printerType}
+          />
         </div>
         <div className="flex gap-2 mt-2">
           <button onClick={onClose} className="flex-1 py-2 rounded-md border border-border text-sm font-medium hover:bg-muted transition-colors">Close</button>
