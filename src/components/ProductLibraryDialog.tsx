@@ -60,7 +60,7 @@ export default function ProductLibraryDialog({
         name: p.name,
         category: p.category,
         pack_size: p.packSize,
-        price: p.defaultPrice,
+        price: 0,
         stock: 0,
         low_stock_threshold: 10,
       };
@@ -184,7 +184,7 @@ export default function ProductLibraryDialog({
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
                     <p className="text-xs text-muted-foreground">{p.packSize}</p>
-                    <p className="text-xs text-primary font-semibold mt-0.5">₦{p.defaultPrice.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground italic mt-0.5">Set price in inventory after adding</p>
                     {alreadyExists && <p className="text-xs text-muted-foreground italic">Already in inventory</p>}
                   </div>
                 </button>
