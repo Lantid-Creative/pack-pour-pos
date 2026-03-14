@@ -78,10 +78,11 @@ export default function SalesHistoryPage() {
   }, [filteredSales]);
 
   const rangeLabel = reportRange === 'custom' && customStart && customEnd
-    ? `${customStart} to ${customEnd}`
+    ? `${format(customStart, 'MMM d, yyyy')} to ${format(customEnd, 'MMM d, yyyy')}`
     : reportRange === 'today' ? 'Today'
     : reportRange === 'week' ? 'Last 7 Days'
-    : 'Last 30 Days';
+    : reportRange === 'month' ? 'Last 30 Days'
+    : 'All Time';
 
   const exportCSV = () => {
     if (filteredSales.length === 0) { toast.error('No sales to export'); return; }
