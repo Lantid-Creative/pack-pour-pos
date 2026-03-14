@@ -16,11 +16,12 @@ import SalesHistoryPage from "./pages/SalesHistoryPage";
 import StaffPage from "./pages/StaffPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import NotFound from "./pages/NotFound";
+import PaywallPage from "./pages/PaywallPage";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { user, role, storeId, loading } = useAuth();
+  const { user, role, storeId, loading, subscriptionActive } = useAuth();
   const { hasPermission } = usePermissions();
 
   if (loading) {
@@ -50,6 +51,17 @@ function AppRoutes() {
       <Routes>
         <Route path="/setup" element={<StoreSetupPage />} />
         <Route path="*" element={<Navigate to="/setup" replace />} />
+      </Routes>
+    );
+  }
+
+  // User has a store but no active subscription and trial expired — paywall
+  if (!subscriptionActive) {
+    return (
+      <Routes>
+        <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/paywall" element={<PaywallPage />} />
+        <Route path="*" element={<Navigate to="/paywall" replace />} />
       </Routes>
     );
   }

@@ -10,9 +10,13 @@ interface AuthContextType {
   role: AppRole | null;
   storeId: string | null;
   loading: boolean;
+  subscriptionActive: boolean;
+  trialEndsAt: Date | null;
+  isTrialing: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  refetchSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +27,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [storeId, setStoreId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionActive, setSubscriptionActive] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
+  const [isTrialing, setIsTrialing] = useState(false);
+
+  const checkSubscriptionStatus = async (stId: string) => {
+    // Check subscription
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('status')
+      .eq('store_id', stId)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+
+    if (sub) {
+      setSubscriptionActive(true);
+      setIsTrialing(false);
+      return;
+    }
+
+    // Check trial
+    const { data: store } = await supabase
+      .from('stores')
+      .select('trial_ends_at')
+      .eq('id', stId)
+      .single();
+
+    if (store?.trial_ends_at) {
+      const trialEnd = new Date(store.trial_ends_at);
+      setTrialEndsAt(trialEnd);
+      const now = new Date();
+      if (trialEnd > now) {
+        setIsTrialing(true);
+        setSubscriptionActive(true);
+      } else {
+        setIsTrialing(false);
+        setSubscriptionActive(false);
+      }
+    } else {
+      setSubscriptionActive(false);
+      setIsTrialing(false);
+    }
+  };
+
+  const refetchSubscription = async () => {
+    if (storeId) {
+      await checkSubscriptionStatus(storeId);
+    }
+  };
 
   const fetchUserData = async (userId: string) => {
     // Get profile
@@ -42,14 +95,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('role, store_id')
       .eq('user_id', userId)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (roleData) {
       setRole(roleData.role as AppRole);
       setStoreId(roleData.store_id);
+      await checkSubscriptionStatus(roleData.store_id);
     } else {
       setRole(null);
       setStoreId(null);
+      setSubscriptionActive(false);
+      setIsTrialing(false);
     }
   };
 
@@ -60,6 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setRole(null);
         setStoreId(null);
+        setSubscriptionActive(false);
+        setIsTrialing(false);
+        setTrialEndsAt(null);
         setLoading(false);
         return;
       }
@@ -77,7 +136,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Keep async work out of the callback to avoid Supabase auth deadlocks
       setTimeout(() => {
         void loadUserData(session?.user ?? null);
       }, 0);
@@ -102,7 +160,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: { data: { full_name: fullName, phone } }
     });
 
-    // Save phone to profile after signup
     if (!error && data.user && phone) {
       await supabase
         .from('profiles')
@@ -118,7 +175,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, role, storeId, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{
+      user, profile, role, storeId, loading,
+      subscriptionActive, trialEndsAt, isTrialing,
+      signIn, signUp, signOut, refetchSubscription
+    }}>
       {children}
     </AuthContext.Provider>
   );
