@@ -103,7 +103,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex-1 flex justify-center">
                   <div className="px-4 py-1 rounded-md bg-landing-bg/60 border border-landing-border/30 text-xs text-landing-muted font-mono">
-                    app.bulkdrink.ng/dashboard
+                    lantid.store/dashboard
                   </div>
                 </div>
               </div>
