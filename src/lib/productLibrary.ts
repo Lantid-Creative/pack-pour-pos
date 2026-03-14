@@ -6,7 +6,6 @@ export interface LibraryProduct {
   brand: string;       // e.g. "Fanta"
   category: string;
   packSize: string;    // e.g. "Crate (24 bottles)"
-  defaultPrice: number; // suggested retail price per pack in ₦
 }
 
 export const productLibrary: LibraryProduct[] = [
