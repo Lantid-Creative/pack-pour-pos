@@ -62,13 +62,14 @@ export function AppSidebarNav() {
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-t border-sidebar-border p-3 space-y-1">
         {!collapsed && (
           <div className="mb-2">
             <p className="text-xs font-medium truncate">{profile?.full_name}</p>
             <p className="text-xs text-sidebar-foreground/50 capitalize">{role}</p>
           </div>
         )}
+        <ThemeToggle collapsed={collapsed} />
         <button onClick={handleSignOut}
           className="flex items-center gap-2 w-full px-2.5 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
           <LogOut className="h-4 w-4 shrink-0" />
