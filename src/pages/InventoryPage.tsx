@@ -86,6 +86,9 @@ export default function InventoryPage() {
           <button onClick={() => setShowLibrary(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-primary/10 active:scale-[0.98] transition-all">
             <Library className="h-4 w-4" /> Product Library
           </button>
+          <button onClick={() => setShowCreateProduct(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border text-foreground font-semibold text-sm hover:bg-muted active:scale-[0.98] transition-all">
+            <PlusCircle className="h-4 w-4" /> Create Product
+          </button>
           <button onClick={() => setShowRestock(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all">
             <Plus className="h-4 w-4" /> Restock
           </button>
