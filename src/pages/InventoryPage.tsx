@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Package, Plus, History, AlertTriangle } from 'lucide-react';
+import { Package, Plus, History, AlertTriangle, Library } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ProductLibraryDialog from '@/components/ProductLibraryDialog';
 import { toast } from 'sonner';
 
 export default function InventoryPage() {
