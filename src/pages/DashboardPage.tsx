@@ -488,8 +488,8 @@ export default function DashboardPage() {
   );
 }
 
-function MetricCard({ icon: Icon, label, value, change, variant = 'default', isMoney }: {
-  icon: React.ElementType; label: string; value: string; change?: number; variant?: 'default' | 'warning'; isMoney?: boolean;
+function MetricCard({ icon: Icon, label, value, change, variant = 'default', isMoney, sub }: {
+  icon: React.ElementType; label: string; value: string; change?: number; variant?: 'default' | 'warning'; isMoney?: boolean; sub?: string;
 }) {
   const isPositive = change !== undefined && change >= 0;
   return (
@@ -501,6 +501,7 @@ function MetricCard({ icon: Icon, label, value, change, variant = 'default', isM
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground truncate">{label}</p>
           <p className={`text-lg font-bold ${isMoney ? 'font-mono-numbers' : ''}`}>{value}</p>
+          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
         </div>
       </div>
       {change !== undefined && change !== 0 && (
