@@ -87,7 +87,9 @@ export default function InventoryPage() {
               <th className="text-left py-3 px-4 text-muted-foreground font-medium">Product</th>
               <th className="text-left py-3 px-4 text-muted-foreground font-medium">Category</th>
               <th className="text-left py-3 px-4 text-muted-foreground font-medium">Pack Size</th>
-              <th className="text-right py-3 px-4 text-muted-foreground font-medium">Price</th>
+              <th className="text-right py-3 px-4 text-muted-foreground font-medium">Cost Price</th>
+              <th className="text-right py-3 px-4 text-muted-foreground font-medium">Sell Price</th>
+              <th className="text-right py-3 px-4 text-muted-foreground font-medium">Margin</th>
               <th className="text-right py-3 px-4 text-muted-foreground font-medium">Stock</th>
               <th className="text-center py-3 px-4 text-muted-foreground font-medium">Status</th>
             </tr>
@@ -96,12 +98,34 @@ export default function InventoryPage() {
             {filteredProducts.map((product: any) => {
               const isLow = product.stock <= product.low_stock_threshold;
               const isOut = product.stock <= 0;
+              const costPrice = Number(product.cost_price || 0);
+              const sellPrice = Number(product.price);
+              const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice * 100) : 0;
               return (
                 <tr key={product.id} className="border-b border-border/50 hover:bg-muted/20">
                   <td className="py-3 px-4 font-medium">{product.name}</td>
                   <td className="py-3 px-4 text-muted-foreground">{product.category}</td>
                   <td className="py-3 px-4 text-muted-foreground">{product.pack_size}</td>
-                  <td className="py-3 px-4 text-right font-mono-numbers">₦{Number(product.price).toLocaleString()}</td>
+                  <td className="py-3 px-4 text-right">
+                    <input
+                      type="number"
+                      defaultValue={costPrice}
+                      onBlur={async (e) => {
+                        const val = parseFloat(e.target.value);
+                        if (isNaN(val) || val === costPrice) return;
+                        await supabase.from('products').update({ cost_price: val }).eq('id', product.id);
+                        queryClient.invalidateQueries({ queryKey: ['products'] });
+                        toast.success(`Cost price updated for ${product.name}`);
+                      }}
+                      className="w-20 text-right font-mono-numbers text-sm px-2 py-1 rounded border border-input bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono-numbers">₦{sellPrice.toLocaleString()}</td>
+                  <td className="py-3 px-4 text-right">
+                    <span className={`text-xs font-bold ${margin > 20 ? 'text-green-500' : margin > 0 ? 'text-yellow-500' : 'text-destructive'}`}>
+                      {costPrice > 0 ? `${margin.toFixed(0)}%` : '—'}
+                    </span>
+                  </td>
                   <td className="py-3 px-4 text-right font-mono-numbers font-bold">{product.stock}</td>
                   <td className="py-3 px-4 text-center">
                     {isOut ? (
