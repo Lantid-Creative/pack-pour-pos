@@ -110,6 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let initialLoadDone = false;
+
     const loadUserData = async (sessionUser: User | null) => {
       if (!sessionUser) {
         setUser(null);
@@ -124,8 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(sessionUser);
-      // Don't reset profile/role/storeId to null here — it causes a flash
-      // of the unauthenticated UI during token refreshes.
 
       try {
         await fetchUserData(sessionUser.id);
@@ -134,14 +134,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setTimeout(() => {
-        void loadUserData(session?.user ?? null);
-      }, 0);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only reload user data on actual auth changes, not token refreshes
+      if (event === 'SIGNED_OUT') {
+        loadUserData(null);
+      } else if (event === 'SIGNED_IN') {
+        // Only reload if this isn't the initial session pickup (handled below)
+        if (initialLoadDone) {
+          loadUserData(session?.user ?? null);
+        }
+      }
+      // TOKEN_REFRESHED, USER_UPDATED — user object updated but role/store unchanged
+      // Just update the user object without refetching everything
+      if (event === 'TOKEN_REFRESHED' && session?.user) {
+        setUser(session.user);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      void loadUserData(session?.user ?? null);
+      loadUserData(session?.user ?? null).then(() => {
+        initialLoadDone = true;
+      });
     });
 
     return () => subscription.unsubscribe();
