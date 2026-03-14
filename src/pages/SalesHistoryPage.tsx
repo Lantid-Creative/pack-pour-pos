@@ -79,41 +79,92 @@ export default function SalesHistoryPage() {
   const exportCSV = () => {
     if (filteredSales.length === 0) { toast.error('No sales to export'); return; }
 
-    const rows: string[][] = [['Sale ID', 'Date', 'Time', 'Cashier', 'Payment Method', 'Items', 'Total (₦)']];
+    const rows: string[][] = [];
+
+    // Report Header
+    rows.push(['BULKDRINK SALES REPORT']);
+    rows.push([`Period: ${rangeLabel}`]);
+    rows.push([`Generated: ${new Date().toLocaleString('en-NG')}`]);
+    rows.push([]);
+
+    // Summary Section
+    rows.push(['=== SUMMARY ===']);
+    rows.push(['Total Transactions', summary.count.toString()]);
+    rows.push(['Total Revenue', `₦${summary.totalRevenue.toLocaleString()}`]);
+    rows.push(['Cash Revenue', `₦${summary.cashRevenue.toLocaleString()}`]);
+    rows.push(['POS Revenue', `₦${summary.posRevenue.toLocaleString()}`]);
+    rows.push(['Transfer Revenue', `₦${summary.transferRevenue.toLocaleString()}`]);
+    rows.push([]);
+
+    // Detailed Sales — one row per item
+    rows.push(['=== DETAILED SALES ===']);
+    rows.push(['Sale ID', 'Date', 'Time', 'Cashier', 'Payment', 'Product', 'Pack Size', 'Qty', 'Unit Price (₦)', 'Line Total (₦)', 'Sale Total (₦)']);
 
     filteredSales.forEach((sale: any) => {
       const date = new Date(sale.created_at);
-      const items = (sale.sale_items || []).map((i: any) => `${i.quantity}x ${i.product_name}`).join('; ');
-      rows.push([
-        sale.id.slice(-6),
-        date.toLocaleDateString('en-NG'),
-        date.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }),
-        sale.cashier_name,
-        sale.payment_method.toUpperCase(),
-        items,
-        Number(sale.total).toFixed(2),
-      ]);
+      const dateStr = date.toLocaleDateString('en-NG');
+      const timeStr = date.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+      const items = sale.sale_items || [];
+
+      items.forEach((item: any, idx: number) => {
+        const lineTotal = item.quantity * Number(item.unit_price);
+        rows.push([
+          idx === 0 ? `#${sale.id.slice(-6)}` : '',
+          idx === 0 ? dateStr : '',
+          idx === 0 ? timeStr : '',
+          idx === 0 ? sale.cashier_name : '',
+          idx === 0 ? sale.payment_method.toUpperCase() : '',
+          item.product_name,
+          item.pack_size || '',
+          item.quantity.toString(),
+          Number(item.unit_price).toLocaleString(),
+          lineTotal.toLocaleString(),
+          idx === 0 ? `₦${Number(sale.total).toLocaleString()}` : '',
+        ]);
+      });
+
+      // If no items, still show the sale
+      if (items.length === 0) {
+        rows.push([
+          `#${sale.id.slice(-6)}`, dateStr, timeStr, sale.cashier_name,
+          sale.payment_method.toUpperCase(), '—', '—', '—', '—', '—',
+          `₦${Number(sale.total).toLocaleString()}`,
+        ]);
+      }
     });
 
-    // Summary rows
     rows.push([]);
-    rows.push(['SUMMARY']);
-    rows.push(['Period', rangeLabel]);
-    rows.push(['Total Sales', summary.count.toString()]);
-    rows.push(['Total Revenue', `₦${summary.totalRevenue.toLocaleString()}`]);
-    rows.push(['Cash', `₦${summary.cashRevenue.toLocaleString()}`]);
-    rows.push(['POS', `₦${summary.posRevenue.toLocaleString()}`]);
-    rows.push(['Transfer', `₦${summary.transferRevenue.toLocaleString()}`]);
+    rows.push(['=== TOP SELLING PRODUCTS ===']);
+    rows.push(['Product', 'Pack Size', 'Total Qty Sold', 'Total Revenue (₦)']);
+
+    // Aggregate top products
+    const productMap = new Map<string, { packSize: string; qty: number; revenue: number }>();
+    filteredSales.forEach((sale: any) => {
+      (sale.sale_items || []).forEach((item: any) => {
+        const key = `${item.product_name}||${item.pack_size || ''}`;
+        const existing = productMap.get(key) || { packSize: item.pack_size || '', qty: 0, revenue: 0 };
+        existing.qty += item.quantity;
+        existing.revenue += item.quantity * Number(item.unit_price);
+        productMap.set(key, existing);
+      });
+    });
+
+    Array.from(productMap.entries())
+      .sort((a, b) => b[1].revenue - a[1].revenue)
+      .forEach(([key, val]) => {
+        const name = key.split('||')[0];
+        rows.push([name, val.packSize, val.qty.toString(), `₦${val.revenue.toLocaleString()}`]);
+      });
 
     const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sales-report-${reportRange}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `BulkDrink-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('CSV report downloaded!');
+    toast.success('Excel report downloaded!');
   };
 
   const exportPDF = async () => {
@@ -123,71 +174,176 @@ export default function SalesHistoryPage() {
     await import('jspdf-autotable');
 
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
 
-    // Header
-    doc.setFontSize(20);
+    // ─── HEADER ───────────────────────────────────────────────
+    doc.setFillColor(124, 58, 237);
+    doc.rect(0, 0, pageWidth, 36, 'F');
+    doc.setTextColor(255);
+    doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('Sales Report', 14, 22);
-
-    doc.setFontSize(10);
+    doc.text('BulkDrink', 14, 16);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100);
-    doc.text(`Period: ${rangeLabel}`, 14, 30);
-    doc.text(`Generated: ${new Date().toLocaleString('en-NG')}`, 14, 36);
-
-    // Summary box
-    doc.setFillColor(245, 245, 250);
-    doc.roundedRect(14, 42, 182, 28, 3, 3, 'F');
-    doc.setTextColor(0);
+    doc.text('Sales Report', 14, 24);
     doc.setFontSize(9);
+    doc.text(`Period: ${rangeLabel}  |  Generated: ${new Date().toLocaleString('en-NG')}`, 14, 32);
+
+    // ─── SUMMARY CARDS ────────────────────────────────────────
+    const cardY = 44;
+    const cardW = (pageWidth - 28 - 12) / 4; // 4 cards with gaps
+    const cards = [
+      { label: 'Total Sales', value: summary.count.toString() },
+      { label: 'Revenue', value: `₦${summary.totalRevenue.toLocaleString()}` },
+      { label: 'Cash', value: `₦${summary.cashRevenue.toLocaleString()}` },
+      { label: 'POS / Transfer', value: `₦${(summary.posRevenue + summary.transferRevenue).toLocaleString()}` },
+    ];
+
+    cards.forEach((card, i) => {
+      const x = 14 + i * (cardW + 4);
+      doc.setFillColor(248, 247, 252);
+      doc.roundedRect(x, cardY, cardW, 22, 2, 2, 'F');
+      doc.setTextColor(100);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(card.label, x + 4, cardY + 8);
+      doc.setTextColor(0);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(card.value, x + 4, cardY + 17);
+    });
+
+    // ─── DETAILED SALES TABLE (item-level) ─────────────────────
+    doc.setTextColor(0);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
+    doc.text('Transaction Details', 14, 78);
 
-    const summaryY = 52;
-    doc.text(`Total Sales: ${summary.count}`, 20, summaryY);
-    doc.text(`Revenue: ₦${summary.totalRevenue.toLocaleString()}`, 70, summaryY);
-    doc.text(`Cash: ₦${summary.cashRevenue.toLocaleString()}`, 20, summaryY + 8);
-    doc.text(`POS: ₦${summary.posRevenue.toLocaleString()}`, 70, summaryY + 8);
-    doc.text(`Transfer: ₦${summary.transferRevenue.toLocaleString()}`, 130, summaryY + 8);
-
-    // Table
-    const tableData = filteredSales.map((sale: any) => {
+    const tableData: string[][] = [];
+    filteredSales.forEach((sale: any) => {
       const date = new Date(sale.created_at);
-      const items = (sale.sale_items || []).map((i: any) => `${i.quantity}x ${i.product_name}`).join(', ');
-      return [
-        sale.id.slice(-6),
-        date.toLocaleDateString('en-NG'),
-        date.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' }),
-        sale.cashier_name,
-        sale.payment_method.toUpperCase(),
-        items,
-        `₦${Number(sale.total).toLocaleString()}`,
-      ];
+      const dateStr = date.toLocaleDateString('en-NG');
+      const timeStr = date.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+      const items = sale.sale_items || [];
+
+      items.forEach((item: any, idx: number) => {
+        const lineTotal = item.quantity * Number(item.unit_price);
+        tableData.push([
+          idx === 0 ? `#${sale.id.slice(-6)}` : '',
+          idx === 0 ? `${dateStr}\n${timeStr}` : '',
+          idx === 0 ? sale.cashier_name : '',
+          item.product_name,
+          item.pack_size || '—',
+          item.quantity.toString(),
+          `₦${Number(item.unit_price).toLocaleString()}`,
+          `₦${lineTotal.toLocaleString()}`,
+          idx === 0 ? sale.payment_method.toUpperCase() : '',
+        ]);
+      });
     });
 
     (doc as any).autoTable({
-      startY: 76,
-      head: [['ID', 'Date', 'Time', 'Cashier', 'Payment', 'Items', 'Total']],
+      startY: 82,
+      head: [['ID', 'Date', 'Cashier', 'Product', 'Pack Size', 'Qty', 'Unit Price', 'Line Total', 'Payment']],
       body: tableData,
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [124, 58, 237], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 247, 252] },
+      styles: { fontSize: 7, cellPadding: 2.5, lineColor: [230, 230, 230], lineWidth: 0.1 },
+      headStyles: { fillColor: [124, 58, 237], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+      alternateRowStyles: { fillColor: [250, 249, 255] },
       columnStyles: {
-        0: { cellWidth: 16 },
-        5: { cellWidth: 50 },
-        6: { halign: 'right', fontStyle: 'bold' },
+        0: { cellWidth: 14, fontStyle: 'bold' },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 22 },
+        3: { cellWidth: 32 },
+        4: { cellWidth: 26 },
+        5: { cellWidth: 10, halign: 'center' },
+        6: { cellWidth: 20, halign: 'right' },
+        7: { cellWidth: 22, halign: 'right', fontStyle: 'bold' },
+        8: { cellWidth: 18, halign: 'center' },
       },
     });
 
-    // Footer
+    // ─── TOP PRODUCTS TABLE ───────────────────────────────────
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+
+    // Aggregate products
+    const productMap = new Map<string, { packSize: string; qty: number; revenue: number }>();
+    filteredSales.forEach((sale: any) => {
+      (sale.sale_items || []).forEach((item: any) => {
+        const key = `${item.product_name}||${item.pack_size || ''}`;
+        const existing = productMap.get(key) || { packSize: item.pack_size || '', qty: 0, revenue: 0 };
+        existing.qty += item.quantity;
+        existing.revenue += item.quantity * Number(item.unit_price);
+        productMap.set(key, existing);
+      });
+    });
+
+    const topProducts = Array.from(productMap.entries())
+      .sort((a, b) => b[1].revenue - a[1].revenue)
+      .slice(0, 15);
+
+    if (topProducts.length > 0) {
+      // Check if we need a new page
+      if (finalY > doc.internal.pageSize.height - 60) {
+        doc.addPage();
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Top Selling Products', 14, 20);
+
+        (doc as any).autoTable({
+          startY: 24,
+          head: [['#', 'Product', 'Pack Size', 'Qty Sold', 'Revenue']],
+          body: topProducts.map(([key, val], i) => [
+            (i + 1).toString(),
+            key.split('||')[0],
+            val.packSize,
+            val.qty.toString(),
+            `₦${val.revenue.toLocaleString()}`,
+          ]),
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [60, 60, 60], textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            4: { halign: 'right', fontStyle: 'bold' },
+          },
+        });
+      } else {
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Top Selling Products', 14, finalY);
+
+        (doc as any).autoTable({
+          startY: finalY + 4,
+          head: [['#', 'Product', 'Pack Size', 'Qty Sold', 'Revenue']],
+          body: topProducts.map(([key, val], i) => [
+            (i + 1).toString(),
+            key.split('||')[0],
+            val.packSize,
+            val.qty.toString(),
+            `₦${val.revenue.toLocaleString()}`,
+          ]),
+          styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [60, 60, 60], textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            4: { halign: 'right', fontStyle: 'bold' },
+          },
+        });
+      }
+    }
+
+    // ─── FOOTER ───────────────────────────────────────────────
     const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       doc.setTextColor(150);
-      doc.text(`BulkDrink POS - Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
+      doc.text(`BulkDrink POS — Sales Report — Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 8);
+      doc.text(`Generated ${new Date().toLocaleString('en-NG')}`, pageWidth - 14, doc.internal.pageSize.height - 8, { align: 'right' });
     }
 
-    doc.save(`sales-report-${reportRange}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(`BulkDrink-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success('PDF report downloaded!');
   };
 
