@@ -1,24 +1,29 @@
 import { useLocation, useNavigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions, Permission } from '@/hooks/usePermissions';
 import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 
 const allNavItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['cashier', 'manager', 'owner'] },
-  { path: '/pos', label: 'POS Terminal', icon: ShoppingCart, roles: ['cashier', 'manager', 'owner'] },
-  { path: '/inventory', label: 'Inventory', icon: Package, roles: ['manager', 'owner'] },
-  { path: '/sales', label: 'Sales History', icon: History, roles: ['cashier', 'manager', 'owner'] },
-  { path: '/staff', label: 'Staff', icon: Users, roles: ['owner'] },
-  { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['owner'] },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'page:dashboard' as Permission },
+  { path: '/pos', label: 'POS Terminal', icon: ShoppingCart, permission: 'page:pos' as Permission },
+  { path: '/inventory', label: 'Inventory', icon: Package, permission: 'page:inventory' as Permission },
+  { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission },
+  { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission },
+  { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true },
 ];
 
 export function AppSidebarNav() {
   const { role, profile, signOut } = useAuth();
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const navItems = allNavItems.filter((item) => item.roles.includes(role || ''));
+  const navItems = allNavItems.filter((item) => {
+    if ((item as any).ownerOnly && role !== 'owner') return false;
+    return hasPermission(item.permission);
+  });
 
   const handleSignOut = async () => {
     await signOut();

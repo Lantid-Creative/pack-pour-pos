@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserPlus, Users, Trash2, Shield } from 'lucide-react';
+import { UserPlus, Users, Trash2, Shield, Settings } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import RolePermissionsEditor from '@/components/RolePermissionsEditor';
 
 type AppRole = 'cashier' | 'manager';
 
@@ -12,6 +13,7 @@ export default function StaffPage() {
   const { storeId } = useAuth();
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
+  const [activeTab, setActiveTab] = useState<'staff' | 'permissions'>('staff');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<AppRole>('cashier');
@@ -76,7 +78,7 @@ export default function StaffPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Staff Management</h1>
-          <p className="text-sm text-muted-foreground">Create and manage staff accounts</p>
+          <p className="text-sm text-muted-foreground">Manage staff accounts and role permissions</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
@@ -86,6 +88,34 @@ export default function StaffPage() {
         </button>
       </div>
 
+      {/* Tab selector */}
+      <div className="flex gap-1 p-1 rounded-lg bg-muted w-fit">
+        <button
+          onClick={() => setActiveTab('staff')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeTab === 'staff'
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Users className="h-4 w-4" /> Staff List
+        </button>
+        <button
+          onClick={() => setActiveTab('permissions')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeTab === 'permissions'
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Settings className="h-4 w-4" /> Permissions
+        </button>
+      </div>
+
+      {activeTab === 'permissions' ? (
+        <RolePermissionsEditor />
+      ) : (
+        <>
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-muted-foreground">Loading staff...</div>
@@ -128,6 +158,8 @@ export default function StaffPage() {
           </table>
         )}
       </div>
+      </>
+      )}
 
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="max-w-md">

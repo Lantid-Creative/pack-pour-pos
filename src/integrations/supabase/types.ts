@@ -135,6 +135,41 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          permission: string
+          role: Database["public"]["Enums"]["app_role"]
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          permission: string
+          role: Database["public"]["Enums"]["app_role"]
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          permission?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sale_items: {
         Row: {
           id: string
@@ -362,6 +397,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      seed_role_permissions: {
+        Args: { p_store_id: string }
+        Returns: undefined
       }
     }
     Enums: {
