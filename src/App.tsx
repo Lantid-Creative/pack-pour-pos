@@ -57,14 +57,14 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/pos" element={<POSPage />} />
-        <Route path="/inventory" element={role === 'manager' || role === 'owner' ? <InventoryPage /> : <Navigate to="/pos" replace />} />
-        <Route path="/sales" element={<SalesHistoryPage />} />
-        <Route path="/staff" element={role === 'owner' ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={hasPermission('page:dashboard') ? <DashboardPage /> : <Navigate to="/pos" replace />} />
+        <Route path="/pos" element={hasPermission('page:pos') ? <POSPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/inventory" element={hasPermission('page:inventory') ? <InventoryPage /> : <Navigate to="/pos" replace />} />
+        <Route path="/sales" element={hasPermission('page:sales_history') ? <SalesHistoryPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/staff" element={hasPermission('page:staff') ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
         <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
       </Route>
-      <Route path="/" element={<Navigate to={role === 'cashier' ? '/pos' : '/dashboard'} replace />} />
+      <Route path="/" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
