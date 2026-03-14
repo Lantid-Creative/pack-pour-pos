@@ -131,9 +131,34 @@ export default function SubscriptionPage() {
     <div className="h-full overflow-y-auto">
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Subscription</h1>
-          <p className="text-muted-foreground mt-1">Manage your store's subscription plan</p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Subscription</h1>
+            <p className="text-muted-foreground mt-1">Manage your store's subscription plan</p>
+          </div>
+          {/* Billing Toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                billingCycle === 'monthly'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                billingCycle === 'yearly'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Yearly
+            </button>
+          </div>
         </div>
 
         {/* Current Status */}
