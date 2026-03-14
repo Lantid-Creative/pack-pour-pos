@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Package, CreditCard, Banknote, ArrowRightLeft, AlertTriangle, Warehouse, Calendar, Percent } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 
 type TimeRange = 'today' | 'week' | 'month' | 'all';
@@ -109,17 +109,36 @@ export default function DashboardPage() {
     const posSales = sales.filter((s: any) => s.payment_method === 'pos');
     const transferSales = sales.filter((s: any) => s.payment_method === 'transfer');
 
+    // Profit calculation from sale_items
+    let totalCOGS = 0;
+    let prevCOGS = 0;
     const productCounts: Record<string, number> = {};
+
     sales.forEach((sale: any) =>
       (sale.sale_items || []).forEach((item: any) => {
         productCounts[item.product_name] = (productCounts[item.product_name] || 0) + item.quantity;
+        totalCOGS += item.quantity * Number(item.cost_price || 0);
       })
     );
+
+    prevSales.forEach((sale: any) =>
+      (sale.sale_items || []).forEach((item: any) => {
+        prevCOGS += item.quantity * Number(item.cost_price || 0);
+      })
+    );
+
+    const totalProfit = totalRevenue - totalCOGS;
+    const prevProfit = prevRevenue - prevCOGS;
+    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+    const profitChange = prevProfit > 0 ? ((totalProfit - prevProfit) / prevProfit) * 100 : 0;
+
     const topProduct = Object.entries(productCounts).sort((a, b) => b[1] - a[1])[0];
     const lowStock = products.filter((p: any) => p.stock <= p.low_stock_threshold);
 
-    // Inventory value = sum of (stock * price) for each product
-    const inventoryValue = products.reduce((sum: number, p: any) => sum + (p.stock * Number(p.price)), 0);
+    // Inventory values
+    const inventoryRetailValue = products.reduce((sum: number, p: any) => sum + (p.stock * Number(p.price)), 0);
+    const inventoryCostValue = products.reduce((sum: number, p: any) => sum + (p.stock * Number(p.cost_price || 0)), 0);
+    const inventoryProfit = inventoryRetailValue - inventoryCostValue;
     const totalProducts = products.length;
     const totalUnits = products.reduce((sum: number, p: any) => sum + p.stock, 0);
 
@@ -135,6 +154,10 @@ export default function DashboardPage() {
     return {
       totalSales: sales.length,
       totalRevenue,
+      totalCOGS,
+      totalProfit,
+      profitMargin,
+      profitChange,
       prevRevenue,
       revenueChange,
       salesCountChange,
@@ -144,7 +167,9 @@ export default function DashboardPage() {
       topProduct: topProduct ? topProduct[0] : 'N/A',
       topProductQty: topProduct ? topProduct[1] : 0,
       lowStock,
-      inventoryValue,
+      inventoryRetailValue,
+      inventoryCostValue,
+      inventoryProfit,
       totalProducts,
       totalUnits,
       avgOrderValue,
@@ -238,13 +263,21 @@ export default function DashboardPage() {
       </div>
 
       {/* Key Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
           icon={DollarSign}
           label={`Revenue (${rangeLabels[timeRange]})`}
           value={`₦${stats.totalRevenue.toLocaleString()}`}
           change={timeRange !== 'all' ? stats.revenueChange : undefined}
           isMoney
+        />
+        <MetricCard
+          icon={Percent}
+          label={`Profit (${rangeLabels[timeRange]})`}
+          value={`₦${stats.totalProfit.toLocaleString()}`}
+          change={timeRange !== 'all' ? stats.profitChange : undefined}
+          isMoney
+          sub={`${stats.profitMargin.toFixed(1)}% margin`}
         />
         <MetricCard
           icon={ShoppingCart}
@@ -267,18 +300,28 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Inventory Value Cards (Owner/Manager only) */}
+      {/* Profit & Inventory Cards (Owner/Manager only) */}
       {(role === 'owner' || role === 'manager') && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-xl border border-primary/20 bg-primary/5">
             <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Warehouse className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">Total Inventory Worth</p>
+              <p className="text-sm text-muted-foreground">Inventory (Retail Value)</p>
             </div>
-            <p className="text-3xl font-extrabold font-mono-numbers text-foreground">₦{stats.inventoryValue.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.totalProducts} products · {stats.totalUnits.toLocaleString()} total units</p>
+            <p className="text-2xl font-extrabold font-mono-numbers text-foreground">₦{stats.inventoryRetailValue.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">{stats.totalProducts} products · {stats.totalUnits.toLocaleString()} units</p>
+          </div>
+          <div className="p-5 rounded-xl border border-border bg-card">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground">Inventory (Cost Value)</p>
+            </div>
+            <p className="text-2xl font-extrabold font-mono-numbers text-foreground">₦{stats.inventoryCostValue.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">Potential profit: ₦{stats.inventoryProfit.toLocaleString()}</p>
           </div>
           <div className="p-5 rounded-xl border border-border bg-card">
             <div className="flex items-center gap-3 mb-2">
@@ -293,12 +336,12 @@ export default function DashboardPage() {
           <div className="p-5 rounded-xl border border-border bg-card">
             <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-primary" />
+                <Percent className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">Period Summary</p>
+              <p className="text-sm text-muted-foreground">Cost of Goods Sold</p>
             </div>
-            <p className="text-xl font-bold text-foreground">₦{stats.totalRevenue.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stats.totalSales} transactions · {rangeLabels[timeRange].toLowerCase()}</p>
+            <p className="text-xl font-bold font-mono-numbers text-foreground">₦{stats.totalCOGS.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">{rangeLabels[timeRange].toLowerCase()} · {stats.totalSales} transactions</p>
           </div>
         </div>
       )}
@@ -445,8 +488,8 @@ export default function DashboardPage() {
   );
 }
 
-function MetricCard({ icon: Icon, label, value, change, variant = 'default', isMoney }: {
-  icon: React.ElementType; label: string; value: string; change?: number; variant?: 'default' | 'warning'; isMoney?: boolean;
+function MetricCard({ icon: Icon, label, value, change, variant = 'default', isMoney, sub }: {
+  icon: React.ElementType; label: string; value: string; change?: number; variant?: 'default' | 'warning'; isMoney?: boolean; sub?: string;
 }) {
   const isPositive = change !== undefined && change >= 0;
   return (
@@ -458,6 +501,7 @@ function MetricCard({ icon: Icon, label, value, change, variant = 'default', isM
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground truncate">{label}</p>
           <p className={`text-lg font-bold ${isMoney ? 'font-mono-numbers' : ''}`}>{value}</p>
+          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
         </div>
       </div>
       {change !== undefined && change !== 0 && (
