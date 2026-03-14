@@ -438,7 +438,7 @@ export default function SalesHistoryPage() {
                   {customEnd ? format(customEnd, 'MMM d, yyyy') : 'End date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 z-50" align="start">
                 <Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
