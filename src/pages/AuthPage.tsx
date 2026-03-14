@@ -43,18 +43,18 @@ export default function AuthPage() {
           <p className="text-sm text-landing-muted">Wholesale Drinks Management System</p>
         </div>
 
-        <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <div className="bg-landing-card rounded-xl border border-landing-border p-6 space-y-4">
           {/* Toggle */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-lg">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-landing-bg rounded-lg">
             <button
               onClick={() => setMode('login')}
-              className={`py-2 text-sm font-semibold rounded-md transition-all ${mode === 'login' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+              className={`py-2 text-sm font-semibold rounded-md transition-all ${mode === 'login' ? 'bg-landing-purple text-white' : 'text-landing-muted'}`}
             >
               Sign In
             </button>
             <button
               onClick={() => setMode('signup')}
-              className={`py-2 text-sm font-semibold rounded-md transition-all ${mode === 'signup' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+              className={`py-2 text-sm font-semibold rounded-md transition-all ${mode === 'signup' ? 'bg-landing-purple text-white' : 'text-landing-muted'}`}
             >
               Create Store
             </button>
