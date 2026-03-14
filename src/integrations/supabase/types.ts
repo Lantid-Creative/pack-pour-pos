@@ -14,16 +14,306 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      inventory_inflows: {
+        Row: {
+          added_by: string
+          added_by_name: string
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          store_id: string
+        }
+        Insert: {
+          added_by: string
+          added_by_name: string
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity: number
+          store_id: string
+        }
+        Update: {
+          added_by?: string
+          added_by_name?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_inflows_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_inflows_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          low_stock_threshold: number
+          name: string
+          pack_size: string
+          price: number
+          stock: number
+          store_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          name: string
+          pack_size: string
+          price?: number
+          stock?: number
+          store_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          name?: string
+          pack_size?: string
+          price?: number
+          stock?: number
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          store_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          store_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          store_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_items: {
+        Row: {
+          id: string
+          pack_size: string
+          product_id: string
+          product_name: string
+          quantity: number
+          sale_id: string
+          unit_price: number
+        }
+        Insert: {
+          id?: string
+          pack_size: string
+          product_id: string
+          product_name: string
+          quantity: number
+          sale_id: string
+          unit_price: number
+        }
+        Update: {
+          id?: string
+          pack_size?: string
+          product_id?: string
+          product_name?: string
+          quantity?: number
+          sale_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          cashier_id: string
+          cashier_name: string
+          created_at: string
+          id: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          store_id: string
+          total: number
+        }
+        Insert: {
+          cashier_id: string
+          cashier_name: string
+          created_at?: string
+          id?: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          store_id: string
+          total?: number
+        }
+        Update: {
+          cashier_id?: string
+          cashier_name?: string
+          created_at?: string
+          id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          store_id?: string
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stores: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          store_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          store_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          store_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_inventory_inflow: {
+        Args: {
+          p_added_by: string
+          p_added_by_name: string
+          p_product_id: string
+          p_quantity: number
+          p_store_id: string
+        }
+        Returns: string
+      }
+      complete_sale: {
+        Args: {
+          p_cashier_id: string
+          p_cashier_name: string
+          p_items: Json
+          p_payment_method: Database["public"]["Enums"]["payment_method"]
+          p_store_id: string
+          p_total: number
+        }
+        Returns: string
+      }
+      get_user_role: {
+        Args: { _store_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_user_store_id: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _store_id: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "manager" | "cashier"
+      payment_method: "cash" | "pos" | "transfer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +440,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "manager", "cashier"],
+      payment_method: ["cash", "pos", "transfer"],
+    },
   },
 } as const
