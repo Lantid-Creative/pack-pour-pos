@@ -191,6 +191,16 @@ export default function InventoryPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {storeId && (
+        <ProductLibraryDialog
+          open={showLibrary}
+          onOpenChange={setShowLibrary}
+          storeId={storeId}
+          existingProducts={products.map((p: any) => p.name)}
+          onProductsAdded={() => queryClient.invalidateQueries({ queryKey: ['products'] })}
+        />
+      )}
     </div>
   );
 }
