@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard, ArrowRight, Check, Zap, Globe, Star } from 'lucide-react';
-import heroDashboard from '@/assets/hero-dashboard.png';
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -68,20 +68,6 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Hero Image */}
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="mt-16 relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-landing-bg via-transparent to-transparent z-10 pointer-events-none" />
-            <img
-              src={heroDashboard}
-              alt="BulkDrink POS Dashboard"
-              className="w-full max-w-4xl mx-auto rounded-2xl border border-landing-border shadow-2xl shadow-landing-purple/10"
-            />
-          </motion.div>
         </div>
       </section>
 
