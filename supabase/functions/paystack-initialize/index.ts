@@ -7,10 +7,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PLAN_PRICES: Record<string, number> = {
-  starter: 500000,   // ₦5,000 in kobo
-  business: 1500000,  // ₦15,000 in kobo
-  enterprise: 5000000, // ₦50,000 in kobo
+const PLAN_PRICES: Record<string, Record<string, number>> = {
+  starter:    { monthly: 500000,   yearly: 4800000 },
+  business:   { monthly: 1500000,  yearly: 14400000 },
+  enterprise: { monthly: 5000000,  yearly: 48000000 },
 };
 
 serve(async (req) => {
