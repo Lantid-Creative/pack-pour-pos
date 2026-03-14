@@ -9,6 +9,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -24,12 +25,14 @@ export default function AuthPage() {
       if (error) { setError(error); setSubmitting(false); return; }
     } else {
       if (!fullName.trim()) { setError('Full name is required'); setSubmitting(false); return; }
-      const { error } = await signUp(email, password, fullName);
+      if (!phone.trim()) { setError('Phone number is required'); setSubmitting(false); return; }
+      const { error } = await signUp(email, password, fullName, phone);
       if (error) { setError(error); setSubmitting(false); return; }
     }
     setSubmitting(false);
-    // Auth state change will redirect
   };
+
+  const inputClass = "w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple";
 
   return (
     <div className="min-h-screen bg-landing-bg flex items-center justify-center p-4 relative">
@@ -62,16 +65,28 @@ export default function AuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             {mode === 'signup' && (
-              <div>
-                <label className="text-sm font-medium text-white mb-1 block">Full Name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your full name"
-                  className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="text-sm font-medium text-white mb-1 block">Full Name</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Your full name"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-white mb-1 block">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="e.g. 08012345678"
+                    className={inputClass}
+                  />
+                </div>
+              </>
             )}
             <div>
               <label className="text-sm font-medium text-white mb-1 block">Email</label>
@@ -81,7 +96,7 @@ export default function AuthPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
+                className={inputClass}
               />
             </div>
             <div>
@@ -93,7 +108,7 @@ export default function AuthPage() {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
+                className={inputClass}
               />
             </div>
 
