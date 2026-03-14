@@ -95,10 +95,18 @@ export default function DashboardPage() {
 
   // Filter sales by time range
   const sales = useMemo(() => {
+    if (timeRange === 'custom' && customStart && customEnd) {
+      const end = new Date(customEnd);
+      end.setHours(23, 59, 59, 999);
+      return allSales.filter((s: any) => {
+        const d = new Date(s.created_at);
+        return d >= customStart && d <= end;
+      });
+    }
     const rangeStart = getDateRange(timeRange);
     if (!rangeStart) return allSales;
     return allSales.filter((s: any) => new Date(s.created_at) >= rangeStart);
-  }, [allSales, timeRange]);
+  }, [allSales, timeRange, customStart, customEnd]);
 
   // Previous period sales for comparison
   const prevSales = useMemo(() => {
