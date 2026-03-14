@@ -78,7 +78,7 @@ export default function StaffPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Staff Management</h1>
-          <p className="text-sm text-muted-foreground">Create and manage staff accounts</p>
+          <p className="text-sm text-muted-foreground">Manage staff accounts and role permissions</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
@@ -88,6 +88,34 @@ export default function StaffPage() {
         </button>
       </div>
 
+      {/* Tab selector */}
+      <div className="flex gap-1 p-1 rounded-lg bg-muted w-fit">
+        <button
+          onClick={() => setActiveTab('staff')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeTab === 'staff'
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Users className="h-4 w-4" /> Staff List
+        </button>
+        <button
+          onClick={() => setActiveTab('permissions')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeTab === 'permissions'
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Settings className="h-4 w-4" /> Permissions
+        </button>
+      </div>
+
+      {activeTab === 'permissions' ? (
+        <RolePermissionsEditor />
+      ) : (
+        <>
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-muted-foreground">Loading staff...</div>
