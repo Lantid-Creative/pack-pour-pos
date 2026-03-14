@@ -4,15 +4,16 @@ import { usePermissions, Permission } from '@/hooks/usePermissions';
 import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
+import { OnboardingChecklist } from '@/components/OnboardingChecklist';
 
 const allNavItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'page:dashboard' as Permission },
-  { path: '/pos', label: 'POS Terminal', icon: ShoppingCart, permission: 'page:pos' as Permission },
-  { path: '/inventory', label: 'Inventory', icon: Package, permission: 'page:inventory' as Permission },
-  { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission },
-  { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission },
-  { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true },
-  { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'page:dashboard' as Permission, tourId: 'nav-dashboard' },
+  { path: '/pos', label: 'POS Terminal', icon: ShoppingCart, permission: 'page:pos' as Permission, tourId: 'nav-pos' },
+  { path: '/inventory', label: 'Inventory', icon: Package, permission: 'page:inventory' as Permission, tourId: 'nav-inventory' },
+  { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission, tourId: 'nav-sales' },
+  { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission, tourId: 'nav-staff' },
+  { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-subscription' },
+  { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-settings' },
 ];
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
@@ -63,7 +64,7 @@ export function AppSidebarNav() {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <RouterNavLink key={item.path} to={item.path}
+            <RouterNavLink key={item.path} to={item.path} id={item.tourId}
               className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
               }`}>
@@ -73,6 +74,9 @@ export function AppSidebarNav() {
           );
         })}
       </nav>
+
+      {/* Onboarding checklist */}
+      {!collapsed && role === 'owner' && <OnboardingChecklist />}
 
       <div className="border-t border-sidebar-border p-3 space-y-1">
         {!collapsed && (
