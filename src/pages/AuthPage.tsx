@@ -63,29 +63,29 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-3">
             {mode === 'signup' && (
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Full Name</label>
+                <label className="text-sm font-medium text-white mb-1 block">Full Name</label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
                 />
               </div>
             )}
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+              <label className="text-sm font-medium text-white mb-1 block">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Password</label>
+              <label className="text-sm font-medium text-white mb-1 block">Password</label>
               <input
                 type="password"
                 value={password}
@@ -93,7 +93,7 @@ export default function AuthPage() {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 rounded-md border border-landing-border bg-landing-bg text-white placeholder:text-landing-muted focus:outline-none focus:ring-2 focus:ring-landing-purple"
               />
             </div>
 
