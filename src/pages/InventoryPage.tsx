@@ -1,0 +1,160 @@
+import { useState } from 'react';
+import { useAppStore } from '@/lib/store';
+import { Package, Plus, History, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+export default function InventoryPage() {
+  const { products, inflows, addInflow } = useAppStore();
+  const [showRestock, setShowRestock] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [search, setSearch] = useState('');
+
+  const handleRestock = () => {
+    if (!selectedProduct || !quantity || parseInt(quantity) <= 0) return;
+    addInflow(selectedProduct, parseInt(quantity));
+    setSelectedProduct('');
+    setQuantity('');
+    setShowRestock(false);
+  };
+
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="p-6 space-y-6 overflow-y-auto h-full">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Inventory</h1>
+          <p className="text-sm text-muted-foreground">Manage stock levels and restocking</p>
+        </div>
+        <button
+          onClick={() => setShowRestock(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
+        >
+          <Plus className="h-4 w-4" /> Restock
+        </button>
+      </div>
+
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search inventory..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full max-w-md px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+      />
+
+      {/* Product Stock Table */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/30">
+              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Product</th>
+              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Category</th>
+              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Pack Size</th>
+              <th className="text-right py-3 px-4 text-muted-foreground font-medium">Price</th>
+              <th className="text-right py-3 px-4 text-muted-foreground font-medium">Stock</th>
+              <th className="text-center py-3 px-4 text-muted-foreground font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => {
+              const isLow = product.stock <= product.lowStockThreshold;
+              const isOut = product.stock <= 0;
+              return (
+                <tr key={product.id} className="border-b border-border/50 hover:bg-muted/20">
+                  <td className="py-3 px-4 font-medium">{product.name}</td>
+                  <td className="py-3 px-4 text-muted-foreground">{product.category}</td>
+                  <td className="py-3 px-4 text-muted-foreground">{product.packSize}</td>
+                  <td className="py-3 px-4 text-right font-mono-numbers">₦{product.price.toLocaleString()}</td>
+                  <td className="py-3 px-4 text-right font-mono-numbers font-bold">{product.stock}</td>
+                  <td className="py-3 px-4 text-center">
+                    {isOut ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
+                        Out of Stock
+                      </span>
+                    ) : isLow ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/10 text-warning text-xs font-medium">
+                        <AlertTriangle className="h-3 w-3" /> Low
+                      </span>
+                    ) : (
+                      <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                        In Stock
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Inflow History */}
+      {inflows.length > 0 && (
+        <div className="bg-card border border-border rounded-lg p-5">
+          <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
+            <History className="h-5 w-5" /> Restock History
+          </h3>
+          <div className="space-y-2">
+            {inflows.slice(0, 20).map((inflow) => (
+              <div key={inflow.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/30">
+                <div>
+                  <p className="text-sm font-medium">{inflow.productName}</p>
+                  <p className="text-xs text-muted-foreground">{inflow.date} • by {inflow.addedBy}</p>
+                </div>
+                <span className="font-mono-numbers text-sm font-bold text-primary">+{inflow.quantity}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Restock Dialog */}
+      <Dialog open={showRestock} onOpenChange={setShowRestock}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" /> Restock Product
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Product</label>
+              <select
+                value={selectedProduct}
+                onChange={(e) => setSelectedProduct(e.target.value)}
+                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Select a product...</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} — {p.packSize} (Stock: {p.stock})</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Quantity (packs)</label>
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="Enter quantity"
+                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <button
+              onClick={handleRestock}
+              disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0}
+              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Add Stock
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
