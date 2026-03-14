@@ -60,6 +60,7 @@ function AppRoutes() {
         <Route path="/inventory" element={role === 'manager' || role === 'owner' ? <InventoryPage /> : <Navigate to="/pos" replace />} />
         <Route path="/sales" element={<SalesHistoryPage />} />
         <Route path="/staff" element={role === 'owner' ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
       </Route>
       <Route path="/" element={<Navigate to={role === 'cashier' ? '/pos' : '/dashboard'} replace />} />
       <Route path="*" element={<NotFound />} />
