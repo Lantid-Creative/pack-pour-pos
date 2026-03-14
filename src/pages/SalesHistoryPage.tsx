@@ -28,6 +28,7 @@ function getDateRange(range: ReportRange): Date {
       return d;
     }
     case 'custom':
+    case 'all':
       return new Date(0);
   }
 }
