@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX subscriptions_store_id_unique ON public.subscriptions (store_id);
