@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 
-type TimeRange = 'today' | 'week' | 'month' | 'all';
+type TimeRange = 'today' | 'week' | 'month' | 'all' | 'custom';
 
 function getDateRange(range: TimeRange): Date | null {
   const now = new Date();
@@ -28,6 +28,7 @@ function getDateRange(range: TimeRange): Date | null {
       return d;
     }
     case 'all':
+    case 'custom':
       return null;
   }
 }
