@@ -15,6 +15,7 @@ import InventoryPage from "./pages/InventoryPage";
 import SalesHistoryPage from "./pages/SalesHistoryPage";
 import StaffPage from "./pages/StaffPage";
 import SubscriptionPage from "./pages/SubscriptionPage";
+import StoreSettingsPage from "./pages/StoreSettingsPage";
 import NotFound from "./pages/NotFound";
 import PaywallPage from "./pages/PaywallPage";
 
