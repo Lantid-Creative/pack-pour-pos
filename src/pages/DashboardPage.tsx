@@ -183,22 +183,8 @@ export default function DashboardPage() {
     { name: 'Transfer', value: stats.transferRevenue, color: 'hsl(38, 92%, 50%)' },
   ];
 
-  // Build chart data based on time range
-  const chartData = useMemo(() => {
-    const grouped: Record<string, number> = {};
-    const salesForChart = timeRange === 'today' ? sales : sales.slice(0, 100);
 
-    salesForChart.forEach((s: any) => {
-      let key: string;
-      if (timeRange === 'today') {
-        key = new Date(s.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
-      } else {
-        key = new Date(s.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
-      }
-      grouped[key] = (grouped[key] || 0) + Number(s.total);
-    });
-    return Object.entries(grouped).map(([label, total]) => ({ label, total })).reverse();
-  }, [sales, timeRange]);
+
 
   // Top 5 products with profit margins
   const topProductsWithMargin = useMemo(() => {
