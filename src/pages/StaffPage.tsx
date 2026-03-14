@@ -33,6 +33,26 @@ export default function StaffPage() {
     enabled: !!storeId,
   });
 
+  // Check current subscription plan
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription-plan', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('store_id', storeId)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
+  const isStarterPlan = !subscription || subscription.plan === 'starter';
+  const nonOwnerStaffCount = staff.filter((s: any) => s.role !== 'owner').length;
+
   const handleAddStaff = async () => {
     if (!email || !fullName || !storeId) return;
     setSubmitting(true);
