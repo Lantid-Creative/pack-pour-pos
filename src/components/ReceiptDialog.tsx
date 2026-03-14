@@ -25,23 +25,70 @@ export function ReceiptDialog({ sale, open, onClose }: Props) {
   const handlePrint = () => {
     const printContent = document.getElementById('receipt-content');
     if (!printContent) return;
-    const win = window.open('', '', 'width=300,height=600');
-    if (!win) return;
-    win.document.write(`
+
+    // Use a hidden iframe to avoid popup blockers
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.top = '-10000px';
+    iframe.style.left = '-10000px';
+    iframe.style.width = '300px';
+    iframe.style.height = '600px';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      return;
+    }
+
+    doc.open();
+    doc.write(`
       <html><head><title>Receipt</title>
       <style>
-        body { font-family: 'Courier New', monospace; font-size: 12px; padding: 10px; width: 280px; }
-        .center { text-align: center; }
-        .bold { font-weight: bold; }
-        .line { border-top: 1px dashed #000; margin: 8px 0; }
-        .row { display: flex; justify-content: space-between; }
+        body { font-family: 'Courier New', monospace; font-size: 12px; padding: 10px; width: 280px; margin: 0 auto; }
+        .center, .text-center { text-align: center; }
+        .font-bold { font-weight: bold; }
+        .text-base { font-size: 14px; }
+        .text-xs { font-size: 11px; }
+        .text-sm { font-size: 12px; }
+        .border-t { border-top: 1px dashed #000; margin: 8px 0; }
+        .flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .space-y-1\\.5 > * + * { margin-top: 6px; }
+        .mb-1 { margin-bottom: 4px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-3 { margin-bottom: 12px; }
+        .mt-2 { margin-top: 8px; }
+        .my-2 { margin: 8px 0; }
+        .font-medium { font-weight: 500; }
+        .uppercase { text-transform: uppercase; }
+        @media print {
+          body { padding: 0; }
+        }
       </style></head><body>
       ${printContent.innerHTML}
       </body></html>
     `);
-    win.document.close();
-    win.print();
-    win.close();
+    doc.close();
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow?.print();
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 500);
+      }, 250);
+    };
+
+    // Fallback if onload doesn't fire (some browsers)
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.print();
+      } catch {}
+      setTimeout(() => {
+        if (iframe.parentNode) document.body.removeChild(iframe);
+      }, 500);
+    }, 1000);
   };
 
   return (
