@@ -29,7 +29,7 @@ interface CompletedSale {
   date: string;
 }
 
-export function OrderSidebar({ cart, setCart }: { cart: CartItem[]; setCart: (c: CartItem[]) => void }) {
+export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: CartItem[]; setCart: (c: CartItem[]) => void; onCheckoutComplete?: () => void }) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState<CompletedSale | null>(null);
