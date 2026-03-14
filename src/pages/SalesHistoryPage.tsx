@@ -38,7 +38,7 @@ export default function SalesHistoryPage() {
   const [reportRange, setReportRange] = useState<ReportRange>('today');
   const [customStart, setCustomStart] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
-  const [customEnd, setCustomEnd] = useState('');
+  
 
   const { data: allSales = [] } = useQuery({
     queryKey: ['sales-history', storeId],
