@@ -277,14 +277,15 @@ export default function SalesHistoryPage() {
     // ─── TOP PRODUCTS TABLE ───────────────────────────────────
     const finalY = (doc as any).lastAutoTable.finalY + 10;
 
-    // Aggregate products
-    const productMap = new Map<string, { packSize: string; qty: number; revenue: number }>();
+    // Aggregate products with cost data
+    const productMap = new Map<string, { packSize: string; qty: number; revenue: number; cost: number }>();
     filteredSales.forEach((sale: any) => {
       (sale.sale_items || []).forEach((item: any) => {
         const key = `${item.product_name}||${item.pack_size || ''}`;
-        const existing = productMap.get(key) || { packSize: item.pack_size || '', qty: 0, revenue: 0 };
+        const existing = productMap.get(key) || { packSize: item.pack_size || '', qty: 0, revenue: 0, cost: 0 };
         existing.qty += item.quantity;
         existing.revenue += item.quantity * Number(item.unit_price);
+        existing.cost += item.quantity * Number(item.cost_price || 0);
         productMap.set(key, existing);
       });
     });
@@ -293,55 +294,52 @@ export default function SalesHistoryPage() {
       .sort((a, b) => b[1].revenue - a[1].revenue)
       .slice(0, 15);
 
+    const renderTopProductsTable = (startY: number) => {
+      const tableHead = [['#', 'Product', 'Pack Size', 'Qty', 'Cost (₦)', 'Revenue (₦)', 'Profit (₦)', 'Margin']];
+      const tableBody = topProducts.map(([key, val], i) => {
+        const profit = val.revenue - val.cost;
+        const margin = val.revenue > 0 ? ((profit / val.revenue) * 100).toFixed(1) : '0';
+        return [
+          (i + 1).toString(),
+          key.split('||')[0],
+          val.packSize,
+          val.qty.toString(),
+          `₦${val.cost.toLocaleString()}`,
+          `₦${val.revenue.toLocaleString()}`,
+          `₦${profit.toLocaleString()}`,
+          `${margin}%`,
+        ];
+      });
+
+      (doc as any).autoTable({
+        startY,
+        head: tableHead,
+        body: tableBody,
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [60, 60, 60], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: {
+          0: { cellWidth: 8, halign: 'center' },
+          4: { halign: 'right' },
+          5: { halign: 'right' },
+          6: { halign: 'right', fontStyle: 'bold' },
+          7: { halign: 'center', fontStyle: 'bold' },
+        },
+      });
+    };
+
     if (topProducts.length > 0) {
-      // Check if we need a new page
       if (finalY > doc.internal.pageSize.height - 60) {
         doc.addPage();
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text('Top Selling Products', 14, 20);
-
-        (doc as any).autoTable({
-          startY: 24,
-          head: [['#', 'Product', 'Pack Size', 'Qty Sold', 'Revenue']],
-          body: topProducts.map(([key, val], i) => [
-            (i + 1).toString(),
-            key.split('||')[0],
-            val.packSize,
-            val.qty.toString(),
-            `₦${val.revenue.toLocaleString()}`,
-          ]),
-          styles: { fontSize: 8, cellPadding: 3 },
-          headStyles: { fillColor: [60, 60, 60], textColor: 255, fontStyle: 'bold' },
-          alternateRowStyles: { fillColor: [245, 245, 245] },
-          columnStyles: {
-            0: { cellWidth: 10, halign: 'center' },
-            4: { halign: 'right', fontStyle: 'bold' },
-          },
-        });
+        doc.text('Top Selling Products — Profit Analysis', 14, 20);
+        renderTopProductsTable(24);
       } else {
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text('Top Selling Products', 14, finalY);
-
-        (doc as any).autoTable({
-          startY: finalY + 4,
-          head: [['#', 'Product', 'Pack Size', 'Qty Sold', 'Revenue']],
-          body: topProducts.map(([key, val], i) => [
-            (i + 1).toString(),
-            key.split('||')[0],
-            val.packSize,
-            val.qty.toString(),
-            `₦${val.revenue.toLocaleString()}`,
-          ]),
-          styles: { fontSize: 8, cellPadding: 3 },
-          headStyles: { fillColor: [60, 60, 60], textColor: 255, fontStyle: 'bold' },
-          alternateRowStyles: { fillColor: [245, 245, 245] },
-          columnStyles: {
-            0: { cellWidth: 10, halign: 'center' },
-            4: { halign: 'right', fontStyle: 'bold' },
-          },
-        });
+        doc.text('Top Selling Products — Profit Analysis', 14, finalY);
+        renderTopProductsTable(finalY + 4);
       }
     }
 
