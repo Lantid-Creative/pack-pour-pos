@@ -458,7 +458,7 @@ export default function SalesHistoryPage() {
       {/* Sales Table */}
       {filteredSales.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
-          <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+          <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-50" />
           <p className="text-lg font-medium">No sales for this period</p>
           <p className="text-sm">Try selecting a different date range</p>
         </div>
