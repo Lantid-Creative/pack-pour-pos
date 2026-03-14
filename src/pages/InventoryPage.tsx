@@ -90,26 +90,47 @@ export default function InventoryPage() {
     }
   };
 
-  const handleQuickRestock = async (productId: string) => {
+  const handleQuickStockChange = async (productId: string) => {
     const qty = parseInt(quickRestockQty);
     if (!qty || qty <= 0 || !user || !storeId) return;
-    try {
-      const { error } = await supabase.rpc('add_inventory_inflow', {
-        p_store_id: storeId,
-        p_product_id: productId,
-        p_quantity: qty,
-        p_added_by: user.id,
-        p_added_by_name: profile?.full_name || '',
-      });
-      if (error) throw error;
-      toast.success(`+${qty} stock added`);
-      setQuickRestockId(null);
-      setQuickRestockQty('');
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inflows'] });
-    } catch (err: any) {
-      toast.error(err.message);
+
+    if (quickMode === '+') {
+      try {
+        const { error } = await supabase.rpc('add_inventory_inflow', {
+          p_store_id: storeId,
+          p_product_id: productId,
+          p_quantity: qty,
+          p_added_by: user.id,
+          p_added_by_name: profile?.full_name || '',
+        });
+        if (error) throw error;
+        toast.success(`+${qty} stock added`);
+      } catch (err: any) {
+        toast.error(err.message);
+        return;
+      }
+    } else {
+      // Reduce stock directly
+      const product = products.find((p: any) => p.id === productId);
+      if (product && qty > product.stock) {
+        toast.error(`Can't remove ${qty} — only ${product.stock} in stock`);
+        return;
+      }
+      const { error } = await supabase
+        .from('products')
+        .update({ stock: (product?.stock || 0) - qty })
+        .eq('id', productId);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success(`-${qty} stock removed`);
     }
+
+    setQuickRestockId(null);
+    setQuickRestockQty('');
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['inflows'] });
   };
 
   const openEditDialog = (product: any) => {
