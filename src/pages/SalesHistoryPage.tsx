@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-type ReportRange = 'today' | 'week' | 'month' | 'custom';
+type ReportRange = 'today' | 'week' | 'month' | 'all' | 'custom';
 
 function getDateRange(range: ReportRange): Date {
   const now = new Date();
