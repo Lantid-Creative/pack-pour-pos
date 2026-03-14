@@ -32,14 +32,15 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+    <div className="min-h-screen bg-landing-bg flex items-center justify-center p-4 relative">
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-landing-purple/15 rounded-full blur-[120px] pointer-events-none" />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-primary mb-3">
-            <Package className="h-7 w-7 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-landing-purple mb-3">
+            <Package className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-secondary-foreground">BulkDrink POS</h1>
-          <p className="text-sm text-secondary-foreground/60">Wholesale Drinks Management System</p>
+          <h1 className="text-2xl font-bold text-white">BulkDrink POS</h1>
+          <p className="text-sm text-landing-muted">Wholesale Drinks Management System</p>
         </div>
 
         <div className="bg-card rounded-xl border border-border p-6 space-y-4">
