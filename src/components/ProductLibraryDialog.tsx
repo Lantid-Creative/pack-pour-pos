@@ -60,7 +60,7 @@ export default function ProductLibraryDialog({
         name: p.name,
         category: p.category,
         pack_size: p.packSize,
-        price: p.defaultPrice,
+        price: 0,
         stock: 0,
         low_stock_threshold: 10,
       };
