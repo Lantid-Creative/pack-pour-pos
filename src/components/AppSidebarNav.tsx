@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 
 const allNavItems = [
@@ -9,6 +9,7 @@ const allNavItems = [
   { path: '/inventory', label: 'Inventory', icon: Package, roles: ['manager', 'owner'] },
   { path: '/sales', label: 'Sales History', icon: History, roles: ['cashier', 'manager', 'owner'] },
   { path: '/staff', label: 'Staff', icon: Users, roles: ['owner'] },
+  { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['owner'] },
 ];
 
 export function AppSidebarNav() {

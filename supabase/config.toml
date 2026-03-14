@@ -2,3 +2,12 @@ project_id = "lzlvdmaxumamhhjgwfsb"
 
 [functions.create-staff]
 verify_jwt = false
+
+[functions.paystack-initialize]
+verify_jwt = false
+
+[functions.paystack-verify]
+verify_jwt = false
+
+[functions.paystack-webhook]
+verify_jwt = false
