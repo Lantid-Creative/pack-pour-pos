@@ -62,6 +62,7 @@ export type Database = {
       products: {
         Row: {
           category: string
+          cost_price: number
           created_at: string
           id: string
           low_stock_threshold: number
@@ -73,6 +74,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          cost_price?: number
           created_at?: string
           id?: string
           low_stock_threshold?: number
@@ -84,6 +86,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          cost_price?: number
           created_at?: string
           id?: string
           low_stock_threshold?: number
@@ -172,6 +175,7 @@ export type Database = {
       }
       sale_items: {
         Row: {
+          cost_price: number
           id: string
           pack_size: string
           product_id: string
@@ -181,6 +185,7 @@ export type Database = {
           unit_price: number
         }
         Insert: {
+          cost_price?: number
           id?: string
           pack_size: string
           product_id: string
@@ -190,6 +195,7 @@ export type Database = {
           unit_price: number
         }
         Update: {
+          cost_price?: number
           id?: string
           pack_size?: string
           product_id?: string
