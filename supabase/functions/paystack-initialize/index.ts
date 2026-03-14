@@ -91,6 +91,7 @@ serve(async (req) => {
           store_id,
           plan,
           user_id: userId,
+          billing_cycle: cycle,
         },
       }),
     });
