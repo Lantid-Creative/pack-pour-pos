@@ -13,7 +13,7 @@ const plans = [
     yearlyPrice: '₦48,000',
     yearlySavings: 'Save ₦12,000',
     icon: Zap,
-    features: ['1 Store', 'Up to 100 Products', '2 Staff Accounts', 'Basic Reports', 'Email Support'],
+    features: ['1 Store', 'Up to 100 Products', 'Owner Only (No Extra Staff)', 'Basic Reports', 'Email Support'],
     popular: false,
   },
   {

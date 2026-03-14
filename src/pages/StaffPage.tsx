@@ -100,12 +100,18 @@ export default function StaffPage() {
           <h1 className="text-2xl font-bold text-foreground">Staff Management</h1>
           <p className="text-sm text-muted-foreground">Manage staff accounts and role permissions</p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
-        >
-          <UserPlus className="h-4 w-4" /> Add Staff
-        </button>
+        {isStarterPlan ? (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-muted text-muted-foreground text-sm font-medium cursor-not-allowed">
+            <Lock className="h-4 w-4" /> Upgrade to Add Staff
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            <UserPlus className="h-4 w-4" /> Add Staff
+          </button>
+        )}
       </div>
 
       {/* Tab selector */}
