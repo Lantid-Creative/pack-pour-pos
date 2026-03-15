@@ -472,7 +472,12 @@ export default function InventoryPage() {
               <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Enter quantity"
                 className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
             </div>
-            <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Reason</label>
+              <input type="text" value={restockReason} onChange={(e) => setRestockReason(e.target.value)} placeholder="e.g. New supply from distributor"
+                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+            </div>
+            <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0 || !restockReason.trim()}
               className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
               Add Stock
             </button>
