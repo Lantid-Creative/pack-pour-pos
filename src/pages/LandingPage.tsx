@@ -310,7 +310,7 @@ export default function LandingPage() {
                 price: '₦5,000',
                 period: '/month',
                 desc: 'Perfect for single-location stores',
-                features: ['1 Store', 'Up to 3 Staff', 'POS & Receipts', 'Basic Analytics', 'Email Support'],
+                features: ['1 Store', 'Owner Only (No Staff)', 'POS & Receipts', 'Basic Analytics', 'Email Support'],
                 popular: false,
               },
               {
