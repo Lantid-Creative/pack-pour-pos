@@ -462,7 +462,7 @@ export default function LandingPage() {
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
               <a href="#testimonials" className="hover:text-white transition-colors">Testimonials</a>
             </div>
-            <p className="text-xs text-landing-muted/70">© 2026 BulkDrink. All rights reserved.</p>
+            <p className="text-xs text-landing-muted/70">© 2026 Lantid. All rights reserved.</p>
           </div>
         </div>
       </footer>

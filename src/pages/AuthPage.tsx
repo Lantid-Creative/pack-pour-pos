@@ -95,7 +95,7 @@ export default function AuthPage() {
               ))}
             </div>
             <p className="text-sm text-landing-muted leading-relaxed mb-3">
-              "Before BulkDrink, my cashiers used notebooks. Now I can see every sale from my phone."
+              "Before Lantid, my cashiers used notebooks. Now I can see every sale from my phone."
             </p>
             <p className="text-xs text-white font-semibold">Chief Okafor · Okafor Drinks, Onitsha</p>
           </div>

@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://bulkdrink.com/sitemap.xml
+Sitemap: https://lantid.store/sitemap.xml

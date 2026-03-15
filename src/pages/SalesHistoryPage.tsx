@@ -364,7 +364,7 @@ export default function SalesHistoryPage() {
       doc.text(`Generated ${new Date().toLocaleString('en-NG')}`, pageWidth - 14, doc.internal.pageSize.height - 8, { align: 'right' });
     }
 
-    doc.save(`BulkDrink-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(`Lantid-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success('PDF report downloaded!');
   };
 
