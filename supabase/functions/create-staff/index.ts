@@ -92,11 +92,13 @@ serve(async (req) => {
       });
     }
 
-    // Update profile name
+    // Upsert profile (trigger may or may not have created it)
     await supabaseAdmin
       .from('profiles')
-      .update({ full_name, store_id })
-      .eq('user_id', newUser.user.id);
+      .upsert(
+        { user_id: newUser.user.id, full_name, store_id },
+        { onConflict: 'user_id' }
+      );
 
     // Assign role
     const { error: roleError } = await supabaseAdmin

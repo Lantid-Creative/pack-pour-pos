@@ -23,12 +23,27 @@ export default function StaffPage() {
     queryKey: ['staff', storeId],
     queryFn: async () => {
       if (!storeId) return [];
-      const { data, error } = await supabase
+      // Fetch roles
+      const { data: roles, error } = await supabase
         .from('user_roles')
-        .select('id, user_id, role, profiles:user_id(full_name, user_id)')
+        .select('id, user_id, role')
         .eq('store_id', storeId);
       if (error) throw error;
-      return data || [];
+      if (!roles || roles.length === 0) return [];
+
+      // Fetch profiles for those user_ids
+      const userIds = roles.map((r: any) => r.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', userIds);
+
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.full_name]));
+
+      return roles.map((r: any) => ({
+        ...r,
+        full_name: profileMap.get(r.user_id) || 'Unknown',
+      }));
     },
     enabled: !!storeId,
   });
@@ -160,7 +175,7 @@ export default function StaffPage() {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{(s.profiles as any)?.full_name || 'Unknown'}</span>
+                      <span className="font-medium">{s.full_name}</span>
                     </div>
                   </td>
                   <td className="py-3 px-4">
