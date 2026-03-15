@@ -153,7 +153,8 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
                 </button>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 
