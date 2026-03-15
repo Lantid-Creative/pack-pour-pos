@@ -44,6 +44,8 @@ export default function InventoryPage() {
   const [newPrice, setNewPrice] = useState('');
   const [newCostPrice, setNewCostPrice] = useState('');
   const [newStock, setNewStock] = useState('');
+  const [newBulkPrice, setNewBulkPrice] = useState('');
+  const [newBulkMinQty, setNewBulkMinQty] = useState('');
   const [creatingProduct, setCreatingProduct] = useState(false);
 
   const { data: products = [] } = useQuery({
