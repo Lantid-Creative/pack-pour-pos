@@ -90,7 +90,7 @@ export default function SalesHistoryPage() {
     const rows: string[][] = [];
 
     // Report Header
-    rows.push(['BULKDRINK SALES REPORT']);
+    rows.push(['LANTID SALES REPORT']);
     rows.push([`Period: ${rangeLabel}`]);
     rows.push([`Generated: ${new Date().toLocaleString('en-NG')}`]);
     rows.push([]);
