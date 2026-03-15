@@ -31,7 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
   const [isTrialing, setIsTrialing] = useState(false);
 
-  const checkSubscriptionStatus = async (stId: string) => {
+  const checkSubscriptionStatus = async (stId: string, hasLifetimeAccess: boolean) => {
+    // Lifetime access bypasses all checks
+    if (hasLifetimeAccess) {
+      setSubscriptionActive(true);
+      setIsTrialing(false);
+      return;
+    }
+
     // Check subscription
     const { data: sub } = await supabase
       .from('subscriptions')
