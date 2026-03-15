@@ -190,7 +190,9 @@ export default function InventoryPage() {
       price: parseFloat(editPrice) || 0,
       cost_price: parseFloat(editCostPrice) || 0,
       low_stock_threshold: parseInt(editLowThreshold) || 10,
-    }).eq('id', editingProduct.id);
+      bulk_price: editBulkPrice ? parseFloat(editBulkPrice) : null,
+      bulk_min_quantity: editBulkMinQty ? parseInt(editBulkMinQty) : null,
+    } as any).eq('id', editingProduct.id);
 
     if (error) {
       toast.error(error.message);
