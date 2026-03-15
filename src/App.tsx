@@ -1,5 +1,7 @@
+import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from 'framer-motion';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,25 +10,33 @@ import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { TourOverlay } from "@/components/TourOverlay";
 import { usePermissions } from "@/hooks/usePermissions";
-import AuthPage from "./pages/AuthPage";
-import LandingPage from "./pages/LandingPage";
-import StoreSetupPage from "./pages/StoreSetupPage";
-import AppLayout from "./layouts/AppLayout";
-import POSPage from "./pages/POSPage";
-import DashboardPage from "./pages/DashboardPage";
-import InventoryPage from "./pages/InventoryPage";
-import SalesHistoryPage from "./pages/SalesHistoryPage";
-import StaffPage from "./pages/StaffPage";
-import SubscriptionPage from "./pages/SubscriptionPage";
-import StoreSettingsPage from "./pages/StoreSettingsPage";
-import NotFound from "./pages/NotFound";
-import PaywallPage from "./pages/PaywallPage";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+import { PageSkeleton } from "@/components/PageSkeleton";
+
+// Lazy-loaded pages
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const StoreSetupPage = lazy(() => import("./pages/StoreSetupPage"));
+const AppLayout = lazy(() => import("./layouts/AppLayout"));
+const POSPage = lazy(() => import("./pages/POSPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const InventoryPage = lazy(() => import("./pages/InventoryPage"));
+const SalesHistoryPage = lazy(() => import("./pages/SalesHistoryPage"));
+const StaffPage = lazy(() => import("./pages/StaffPage"));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
+const StoreSettingsPage = lazy(() => import("./pages/StoreSettingsPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PaywallPage = lazy(() => import("./pages/PaywallPage"));
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user, role, storeId, loading, subscriptionActive } = useAuth();
   const { hasPermission } = usePermissions();
+  const location = useLocation();
+
+  // Session timeout for authenticated users
+  useSessionTimeout();
 
   if (loading) {
     return (
@@ -41,52 +51,62 @@ function AppRoutes() {
 
   if (!user) {
     return (
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<PageSkeleton />}>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AnimatePresence>
+      </Suspense>
     );
   }
 
-  // User is authenticated but has no store/role — needs store setup
   if (!storeId || !role) {
     return (
-      <Routes>
-        <Route path="/setup" element={<StoreSetupPage />} />
-        <Route path="*" element={<Navigate to="/setup" replace />} />
-      </Routes>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
+          <Route path="/setup" element={<StoreSetupPage />} />
+          <Route path="*" element={<Navigate to="/setup" replace />} />
+        </Routes>
+      </Suspense>
     );
   }
 
-  // User has a store but no active subscription and trial expired — paywall
   if (!subscriptionActive) {
     return (
-      <Routes>
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/paywall" element={<PaywallPage />} />
-        <Route path="*" element={<Navigate to="/paywall" replace />} />
-      </Routes>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/paywall" element={<PaywallPage />} />
+          <Route path="*" element={<Navigate to="/paywall" replace />} />
+        </Routes>
+      </Suspense>
     );
   }
 
   return (
-    <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={hasPermission('page:dashboard') ? <DashboardPage /> : <Navigate to="/pos" replace />} />
-        <Route path="/pos" element={hasPermission('page:pos') ? <POSPage /> : <Navigate to="/dashboard" replace />} />
-        <Route path="/inventory" element={hasPermission('page:inventory') ? <InventoryPage /> : <Navigate to="/pos" replace />} />
-        <Route path="/sales" element={hasPermission('page:sales_history') ? <SalesHistoryPage /> : <Navigate to="/dashboard" replace />} />
-        <Route path="/staff" element={hasPermission('page:staff') ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
-        <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
-        <Route path="/settings" element={role === 'owner' ? <StoreSettingsPage /> : <Navigate to="/dashboard" replace />} />
-      </Route>
-      <Route path="/setup" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
-      <Route path="/login" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
-      <Route path="/paywall" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
-      <Route path="/" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <Suspense fallback={<PageSkeleton />}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={hasPermission('page:dashboard') ? <DashboardPage /> : <Navigate to="/pos" replace />} />
+            <Route path="/pos" element={hasPermission('page:pos') ? <POSPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/inventory" element={hasPermission('page:inventory') ? <InventoryPage /> : <Navigate to="/pos" replace />} />
+            <Route path="/sales" element={hasPermission('page:sales_history') ? <SalesHistoryPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/staff" element={hasPermission('page:staff') ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/settings" element={role === 'owner' ? <StoreSettingsPage /> : <Navigate to="/dashboard" replace />} />
+          </Route>
+          <Route path="/setup" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
+          <Route path="/login" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
+          <Route path="/paywall" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
+          <Route path="/" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AnimatePresence>
+    </Suspense>
   );
 }
 
