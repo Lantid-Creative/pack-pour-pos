@@ -360,7 +360,7 @@ export default function SalesHistoryPage() {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(150);
-      doc.text(`BulkDrink POS — Sales Report — Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 8);
+      doc.text(`Lantid POS — Sales Report — Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 8);
       doc.text(`Generated ${new Date().toLocaleString('en-NG')}`, pageWidth - 14, doc.internal.pageSize.height - 8, { align: 'right' });
     }
 
