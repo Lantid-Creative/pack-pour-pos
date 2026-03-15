@@ -291,11 +291,11 @@ export default function InventoryPage() {
                   </div>
                 ) : (
                   <>
-                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('+'); }}
+                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('+'); }}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
                       <Plus className="h-3 w-3" /> Add
                     </button>
-                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('-'); }}
+                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('-'); }}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-destructive/10 text-destructive text-xs font-medium hover:bg-destructive/20 transition-colors">
                       <Minus className="h-3 w-3" /> Remove
                     </button>
