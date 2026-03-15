@@ -32,6 +32,7 @@ export default function InventoryPage() {
   const [quickRestockId, setQuickRestockId] = useState<string | null>(null);
   const [quickRestockQty, setQuickRestockQty] = useState('');
   const [quickMode, setQuickMode] = useState<'+' | '-'>('+');
+  const [quickReason, setQuickReason] = useState('');
 
   // Create product form state
   const [newName, setNewName] = useState('');
