@@ -410,6 +410,13 @@ export default function InventoryPage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
+                      <button
+                        onClick={() => handleDeleteProduct(product)}
+                        title="Delete product"
+                        className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
