@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard, ArrowRight, Check, Zap, Globe, Star, ChevronRight, Play, MousePointer } from 'lucide-react';
+import { Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard, ArrowRight, Check, Zap, Globe, Star, ChevronRight, Play, MousePointer, Eye } from 'lucide-react';
 import heroDashboard from '@/assets/hero-dashboard.png';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -14,9 +17,34 @@ const stagger = {
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [demoLoading, setDemoLoading] = useState(false);
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
+
+  const handleTryDemo = async () => {
+    setDemoLoading(true);
+    try {
+      // Seed demo data (idempotent)
+      await supabase.functions.invoke('seed-demo');
+      // Log in as demo user
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'demo@lantid.store',
+        password: 'Demo#login#to#$TORE',
+      });
+      if (error) {
+        toast.error('Demo login failed. Please try again.');
+        console.error(error);
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.');
+      console.error(err);
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-landing-bg text-landing-fg overflow-x-hidden">
@@ -75,9 +103,13 @@ export default function LandingPage() {
               <button onClick={() => navigate('/login')} className="group px-8 py-3.5 rounded-xl bg-landing-purple text-white font-bold text-base hover:bg-landing-purple-hover active:scale-[0.97] transition-all flex items-center gap-2 shadow-xl shadow-landing-purple/30">
                 Start Free Trial <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <a href="#how-it-works" className="group px-8 py-3.5 rounded-xl border border-landing-border text-landing-muted font-semibold text-base hover:bg-white/5 hover:border-landing-muted/30 transition-all flex items-center gap-2">
-                <Play className="h-4 w-4" /> See How It Works
-              </a>
+              <button
+                onClick={handleTryDemo}
+                disabled={demoLoading}
+                className="group px-8 py-3.5 rounded-xl border border-landing-purple/40 bg-landing-purple/10 text-landing-purple-light font-semibold text-base hover:bg-landing-purple/20 hover:border-landing-purple/60 active:scale-[0.97] transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                <Eye className="h-4 w-4" /> {demoLoading ? 'Loading Demo...' : 'Try Live Demo'}
+              </button>
             </motion.div>
             <motion.p variants={fadeUp} custom={4} className="mt-4 text-xs text-landing-muted/70">
               No credit card required · 14-day free trial · Setup in 3 minutes
@@ -400,6 +432,13 @@ export default function LandingPage() {
           <motion.div variants={fadeUp} custom={2} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={() => navigate('/login')} className="group px-10 py-4 rounded-xl bg-landing-purple text-white font-bold text-lg hover:bg-landing-purple-hover active:scale-[0.97] transition-all shadow-xl shadow-landing-purple/30 flex items-center gap-2">
               Start Your Free Trial <ArrowRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+            <button
+              onClick={handleTryDemo}
+              disabled={demoLoading}
+              className="group px-8 py-3.5 rounded-xl border border-landing-purple/40 bg-landing-purple/10 text-landing-purple-light font-semibold text-base hover:bg-landing-purple/20 hover:border-landing-purple/60 active:scale-[0.97] transition-all flex items-center gap-2 disabled:opacity-50"
+            >
+              <Eye className="h-4 w-4" /> {demoLoading ? 'Loading...' : 'Try Live Demo'}
             </button>
           </motion.div>
           <motion.p variants={fadeUp} custom={3} className="mt-4 text-xs text-landing-muted/70">

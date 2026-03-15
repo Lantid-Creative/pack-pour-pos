@@ -51,20 +51,31 @@ serve(async (req) => {
       });
     }
 
-    // Check subscription plan — Starter plan cannot add staff
-    const { data: activeSub } = await supabaseAdmin
-      .from('subscriptions')
-      .select('plan')
-      .eq('store_id', store_id)
-      .eq('status', 'active')
-      .limit(1)
-      .maybeSingle();
+    // Check if owner has lifetime access
+    const { data: ownerProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('lifetime_access')
+      .eq('user_id', callingUser.id)
+      .single();
 
-    // If no active subscription or on starter plan, block staff creation
-    if (!activeSub || activeSub.plan === 'starter') {
-      return new Response(JSON.stringify({ error: 'Starter plan does not allow adding staff. Please upgrade to Business or Enterprise.' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    const hasLifetimeAccess = ownerProfile?.lifetime_access === true;
+
+    // Check subscription plan — Starter plan cannot add staff (unless lifetime access)
+    if (!hasLifetimeAccess) {
+      const { data: activeSub } = await supabaseAdmin
+        .from('subscriptions')
+        .select('plan')
+        .eq('store_id', store_id)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+      // If no active subscription or on starter plan, block staff creation
+      if (!activeSub || activeSub.plan === 'starter') {
+        return new Response(JSON.stringify({ error: 'Starter plan does not allow adding staff. Please upgrade to Business or Enterprise.' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     // Create the user account
