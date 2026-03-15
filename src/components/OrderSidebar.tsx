@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { ReceiptDialog } from './ReceiptDialog';
 import { toast } from 'sonner';
@@ -11,8 +11,6 @@ interface CartProduct {
   name: string;
   pack_size: string;
   price: number;
-  bulk_price?: number | null;
-  bulk_min_quantity?: number | null;
 }
 
 export interface CartItem {
@@ -39,11 +37,46 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   const { user, profile, storeId } = useAuth();
   const queryClient = useQueryClient();
 
+  // Fetch all price tiers for the store
+  const { data: allTiers = [] } = useQuery({
+    queryKey: ['product_price_tiers', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('product_price_tiers' as any).select('*').eq('store_id', storeId).order('min_quantity');
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
   const getEffectivePrice = (item: CartItem) => {
-    if (item.product.bulk_price && item.product.bulk_min_quantity && item.quantity >= item.product.bulk_min_quantity) {
-      return item.product.bulk_price;
+    // Find matching tier for this product and quantity
+    const productTiers = allTiers
+      .filter((t: any) => t.product_id === item.product.id)
+      .sort((a: any, b: any) => b.min_quantity - a.min_quantity); // highest min_quantity first
+
+    for (const tier of productTiers) {
+      const minOk = item.quantity >= tier.min_quantity;
+      const maxOk = !tier.max_quantity || item.quantity <= tier.max_quantity;
+      if (minOk && maxOk) {
+        return Number(tier.price);
+      }
     }
+
     return item.product.price;
+  };
+
+  const getAppliedTier = (item: CartItem) => {
+    const productTiers = allTiers
+      .filter((t: any) => t.product_id === item.product.id)
+      .sort((a: any, b: any) => b.min_quantity - a.min_quantity);
+
+    for (const tier of productTiers) {
+      const minOk = item.quantity >= tier.min_quantity;
+      const maxOk = !tier.max_quantity || item.quantity <= tier.max_quantity;
+      if (minOk && maxOk) return tier;
+    }
+    return null;
   };
 
   const total = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
@@ -127,14 +160,16 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
         ) : (
           cart.map((item) => {
             const effectivePrice = getEffectivePrice(item);
-            const isBulk = item.product.bulk_price && item.product.bulk_min_quantity && item.quantity >= item.product.bulk_min_quantity;
+            const tier = getAppliedTier(item);
             return (
             <div key={item.product.id} className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{item.product.name}</p>
                 <p className="text-xs text-muted-foreground">{item.product.pack_size}</p>
-                {isBulk && (
-                  <p className="text-[10px] font-medium text-green-500">Bulk price applied (≥{item.product.bulk_min_quantity})</p>
+                {tier && (
+                  <p className="text-[10px] font-medium text-green-500">
+                    Tier price: {tier.min_quantity}{tier.max_quantity ? `-${tier.max_quantity}` : '+'} @ ₦{Number(tier.price).toLocaleString()}
+                  </p>
                 )}
                 <p className="font-mono-numbers text-sm font-semibold text-primary">
                   ₦{(effectivePrice * item.quantity).toLocaleString()}
