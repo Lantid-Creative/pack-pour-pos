@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ProductGrid } from '@/components/ProductGrid';
 import { OrderSidebar, CartItem } from '@/components/OrderSidebar';
 import { useAuth } from '@/contexts/AuthContext';
