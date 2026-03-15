@@ -59,6 +59,54 @@ export type Database = {
           },
         ]
       }
+      inventory_outflows: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          reason: string
+          removed_by: string
+          removed_by_name: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity: number
+          reason?: string
+          removed_by: string
+          removed_by_name: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          reason?: string
+          removed_by?: string
+          removed_by_name?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_outflows_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_outflows_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string
@@ -430,6 +478,17 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      reduce_inventory: {
+        Args: {
+          p_product_id: string
+          p_quantity: number
+          p_reason?: string
+          p_removed_by: string
+          p_removed_by_name: string
+          p_store_id: string
+        }
+        Returns: string
       }
       seed_role_permissions: {
         Args: { p_store_id: string }

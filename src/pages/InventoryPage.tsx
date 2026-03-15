@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Package, Plus, History, AlertTriangle, Library, PlusCircle, Pencil, X, Check, Minus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductLibraryDialog from '@/components/ProductLibraryDialog';
 import { toast } from 'sonner';
 
@@ -68,6 +69,22 @@ export default function InventoryPage() {
     enabled: !!storeId,
   });
 
+  const { data: outflows = [] } = useQuery({
+    queryKey: ['outflows', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase
+        .from('inventory_outflows' as any)
+        .select('*, products(name)')
+        .eq('store_id', storeId)
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
   const handleRestock = async () => {
     if (!selectedProduct || !quantity || parseInt(quantity) <= 0 || !user || !storeId) return;
     try {
@@ -110,27 +127,34 @@ export default function InventoryPage() {
         return;
       }
     } else {
-      // Reduce stock directly
+      // Reduce stock with history tracking
       const product = products.find((p: any) => p.id === productId);
       if (product && qty > product.stock) {
         toast.error(`Can't remove ${qty} — only ${product.stock} in stock`);
         return;
       }
-      const { error } = await supabase
-        .from('products')
-        .update({ stock: (product?.stock || 0) - qty })
-        .eq('id', productId);
-      if (error) {
-        toast.error(error.message);
+      try {
+        const { error } = await supabase.rpc('reduce_inventory' as any, {
+          p_store_id: storeId,
+          p_product_id: productId,
+          p_quantity: qty,
+          p_removed_by: user.id,
+          p_removed_by_name: profile?.full_name || '',
+          p_reason: 'manual',
+        });
+        if (error) throw error;
+        toast.success(`-${qty} stock removed`);
+      } catch (err: any) {
+        toast.error(err.message);
         return;
       }
-      toast.success(`-${qty} stock removed`);
     }
 
     setQuickRestockId(null);
     setQuickRestockQty('');
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['inflows'] });
+    queryClient.invalidateQueries({ queryKey: ['outflows'] });
   };
 
   const openEditDialog = (product: any) => {
@@ -387,20 +411,43 @@ export default function InventoryPage() {
         </table>
       </div>
 
-      {inflows.length > 0 && (
+      {(inflows.length > 0 || outflows.length > 0) && (
         <div className="bg-card border border-border rounded-lg p-5">
-          <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2"><History className="h-5 w-5" /> Restock History</h3>
-          <div className="space-y-2">
-            {inflows.map((inflow: any) => (
-              <div key={inflow.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/30">
-                <div>
-                  <p className="text-sm font-medium">{(inflow.products as any)?.name || 'Product'}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(inflow.created_at).toLocaleDateString('en-NG')} • by {inflow.added_by_name}</p>
-                </div>
-                <span className="font-mono-numbers text-sm font-bold text-primary">+{inflow.quantity}</span>
+          <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2"><History className="h-5 w-5" /> Stock History</h3>
+          <Tabs defaultValue="restock" className="w-full">
+            <TabsList className="mb-3">
+              <TabsTrigger value="restock">Restock ({inflows.length})</TabsTrigger>
+              <TabsTrigger value="reduce">Reduce ({outflows.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="restock">
+              <div className="space-y-2">
+                {inflows.length === 0 && <p className="text-sm text-muted-foreground">No restock history yet.</p>}
+                {inflows.map((inflow: any) => (
+                  <div key={inflow.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/30">
+                    <div>
+                      <p className="text-sm font-medium">{(inflow.products as any)?.name || 'Product'}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(inflow.created_at).toLocaleDateString('en-NG')} • by {inflow.added_by_name}</p>
+                    </div>
+                    <span className="font-mono-numbers text-sm font-bold text-primary">+{inflow.quantity}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </TabsContent>
+            <TabsContent value="reduce">
+              <div className="space-y-2">
+                {outflows.length === 0 && <p className="text-sm text-muted-foreground">No reduce history yet.</p>}
+                {outflows.map((outflow: any) => (
+                  <div key={outflow.id} className="flex items-center justify-between p-2.5 rounded-md bg-muted/30">
+                    <div>
+                      <p className="text-sm font-medium">{(outflow.products as any)?.name || 'Product'}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(outflow.created_at).toLocaleDateString('en-NG')} • by {outflow.removed_by_name}</p>
+                    </div>
+                    <span className="font-mono-numbers text-sm font-bold text-destructive">−{outflow.quantity}</span>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
 
