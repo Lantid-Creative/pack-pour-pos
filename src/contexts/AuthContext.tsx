@@ -117,10 +117,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    let initialLoadDone = false;
+    let mounted = true;
+    let currentUserId: string | null = null;
 
     const loadUserData = async (sessionUser: User | null) => {
+      if (!mounted) return;
+
       if (!sessionUser) {
+        currentUserId = null;
         setUser(null);
         setProfile(null);
         setRole(null);
@@ -132,41 +136,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Set loading true to prevent partial-state renders during data fetch
+      // Prevent duplicate loads for the same user
+      if (currentUserId === sessionUser.id) return;
+      currentUserId = sessionUser.id;
+
       setLoading(true);
       setUser(sessionUser);
 
       try {
         await fetchUserData(sessionUser.id);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
+    // Listen for auth changes — handle INITIAL_SESSION + SIGNED_IN
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Only reload user data on actual auth changes, not token refreshes
       if (event === 'SIGNED_OUT') {
         loadUserData(null);
-      } else if (event === 'SIGNED_IN') {
-        // Only reload if this isn't the initial session pickup (handled below)
-        if (initialLoadDone) {
-          loadUserData(session?.user ?? null);
-        }
-      }
-      // TOKEN_REFRESHED, USER_UPDATED — user object updated but role/store unchanged
-      // Just update the user object without refetching everything
-      if (event === 'TOKEN_REFRESHED' && session?.user) {
+      } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        loadUserData(session?.user ?? null);
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
         setUser(session.user);
       }
     });
 
+    // Fallback for session pickup if INITIAL_SESSION was missed
     supabase.auth.getSession().then(({ data: { session } }) => {
-      loadUserData(session?.user ?? null).then(() => {
-        initialLoadDone = true;
-      });
+      if (mounted && !currentUserId) {
+        loadUserData(session?.user ?? null);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
