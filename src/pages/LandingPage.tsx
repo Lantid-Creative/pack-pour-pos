@@ -393,7 +393,7 @@ export default function LandingPage() {
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: 'Chief Okafor', store: 'Okafor Drinks, Onitsha', text: 'Before BulkDrink, my cashiers used notebooks. Now I can see every sale from my phone. Game changer!' },
+              { name: 'Chief Okafor', store: 'Okafor Drinks, Onitsha', text: 'Before Lantid, my cashiers used notebooks. Now I can see every sale from my phone. Game changer!' },
               { name: 'Mrs. Adebayo', store: 'Ade Wholesale, Lagos', text: 'The inventory alerts alone have saved me from stock-outs three times this month. Worth every naira.' },
               { name: 'Alhaji Musa', store: 'Musa & Sons, Kano', text: 'I manage 4 staff from one dashboard. The role system means my cashiers can\'t touch inventory settings.' },
             ].map((t, i) => (
