@@ -60,13 +60,16 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     if (cart.length === 0 || !user || !storeId) return;
     setProcessing(true);
     try {
-      const items = cart.map((i) => ({
-        product_id: i.product.id,
-        product_name: i.product.name,
-        pack_size: i.product.pack_size,
-        quantity: i.quantity,
-        unit_price: i.product.price,
-      }));
+      const items = cart.map((i) => {
+        const effectivePrice = getEffectivePrice(i);
+        return {
+          product_id: i.product.id,
+          product_name: i.product.name,
+          pack_size: i.product.pack_size,
+          quantity: i.quantity,
+          unit_price: effectivePrice,
+        };
+      });
 
       const { data, error } = await supabase.rpc('complete_sale', {
         p_store_id: storeId,
