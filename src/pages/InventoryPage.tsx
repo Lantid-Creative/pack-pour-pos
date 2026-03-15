@@ -304,6 +304,10 @@ export default function InventoryPage() {
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-medium hover:text-foreground transition-colors">
                       <Pencil className="h-3 w-3" /> Edit
                     </button>
+                    <button onClick={() => handleDeleteProduct(product)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-destructive/10 text-destructive text-xs font-medium hover:bg-destructive/20 transition-colors">
+                      <Trash2 className="h-3 w-3" /> Delete
+                    </button>
                   </>
                 )}
               </div>
