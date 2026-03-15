@@ -27,6 +27,8 @@ export default function InventoryPage() {
   const [editPrice, setEditPrice] = useState('');
   const [editCostPrice, setEditCostPrice] = useState('');
   const [editLowThreshold, setEditLowThreshold] = useState('');
+  const [editBulkPrice, setEditBulkPrice] = useState('');
+  const [editBulkMinQty, setEditBulkMinQty] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Quick restock/reduce state
