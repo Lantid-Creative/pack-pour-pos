@@ -35,7 +35,8 @@ serve(async (req) => {
       });
     }
 
-    const { email, full_name, role, store_id } = await req.json();
+    const body = await req.json();
+    const { email, full_name, role, store_id, action, user_id, role_id } = body;
 
     // Verify caller is owner of this store
     const { data: callerRole } = await supabaseAdmin
