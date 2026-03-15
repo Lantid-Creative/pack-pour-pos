@@ -10,7 +10,7 @@ import RolePermissionsEditor from '@/components/RolePermissionsEditor';
 type AppRole = 'cashier' | 'manager';
 
 export default function StaffPage() {
-  const { storeId } = useAuth();
+  const { storeId, profile } = useAuth();
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [activeTab, setActiveTab] = useState<'staff' | 'permissions'>('staff');
