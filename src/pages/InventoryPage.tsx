@@ -16,6 +16,7 @@ export default function InventoryPage() {
   const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [restockReason, setRestockReason] = useState('');
   const [search, setSearch] = useState('');
 
   // Edit product state
@@ -32,6 +33,7 @@ export default function InventoryPage() {
   const [quickRestockId, setQuickRestockId] = useState<string | null>(null);
   const [quickRestockQty, setQuickRestockQty] = useState('');
   const [quickMode, setQuickMode] = useState<'+' | '-'>('+');
+  const [quickReason, setQuickReason] = useState('');
 
   // Create product form state
   const [newName, setNewName] = useState('');
@@ -87,6 +89,7 @@ export default function InventoryPage() {
 
   const handleRestock = async () => {
     if (!selectedProduct || !quantity || parseInt(quantity) <= 0 || !user || !storeId) return;
+    if (!restockReason.trim()) { toast.error('Please enter a reason'); return; }
     try {
       const { error } = await supabase.rpc('add_inventory_inflow', {
         p_store_id: storeId,
@@ -94,11 +97,13 @@ export default function InventoryPage() {
         p_quantity: parseInt(quantity),
         p_added_by: user.id,
         p_added_by_name: profile?.full_name || '',
-      });
+        p_reason: restockReason.trim(),
+      } as any);
       if (error) throw error;
       toast.success('Stock updated!');
       setSelectedProduct('');
       setQuantity('');
+      setRestockReason('');
       setShowRestock(false);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['inflows'] });
@@ -110,6 +115,7 @@ export default function InventoryPage() {
   const handleQuickStockChange = async (productId: string) => {
     const qty = parseInt(quickRestockQty);
     if (!qty || qty <= 0 || !user || !storeId) return;
+    if (!quickReason.trim()) { toast.error('Please enter a reason'); return; }
 
     if (quickMode === '+') {
       try {
@@ -119,7 +125,8 @@ export default function InventoryPage() {
           p_quantity: qty,
           p_added_by: user.id,
           p_added_by_name: profile?.full_name || '',
-        });
+          p_reason: quickReason.trim(),
+        } as any);
         if (error) throw error;
         toast.success(`+${qty} stock added`);
       } catch (err: any) {
@@ -127,7 +134,6 @@ export default function InventoryPage() {
         return;
       }
     } else {
-      // Reduce stock with history tracking
       const product = products.find((p: any) => p.id === productId);
       if (product && qty > product.stock) {
         toast.error(`Can't remove ${qty} — only ${product.stock} in stock`);
@@ -140,7 +146,7 @@ export default function InventoryPage() {
           p_quantity: qty,
           p_removed_by: user.id,
           p_removed_by_name: profile?.full_name || '',
-          p_reason: 'manual',
+          p_reason: quickReason.trim(),
         });
         if (error) throw error;
         toast.success(`-${qty} stock removed`);
@@ -152,6 +158,7 @@ export default function InventoryPage() {
 
     setQuickRestockId(null);
     setQuickRestockQty('');
+    setQuickReason('');
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['inflows'] });
     queryClient.invalidateQueries({ queryKey: ['outflows'] });
@@ -267,30 +274,28 @@ export default function InventoryPage() {
               </div>
               <div className="flex items-center gap-2 pt-1">
                 {isQuickRestock ? (
-                  <div className="flex items-center gap-1 flex-1">
-                    <div className="flex rounded overflow-hidden border border-input">
-                      <button onClick={() => setQuickMode('+')} className={`px-2 py-1 text-xs font-bold ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>+</button>
-                      <button onClick={() => setQuickMode('-')} className={`px-2 py-1 text-xs font-bold ${quickMode === '-' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>−</button>
+                  <div className="flex flex-col gap-1.5 flex-1">
+                    <div className="flex items-center gap-1">
+                      <div className="flex rounded overflow-hidden border border-input">
+                        <button onClick={() => setQuickMode('+')} className={`px-2 py-1 text-xs font-bold ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>+</button>
+                        <button onClick={() => setQuickMode('-')} className={`px-2 py-1 text-xs font-bold ${quickMode === '-' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>−</button>
+                      </div>
+                      <input type="number" min="1" value={quickRestockQty} onChange={(e) => setQuickRestockQty(e.target.value)}
+                        placeholder="Qty" autoFocus className="flex-1 px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                      <button onClick={() => handleQuickStockChange(product.id)} className={`p-1.5 rounded ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-destructive text-destructive-foreground'}`}><Check className="h-4 w-4" /></button>
+                      <button onClick={() => { setQuickRestockId(null); setQuickRestockQty(''); setQuickReason(''); }} className="p-1.5 rounded bg-muted text-muted-foreground"><X className="h-4 w-4" /></button>
                     </div>
-                    <input
-                      type="number"
-                      min="1"
-                      value={quickRestockQty}
-                      onChange={(e) => setQuickRestockQty(e.target.value)}
-                      placeholder="Qty"
-                      autoFocus
-                      className="flex-1 px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                    <button onClick={() => handleQuickStockChange(product.id)} className={`p-1.5 rounded ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-destructive text-destructive-foreground'}`}><Check className="h-4 w-4" /></button>
-                    <button onClick={() => { setQuickRestockId(null); setQuickRestockQty(''); }} className="p-1.5 rounded bg-muted text-muted-foreground"><X className="h-4 w-4" /></button>
+                    <input type="text" value={quickReason} onChange={(e) => setQuickReason(e.target.value)}
+                      placeholder={quickMode === '+' ? 'Reason (e.g. New supply)' : 'Reason (e.g. Damaged, Expired)'}
+                      className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
                   </div>
                 ) : (
                   <>
-                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('+'); }}
+                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('+'); }}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
                       <Plus className="h-3 w-3" /> Add
                     </button>
-                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('-'); }}
+                    <button onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('-'); }}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-destructive/10 text-destructive text-xs font-medium hover:bg-destructive/20 transition-colors">
                       <Minus className="h-3 w-3" /> Remove
                     </button>
@@ -345,22 +350,20 @@ export default function InventoryPage() {
                   </td>
                   <td className="py-3 px-4 text-right">
                     {isQuickRestock ? (
-                      <div className="flex items-center justify-end gap-1">
-                        <div className="flex rounded overflow-hidden border border-input">
-                          <button onClick={() => setQuickMode('+')} className={`px-1.5 py-0.5 text-xs font-bold ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>+</button>
-                          <button onClick={() => setQuickMode('-')} className={`px-1.5 py-0.5 text-xs font-bold ${quickMode === '-' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>−</button>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1">
+                          <div className="flex rounded overflow-hidden border border-input">
+                            <button onClick={() => setQuickMode('+')} className={`px-1.5 py-0.5 text-xs font-bold ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>+</button>
+                            <button onClick={() => setQuickMode('-')} className={`px-1.5 py-0.5 text-xs font-bold ${quickMode === '-' ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'}`}>−</button>
+                          </div>
+                          <input type="number" min="1" value={quickRestockQty} onChange={(e) => setQuickRestockQty(e.target.value)}
+                            placeholder="Qty" autoFocus className="w-16 text-right text-sm px-2 py-1 rounded border border-input bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+                          <button onClick={() => handleQuickStockChange(product.id)} className={`p-1 rounded ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-destructive text-destructive-foreground'} hover:opacity-90`}><Check className="h-3.5 w-3.5" /></button>
+                          <button onClick={() => { setQuickRestockId(null); setQuickRestockQty(''); setQuickReason(''); }} className="p-1 rounded bg-muted text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                         </div>
-                        <input
-                          type="number"
-                          min="1"
-                          value={quickRestockQty}
-                          onChange={(e) => setQuickRestockQty(e.target.value)}
-                          placeholder="Qty"
-                          autoFocus
-                          className="w-16 text-right text-sm px-2 py-1 rounded border border-input bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                        />
-                        <button onClick={() => handleQuickStockChange(product.id)} className={`p-1 rounded ${quickMode === '+' ? 'bg-primary text-primary-foreground' : 'bg-destructive text-destructive-foreground'} hover:opacity-90`}><Check className="h-3.5 w-3.5" /></button>
-                        <button onClick={() => { setQuickRestockId(null); setQuickRestockQty(''); }} className="p-1 rounded bg-muted text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                        <input type="text" value={quickReason} onChange={(e) => setQuickReason(e.target.value)}
+                          placeholder={quickMode === '+' ? 'Reason (e.g. New supply)' : 'Reason (e.g. Damaged)'}
+                          className="w-48 text-sm px-2 py-1 rounded border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
                       </div>
                     ) : (
                       <span className="font-mono-numbers font-bold">{product.stock}</span>
@@ -380,14 +383,14 @@ export default function InventoryPage() {
                       {!isQuickRestock && (
                         <>
                           <button
-                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('+'); }}
+                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('+'); }}
                             title="Add stock"
                             className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
                           >
                             <Plus className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('-'); }}
+                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('-'); }}
                             title="Remove stock"
                             className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
                           >
@@ -427,6 +430,9 @@ export default function InventoryPage() {
                     <div>
                       <p className="text-sm font-medium">{(inflow.products as any)?.name || 'Product'}</p>
                       <p className="text-xs text-muted-foreground">{new Date(inflow.created_at).toLocaleDateString('en-NG')} • by {inflow.added_by_name}</p>
+                      {inflow.reason && (
+                        <p className="text-xs text-muted-foreground italic mt-0.5">"{inflow.reason}"</p>
+                      )}
                     </div>
                     <span className="font-mono-numbers text-sm font-bold text-primary">+{inflow.quantity}</span>
                   </div>
@@ -441,6 +447,9 @@ export default function InventoryPage() {
                     <div>
                       <p className="text-sm font-medium">{(outflow.products as any)?.name || 'Product'}</p>
                       <p className="text-xs text-muted-foreground">{new Date(outflow.created_at).toLocaleDateString('en-NG')} • by {outflow.removed_by_name}</p>
+                      {outflow.reason && (
+                        <p className="text-xs text-muted-foreground italic mt-0.5">"{outflow.reason}"</p>
+                      )}
                     </div>
                     <span className="font-mono-numbers text-sm font-bold text-destructive">−{outflow.quantity}</span>
                   </div>
@@ -469,7 +478,12 @@ export default function InventoryPage() {
               <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Enter quantity"
                 className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
             </div>
-            <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Reason</label>
+              <input type="text" value={restockReason} onChange={(e) => setRestockReason(e.target.value)} placeholder="e.g. New supply from distributor"
+                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+            </div>
+            <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0 || !restockReason.trim()}
               className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
               Add Stock
             </button>
