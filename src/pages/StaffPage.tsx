@@ -10,7 +10,7 @@ import RolePermissionsEditor from '@/components/RolePermissionsEditor';
 type AppRole = 'cashier' | 'manager';
 
 export default function StaffPage() {
-  const { storeId } = useAuth();
+  const { storeId, profile } = useAuth();
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [activeTab, setActiveTab] = useState<'staff' | 'permissions'>('staff');
@@ -50,7 +50,7 @@ export default function StaffPage() {
     enabled: !!storeId,
   });
 
-  const isStarterPlan = !subscription || subscription.plan === 'starter';
+  const isStarterPlan = !profile?.lifetime_access && (!subscription || subscription.plan === 'starter');
   const nonOwnerStaffCount = staff.filter((s: any) => s.role !== 'owner').length;
 
   const handleAddStaff = async () => {
