@@ -6,7 +6,7 @@ type AppRole = 'owner' | 'manager' | 'cashier';
 
 interface AuthContextType {
   user: User | null;
-  profile: { full_name: string; store_id: string | null } | null;
+  profile: { full_name: string; store_id: string | null; lifetime_access: boolean } | null;
   role: AppRole | null;
   storeId: string | null;
   loading: boolean;
