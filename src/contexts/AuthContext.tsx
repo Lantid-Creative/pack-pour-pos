@@ -6,7 +6,7 @@ type AppRole = 'owner' | 'manager' | 'cashier';
 
 interface AuthContextType {
   user: User | null;
-  profile: { full_name: string; store_id: string | null } | null;
+  profile: { full_name: string; store_id: string | null; lifetime_access: boolean } | null;
   role: AppRole | null;
   storeId: string | null;
   loading: boolean;
@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{ full_name: string; store_id: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string; store_id: string | null; lifetime_access: boolean } | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [storeId, setStoreId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
   const [isTrialing, setIsTrialing] = useState(false);
 
-  const checkSubscriptionStatus = async (stId: string) => {
+  const checkSubscriptionStatus = async (stId: string, hasLifetimeAccess: boolean) => {
+    // Lifetime access bypasses all checks
+    if (hasLifetimeAccess) {
+      setSubscriptionActive(true);
+      setIsTrialing(false);
+      return;
+    }
+
     // Check subscription
     const { data: sub } = await supabase
       .from('subscriptions')
@@ -73,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refetchSubscription = async () => {
     if (storeId) {
-      await checkSubscriptionStatus(storeId);
+      await checkSubscriptionStatus(storeId, profile?.lifetime_access ?? false);
     }
   };
 
@@ -81,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get profile
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('full_name, store_id')
+      .select('full_name, store_id, lifetime_access')
       .eq('user_id', userId)
       .single();
 
@@ -100,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (roleData) {
       setRole(roleData.role as AppRole);
       setStoreId(roleData.store_id);
-      await checkSubscriptionStatus(roleData.store_id);
+      await checkSubscriptionStatus(roleData.store_id, profileData?.lifetime_access ?? false);
     } else {
       setRole(null);
       setStoreId(null);
