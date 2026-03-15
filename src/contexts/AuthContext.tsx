@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refetchSubscription = async () => {
     if (storeId) {
-      await checkSubscriptionStatus(storeId);
+      await checkSubscriptionStatus(storeId, profile?.lifetime_access ?? false);
     }
   };
 
