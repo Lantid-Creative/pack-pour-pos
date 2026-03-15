@@ -132,6 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Set loading true to prevent partial-state renders during data fetch
+      setLoading(true);
       setUser(sessionUser);
 
       try {
