@@ -60,7 +60,7 @@ export default function LandingPage() {
             <div className="h-9 w-9 rounded-lg bg-landing-purple flex items-center justify-center shadow-lg shadow-landing-purple/25">
               <Package className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-white">BulkDrink</span>
+            <span className="text-lg font-bold text-white">Lantid</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-landing-muted">
             <a href="#features" className="hover:text-white transition-colors duration-200">Features</a>
