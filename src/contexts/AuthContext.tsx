@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (roleData) {
       setRole(roleData.role as AppRole);
       setStoreId(roleData.store_id);
-      await checkSubscriptionStatus(roleData.store_id);
+      await checkSubscriptionStatus(roleData.store_id, profileData?.lifetime_access ?? false);
     } else {
       setRole(null);
       setStoreId(null);
