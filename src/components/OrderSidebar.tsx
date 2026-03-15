@@ -11,6 +11,8 @@ interface CartProduct {
   name: string;
   pack_size: string;
   price: number;
+  bulk_price?: number | null;
+  bulk_min_quantity?: number | null;
 }
 
 export interface CartItem {
