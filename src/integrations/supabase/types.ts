@@ -112,6 +112,8 @@ export type Database = {
       }
       products: {
         Row: {
+          bulk_min_quantity: number | null
+          bulk_price: number | null
           category: string
           cost_price: number
           created_at: string
@@ -124,6 +126,8 @@ export type Database = {
           store_id: string
         }
         Insert: {
+          bulk_min_quantity?: number | null
+          bulk_price?: number | null
           category: string
           cost_price?: number
           created_at?: string
@@ -136,6 +140,8 @@ export type Database = {
           store_id: string
         }
         Update: {
+          bulk_min_quantity?: number | null
+          bulk_price?: number | null
           category?: string
           cost_price?: number
           created_at?: string
