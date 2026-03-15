@@ -193,7 +193,7 @@ export default function SalesHistoryPage() {
     doc.setTextColor(255);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('BulkDrink', 14, 16);
+    doc.text('Lantid', 14, 16);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.text('Sales Report', 14, 24);
