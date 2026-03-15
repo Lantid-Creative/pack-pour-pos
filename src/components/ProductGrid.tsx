@@ -14,6 +14,8 @@ interface ProductRow {
   price: number;
   stock: number;
   low_stock_threshold: number;
+  bulk_price?: number | null;
+  bulk_min_quantity?: number | null;
 }
 
 export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void }) {
@@ -107,6 +109,11 @@ function ProductTile({ product, onAdd }: { product: ProductRow; onAdd: () => voi
       <span className="font-mono-numbers text-sm font-bold text-primary mt-1">
         ₦{product.price.toLocaleString()}
       </span>
+      {product.bulk_price && product.bulk_min_quantity && (
+        <span className="text-[10px] text-green-500 font-medium">
+          ₦{product.bulk_price.toLocaleString()} for {product.bulk_min_quantity}+
+        </span>
+      )}
       <span className={`text-xs mt-0.5 ${isLowStock ? 'text-warning font-medium' : 'text-muted-foreground'}`}>
         {isOutOfStock ? 'Out of stock' : `${product.stock} in stock`}
       </span>

@@ -11,6 +11,8 @@ interface CartProduct {
   name: string;
   pack_size: string;
   price: number;
+  bulk_price?: number | null;
+  bulk_min_quantity?: number | null;
 }
 
 export interface CartItem {
@@ -37,7 +39,14 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   const { user, profile, storeId } = useAuth();
   const queryClient = useQueryClient();
 
-  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const getEffectivePrice = (item: CartItem) => {
+    if (item.product.bulk_price && item.product.bulk_min_quantity && item.quantity >= item.product.bulk_min_quantity) {
+      return item.product.bulk_price;
+    }
+    return item.product.price;
+  };
+
+  const total = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
 
   const updateQty = (productId: string, qty: number) => {
     if (qty <= 0) {
@@ -51,13 +60,16 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     if (cart.length === 0 || !user || !storeId) return;
     setProcessing(true);
     try {
-      const items = cart.map((i) => ({
-        product_id: i.product.id,
-        product_name: i.product.name,
-        pack_size: i.product.pack_size,
-        quantity: i.quantity,
-        unit_price: i.product.price,
-      }));
+      const items = cart.map((i) => {
+        const effectivePrice = getEffectivePrice(i);
+        return {
+          product_id: i.product.id,
+          product_name: i.product.name,
+          pack_size: i.product.pack_size,
+          quantity: i.quantity,
+          unit_price: effectivePrice,
+        };
+      });
 
       const { data, error } = await supabase.rpc('complete_sale', {
         p_store_id: storeId,
@@ -113,13 +125,19 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             <p className="text-xs">Tap products to add</p>
           </div>
         ) : (
-          cart.map((item) => (
+          cart.map((item) => {
+            const effectivePrice = getEffectivePrice(item);
+            const isBulk = item.product.bulk_price && item.product.bulk_min_quantity && item.quantity >= item.product.bulk_min_quantity;
+            return (
             <div key={item.product.id} className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{item.product.name}</p>
                 <p className="text-xs text-muted-foreground">{item.product.pack_size}</p>
+                {isBulk && (
+                  <p className="text-[10px] font-medium text-green-500">Bulk price applied (≥{item.product.bulk_min_quantity})</p>
+                )}
                 <p className="font-mono-numbers text-sm font-semibold text-primary">
-                  ₦{(item.product.price * item.quantity).toLocaleString()}
+                  ₦{(effectivePrice * item.quantity).toLocaleString()}
                 </p>
               </div>
               <div className="flex items-center gap-1">
@@ -135,7 +153,8 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
                 </button>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 

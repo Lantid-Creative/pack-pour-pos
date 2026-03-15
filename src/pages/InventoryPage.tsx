@@ -27,6 +27,8 @@ export default function InventoryPage() {
   const [editPrice, setEditPrice] = useState('');
   const [editCostPrice, setEditCostPrice] = useState('');
   const [editLowThreshold, setEditLowThreshold] = useState('');
+  const [editBulkPrice, setEditBulkPrice] = useState('');
+  const [editBulkMinQty, setEditBulkMinQty] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Quick restock/reduce state
@@ -42,6 +44,8 @@ export default function InventoryPage() {
   const [newPrice, setNewPrice] = useState('');
   const [newCostPrice, setNewCostPrice] = useState('');
   const [newStock, setNewStock] = useState('');
+  const [newBulkPrice, setNewBulkPrice] = useState('');
+  const [newBulkMinQty, setNewBulkMinQty] = useState('');
   const [creatingProduct, setCreatingProduct] = useState(false);
 
   const { data: products = [] } = useQuery({
@@ -172,6 +176,8 @@ export default function InventoryPage() {
     setEditPrice(String(product.price));
     setEditCostPrice(String(product.cost_price));
     setEditLowThreshold(String(product.low_stock_threshold));
+    setEditBulkPrice(product.bulk_price ? String(product.bulk_price) : '');
+    setEditBulkMinQty(product.bulk_min_quantity ? String(product.bulk_min_quantity) : '');
   };
 
   const handleSaveEdit = async () => {
@@ -184,7 +190,9 @@ export default function InventoryPage() {
       price: parseFloat(editPrice) || 0,
       cost_price: parseFloat(editCostPrice) || 0,
       low_stock_threshold: parseInt(editLowThreshold) || 10,
-    }).eq('id', editingProduct.id);
+      bulk_price: editBulkPrice ? parseFloat(editBulkPrice) : null,
+      bulk_min_quantity: editBulkMinQty ? parseInt(editBulkMinQty) : null,
+    } as any).eq('id', editingProduct.id);
 
     if (error) {
       toast.error(error.message);
@@ -551,6 +559,21 @@ export default function InventoryPage() {
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground mb-2">Bulk Pricing (optional) — set a discounted price when buying in quantity</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Min Qty for Bulk</label>
+                  <input type="number" min="2" value={newBulkMinQty} onChange={(e) => setNewBulkMinQty(e.target.value)} placeholder="e.g. 5"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Bulk Price (₦)</label>
+                  <input type="number" value={newBulkPrice} onChange={(e) => setNewBulkPrice(e.target.value)} placeholder="e.g. 800"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+            </div>
             <button
               onClick={async () => {
                 if (!newName.trim() || !newPackSize.trim() || !storeId) {
@@ -567,12 +590,14 @@ export default function InventoryPage() {
                   cost_price: parseFloat(newCostPrice) || 0,
                   stock: parseInt(newStock) || 0,
                   low_stock_threshold: 10,
+                  bulk_price: newBulkPrice ? parseFloat(newBulkPrice) : null,
+                  bulk_min_quantity: newBulkMinQty ? parseInt(newBulkMinQty) : null,
                 } as any);
                 if (error) {
                   toast.error(error.message);
                 } else {
                   toast.success(`${newName.trim()} added to inventory!`);
-                  setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock('');
+                  setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock(''); setNewBulkPrice(''); setNewBulkMinQty('');
                   setShowCreateProduct(false);
                   queryClient.invalidateQueries({ queryKey: ['products'] });
                 }
@@ -630,6 +655,21 @@ export default function InventoryPage() {
                 <label className="text-sm font-medium text-foreground mb-1 block">Low Stock Alert</label>
                 <input type="number" value={editLowThreshold} onChange={(e) => setEditLowThreshold(e.target.value)}
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground mb-2">Bulk Pricing (optional) — discounted price for larger quantities</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Min Qty for Bulk</label>
+                  <input type="number" min="2" value={editBulkMinQty} onChange={(e) => setEditBulkMinQty(e.target.value)} placeholder="e.g. 5"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Bulk Price (₦)</label>
+                  <input type="number" value={editBulkPrice} onChange={(e) => setEditBulkPrice(e.target.value)} placeholder="e.g. 800"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
               </div>
             </div>
             <div className="flex gap-2">
