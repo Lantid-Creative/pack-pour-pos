@@ -78,32 +78,57 @@ serve(async (req) => {
       }
     }
 
-    // Create the user account
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: 'TempPass123!', // Temporary password, user should change
-      email_confirm: true,
-      user_metadata: { full_name }
-    });
+    // Check if user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find((u: any) => u.email === email.toLowerCase());
 
-    if (createError) {
-      return new Response(JSON.stringify({ error: createError.message }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    let userId: string;
+
+    if (existingUser) {
+      userId = existingUser.id;
+
+      // Check if they already have a role in this store
+      const { data: existingRole } = await supabaseAdmin
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('store_id', store_id)
+        .maybeSingle();
+
+      if (existingRole) {
+        return new Response(JSON.stringify({ error: 'This user is already a staff member in your store' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    } else {
+      // Create the user account
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: 'TempPass123!',
+        email_confirm: true,
+        user_metadata: { full_name }
       });
+
+      if (createError) {
+        return new Response(JSON.stringify({ error: createError.message }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      userId = newUser.user.id;
     }
 
-    // Upsert profile (trigger may or may not have created it)
+    // Upsert profile
     await supabaseAdmin
       .from('profiles')
       .upsert(
-        { user_id: newUser.user.id, full_name, store_id },
+        { user_id: userId, full_name, store_id },
         { onConflict: 'user_id' }
       );
 
     // Assign role
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
-      .insert({ user_id: newUser.user.id, store_id, role });
+      .insert({ user_id: userId, store_id, role });
 
     if (roleError) {
       return new Response(JSON.stringify({ error: roleError.message }), {
@@ -113,8 +138,10 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      user: { id: newUser.user.id, email, full_name, role },
-      message: `Staff account created. Temporary password: TempPass123!`
+      user: { id: userId, email, full_name, role },
+      message: existingUser 
+        ? `Existing user added as ${role}. They can log in with their current password.`
+        : `Staff account created. Temporary password: TempPass123!`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

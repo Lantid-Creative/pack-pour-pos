@@ -77,7 +77,7 @@ export default function StaffPage() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Staff created! Temporary password: TempPass123!`);
+      toast.success(data?.message || 'Staff created!');
       setShowAdd(false);
       setEmail('');
       setFullName('');
