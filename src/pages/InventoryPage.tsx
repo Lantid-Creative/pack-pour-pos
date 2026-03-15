@@ -559,6 +559,21 @@ export default function InventoryPage() {
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground mb-2">Bulk Pricing (optional) — set a discounted price when buying in quantity</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Min Qty for Bulk</label>
+                  <input type="number" min="2" value={newBulkMinQty} onChange={(e) => setNewBulkMinQty(e.target.value)} placeholder="e.g. 5"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Bulk Price (₦)</label>
+                  <input type="number" value={newBulkPrice} onChange={(e) => setNewBulkPrice(e.target.value)} placeholder="e.g. 800"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+            </div>
             <button
               onClick={async () => {
                 if (!newName.trim() || !newPackSize.trim() || !storeId) {
