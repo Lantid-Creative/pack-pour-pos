@@ -69,7 +69,8 @@ export default function StaffPage() {
     enabled: !!storeId,
   });
 
-  const isStarterPlan = !profile?.lifetime_access && (!subscription || subscription.plan === 'starter');
+  // During trial (no subscription), allow staff creation. Only block on active starter plan.
+  const isStarterPlan = !profile?.lifetime_access && subscription?.plan === 'starter';
 
   const handleAddStaff = async () => {
     if (!email || !fullName || !storeId) return;

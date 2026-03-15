@@ -20,9 +20,11 @@ export default function POSPage() {
     }
   }, []);
 
-  document.onfullscreenchange = () => {
-    setIsFullscreen(!!document.fullscreenElement);
-  };
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
 
   const addToCart = (product: { id: string; name: string; pack_size: string; price: number }) => {
     setCart((prev) => {
