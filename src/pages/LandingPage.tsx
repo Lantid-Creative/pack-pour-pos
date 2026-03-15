@@ -427,7 +427,7 @@ export default function LandingPage() {
             Ready to Grow Your <span className="text-landing-purple-light">Drink Business?</span>
           </motion.h2>
           <motion.p variants={fadeUp} custom={1} className="mt-4 text-lg text-landing-muted">
-            Join hundreds of Nigerian wholesale stores already using BulkDrink POS.
+            Join hundreds of Nigerian wholesale stores already using Lantid POS.
           </motion.p>
           <motion.div variants={fadeUp} custom={2} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={() => navigate('/login')} className="group px-10 py-4 rounded-xl bg-landing-purple text-white font-bold text-lg hover:bg-landing-purple-hover active:scale-[0.97] transition-all shadow-xl shadow-landing-purple/30 flex items-center gap-2">
