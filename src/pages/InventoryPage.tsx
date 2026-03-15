@@ -153,6 +153,7 @@ export default function InventoryPage() {
     setQuickRestockQty('');
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['inflows'] });
+    queryClient.invalidateQueries({ queryKey: ['outflows'] });
   };
 
   const openEditDialog = (product: any) => {
