@@ -58,7 +58,7 @@ export default function AuthPage() {
               <Package className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">BulkDrink POS</h1>
+              <h1 className="text-2xl font-bold text-white">Lantid POS</h1>
               <p className="text-sm text-landing-muted">Wholesale Drinks Management</p>
             </div>
           </div>
