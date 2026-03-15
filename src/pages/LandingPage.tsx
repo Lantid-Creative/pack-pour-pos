@@ -142,7 +142,7 @@ export default function LandingPage() {
               {/* Screenshot */}
               <img
                 src={heroDashboard}
-                alt="BulkDrink POS Dashboard showing sales analytics, inventory management and real-time metrics"
+                alt="Lantid POS Dashboard showing sales analytics, inventory management and real-time metrics"
                 className="w-full"
                 loading="eager"
               />
