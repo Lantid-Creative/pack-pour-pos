@@ -29,7 +29,7 @@ export default function PaywallPage() {
           {isOwner ? (
             <>
               <p className="text-sm text-landing-muted text-center">
-                Choose a plan to continue using BulkDrink POS for your store and staff.
+                Choose a plan to continue using Lantid POS for your store and staff.
               </p>
               <button
                 onClick={() => navigate('/subscription')}
