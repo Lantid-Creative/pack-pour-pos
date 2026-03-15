@@ -433,6 +433,13 @@ export default function LandingPage() {
             <button onClick={() => navigate('/login')} className="group px-10 py-4 rounded-xl bg-landing-purple text-white font-bold text-lg hover:bg-landing-purple-hover active:scale-[0.97] transition-all shadow-xl shadow-landing-purple/30 flex items-center gap-2">
               Start Your Free Trial <ArrowRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
             </button>
+            <button
+              onClick={handleTryDemo}
+              disabled={demoLoading}
+              className="group px-8 py-3.5 rounded-xl border border-landing-purple/40 bg-landing-purple/10 text-landing-purple-light font-semibold text-base hover:bg-landing-purple/20 hover:border-landing-purple/60 active:scale-[0.97] transition-all flex items-center gap-2 disabled:opacity-50"
+            >
+              <Eye className="h-4 w-4" /> {demoLoading ? 'Loading...' : 'Try Live Demo'}
+            </button>
           </motion.div>
           <motion.p variants={fadeUp} custom={3} className="mt-4 text-xs text-landing-muted/70">
             No credit card required · Cancel anytime
