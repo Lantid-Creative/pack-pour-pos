@@ -3,6 +3,7 @@ import { AppSidebarNav } from '@/components/AppSidebarNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
+import { PageTransition } from '@/components/PageTransition';
 import { AlertTriangle, X, LayoutDashboard, ShoppingCart, Package, History, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -27,11 +28,8 @@ export default function AppLayout() {
     : null;
 
   const showBanner = isTrialing && daysLeft !== null && daysLeft <= 3 && !dismissed;
-
-  // On POS page mobile, hide the bottom nav (POS has its own tab bar)
   const isPOSPage = location.pathname === '/pos';
   const showMobileNav = isMobile && !isPOSPage;
-
   const visibleMobileItems = mobileNavItems.filter(item => hasPermission(item.permission));
 
   return (
@@ -62,7 +60,9 @@ export default function AppLayout() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Outlet />
+          <PageTransition key={location.pathname}>
+            <Outlet />
+          </PageTransition>
         </div>
         {/* Mobile bottom navigation */}
         {showMobileNav && (
