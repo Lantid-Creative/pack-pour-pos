@@ -8,6 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductLibraryDialog from '@/components/ProductLibraryDialog';
 import { toast } from 'sonner';
 
+interface PriceTier {
+  id?: string;
+  min_quantity: number;
+  max_quantity: number | null;
+  price: number;
+}
+
 export default function InventoryPage() {
   const { storeId, user, profile } = useAuth();
   const queryClient = useQueryClient();
@@ -27,8 +34,7 @@ export default function InventoryPage() {
   const [editPrice, setEditPrice] = useState('');
   const [editCostPrice, setEditCostPrice] = useState('');
   const [editLowThreshold, setEditLowThreshold] = useState('');
-  const [editBulkPrice, setEditBulkPrice] = useState('');
-  const [editBulkMinQty, setEditBulkMinQty] = useState('');
+  const [editTiers, setEditTiers] = useState<PriceTier[]>([]);
   const [saving, setSaving] = useState(false);
 
   // Quick restock/reduce state
@@ -44,8 +50,7 @@ export default function InventoryPage() {
   const [newPrice, setNewPrice] = useState('');
   const [newCostPrice, setNewCostPrice] = useState('');
   const [newStock, setNewStock] = useState('');
-  const [newBulkPrice, setNewBulkPrice] = useState('');
-  const [newBulkMinQty, setNewBulkMinQty] = useState('');
+  const [newTiers, setNewTiers] = useState<PriceTier[]>([]);
   const [creatingProduct, setCreatingProduct] = useState(false);
 
   const { data: products = [] } = useQuery({
@@ -55,6 +60,17 @@ export default function InventoryPage() {
       const { data, error } = await supabase.from('products').select('*').eq('store_id', storeId).order('name');
       if (error) throw error;
       return data;
+    },
+    enabled: !!storeId,
+  });
+
+  const { data: allTiers = [] } = useQuery({
+    queryKey: ['product_price_tiers', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('product_price_tiers' as any).select('*').eq('store_id', storeId).order('min_quantity');
+      if (error) throw error;
+      return data as any[];
     },
     enabled: !!storeId,
   });
@@ -176,13 +192,21 @@ export default function InventoryPage() {
     setEditPrice(String(product.price));
     setEditCostPrice(String(product.cost_price));
     setEditLowThreshold(String(product.low_stock_threshold));
-    setEditBulkPrice(product.bulk_price ? String(product.bulk_price) : '');
-    setEditBulkMinQty(product.bulk_min_quantity ? String(product.bulk_min_quantity) : '');
+    // Load existing tiers for this product
+    const productTiers = allTiers.filter((t: any) => t.product_id === product.id).map((t: any) => ({
+      id: t.id,
+      min_quantity: t.min_quantity,
+      max_quantity: t.max_quantity,
+      price: t.price,
+    }));
+    setEditTiers(productTiers);
   };
 
   const handleSaveEdit = async () => {
-    if (!editingProduct) return;
+    if (!editingProduct || !storeId) return;
     setSaving(true);
+    
+    // Update product (remove old bulk fields usage)
     const { error } = await supabase.from('products').update({
       name: editName.trim(),
       category: editCategory,
@@ -190,17 +214,33 @@ export default function InventoryPage() {
       price: parseFloat(editPrice) || 0,
       cost_price: parseFloat(editCostPrice) || 0,
       low_stock_threshold: parseInt(editLowThreshold) || 10,
-      bulk_price: editBulkPrice ? parseFloat(editBulkPrice) : null,
-      bulk_min_quantity: editBulkMinQty ? parseInt(editBulkMinQty) : null,
+      bulk_price: null,
+      bulk_min_quantity: null,
     } as any).eq('id', editingProduct.id);
 
     if (error) {
       toast.error(error.message);
-    } else {
-      toast.success(`${editName.trim()} updated!`);
-      setEditingProduct(null);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setSaving(false);
+      return;
     }
+
+    // Sync tiers: delete all existing, then insert new
+    await supabase.from('product_price_tiers' as any).delete().eq('product_id', editingProduct.id);
+    if (editTiers.length > 0) {
+      const tierInserts = editTiers.map(t => ({
+        product_id: editingProduct.id,
+        store_id: storeId,
+        min_quantity: t.min_quantity,
+        max_quantity: t.max_quantity || null,
+        price: t.price,
+      }));
+      await supabase.from('product_price_tiers' as any).insert(tierInserts);
+    }
+
+    toast.success(`${editName.trim()} updated!`);
+    setEditingProduct(null);
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['product_price_tiers'] });
     setSaving(false);
   };
 
@@ -216,12 +256,15 @@ export default function InventoryPage() {
       toast.success('Product deleted');
       if (editingProduct?.id === target.id) setEditingProduct(null);
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product_price_tiers'] });
     }
   };
 
   const filteredProducts = products.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase()));
 
-  const categories = ['Soft Drink', 'Beer', 'Stout', 'Malt', 'Energy', 'Water', 'Juice', 'Spirit', 'Other'];
+  const categories = ['Soft Drink', 'Beer', 'Stout', 'Malt', 'Energy', 'Water', 'Juice', 'Spirit', 'Wine', 'Other'];
+
+  const getProductTiers = (productId: string) => allTiers.filter((t: any) => t.product_id === productId);
 
   return (
     <div className="p-4 md:p-6 space-y-5 overflow-y-auto h-full">
@@ -255,6 +298,7 @@ export default function InventoryPage() {
           const sellPrice = Number(product.price);
           const margin = sellPrice > 0 && costPrice > 0 ? ((sellPrice - costPrice) / sellPrice * 100) : 0;
           const isQuickRestock = quickRestockId === product.id;
+          const tiers = getProductTiers(product.id);
 
           return (
             <div key={product.id} className="bg-card border border-border rounded-lg p-3 space-y-2">
@@ -281,6 +325,15 @@ export default function InventoryPage() {
                 </div>
                 <span className="font-mono-numbers font-bold">{product.stock}</span>
               </div>
+              {tiers.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {tiers.map((t: any) => (
+                    <span key={t.id} className="text-[10px] bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded">
+                      ₦{Number(t.price).toLocaleString()} for {t.min_quantity}{t.max_quantity ? `-${t.max_quantity}` : '+'}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center gap-2 pt-1">
                 {isQuickRestock ? (
                   <div className="flex flex-col gap-1.5 flex-1">
@@ -348,10 +401,24 @@ export default function InventoryPage() {
               const sellPrice = Number(product.price);
               const margin = sellPrice > 0 && costPrice > 0 ? ((sellPrice - costPrice) / sellPrice * 100) : 0;
               const isQuickRestock = quickRestockId === product.id;
+              const tiers = getProductTiers(product.id);
 
               return (
                 <tr key={product.id} className="border-b border-border/50 hover:bg-muted/20">
-                  <td className="py-3 px-4 font-medium">{product.name}</td>
+                  <td className="py-3 px-4">
+                    <div>
+                      <span className="font-medium">{product.name}</span>
+                      {tiers.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {tiers.map((t: any) => (
+                            <span key={t.id} className="text-[10px] bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded">
+                              ₦{Number(t.price).toLocaleString()} for {t.min_quantity}{t.max_quantity ? `-${t.max_quantity}` : '+'}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-3 px-4 text-muted-foreground">{product.category}</td>
                   <td className="py-3 px-4 text-muted-foreground">{product.pack_size}</td>
                   <td className="py-3 px-4 text-right font-mono-numbers">₦{costPrice.toLocaleString()}</td>
@@ -513,7 +580,7 @@ export default function InventoryPage() {
 
       {/* Create Product Dialog */}
       <Dialog open={showCreateProduct} onOpenChange={setShowCreateProduct}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PlusCircle className="h-5 w-5" /> Create New Product
@@ -559,21 +626,7 @@ export default function InventoryPage() {
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
-            <div className="border-t border-border pt-3">
-              <p className="text-xs text-muted-foreground mb-2">Bulk Pricing (optional) — set a discounted price when buying in quantity</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Min Qty for Bulk</label>
-                  <input type="number" min="2" value={newBulkMinQty} onChange={(e) => setNewBulkMinQty(e.target.value)} placeholder="e.g. 5"
-                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Bulk Price (₦)</label>
-                  <input type="number" value={newBulkPrice} onChange={(e) => setNewBulkPrice(e.target.value)} placeholder="e.g. 800"
-                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-              </div>
-            </div>
+            <PriceTiersEditor tiers={newTiers} onChange={setNewTiers} />
             <button
               onClick={async () => {
                 if (!newName.trim() || !newPackSize.trim() || !storeId) {
@@ -581,7 +634,7 @@ export default function InventoryPage() {
                   return;
                 }
                 setCreatingProduct(true);
-                const { error } = await supabase.from('products').insert({
+                const { data, error } = await supabase.from('products').insert({
                   store_id: storeId,
                   name: newName.trim(),
                   category: newCategory,
@@ -590,17 +643,29 @@ export default function InventoryPage() {
                   cost_price: parseFloat(newCostPrice) || 0,
                   stock: parseInt(newStock) || 0,
                   low_stock_threshold: 10,
-                  bulk_price: newBulkPrice ? parseFloat(newBulkPrice) : null,
-                  bulk_min_quantity: newBulkMinQty ? parseInt(newBulkMinQty) : null,
-                } as any);
+                } as any).select('id').single();
                 if (error) {
                   toast.error(error.message);
-                } else {
-                  toast.success(`${newName.trim()} added to inventory!`);
-                  setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock(''); setNewBulkPrice(''); setNewBulkMinQty('');
-                  setShowCreateProduct(false);
-                  queryClient.invalidateQueries({ queryKey: ['products'] });
+                  setCreatingProduct(false);
+                  return;
                 }
+                // Insert tiers if any
+                if (newTiers.length > 0 && data) {
+                  await supabase.from('product_price_tiers' as any).insert(
+                    newTiers.map(t => ({
+                      product_id: data.id,
+                      store_id: storeId,
+                      min_quantity: t.min_quantity,
+                      max_quantity: t.max_quantity || null,
+                      price: t.price,
+                    }))
+                  );
+                }
+                toast.success(`${newName.trim()} added to inventory!`);
+                setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock(''); setNewTiers([]);
+                setShowCreateProduct(false);
+                queryClient.invalidateQueries({ queryKey: ['products'] });
+                queryClient.invalidateQueries({ queryKey: ['product_price_tiers'] });
                 setCreatingProduct(false);
               }}
               disabled={creatingProduct || !newName.trim() || !newPackSize.trim()}
@@ -614,7 +679,7 @@ export default function InventoryPage() {
 
       {/* Edit Product Dialog */}
       <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Pencil className="h-5 w-5" /> Edit Product
@@ -657,27 +722,13 @@ export default function InventoryPage() {
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
-            <div className="border-t border-border pt-3">
-              <p className="text-xs text-muted-foreground mb-2">Bulk Pricing (optional) — discounted price for larger quantities</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Min Qty for Bulk</label>
-                  <input type="number" min="2" value={editBulkMinQty} onChange={(e) => setEditBulkMinQty(e.target.value)} placeholder="e.g. 5"
-                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Bulk Price (₦)</label>
-                  <input type="number" value={editBulkPrice} onChange={(e) => setEditBulkPrice(e.target.value)} placeholder="e.g. 800"
-                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-              </div>
-            </div>
+            <PriceTiersEditor tiers={editTiers} onChange={setEditTiers} />
             <div className="flex gap-2">
               <button onClick={handleSaveEdit} disabled={saving || !editName.trim() || !editPackSize.trim()}
                 className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
-              <button onClick={handleDeleteProduct}
+              <button onClick={() => handleDeleteProduct()}
                 className="px-4 py-2.5 rounded-lg bg-destructive/10 text-destructive font-semibold text-sm hover:bg-destructive/20 active:scale-[0.98] transition-all">
                 Delete
               </button>
@@ -695,6 +746,87 @@ export default function InventoryPage() {
           onProductsAdded={() => queryClient.invalidateQueries({ queryKey: ['products'] })}
         />
       )}
+    </div>
+  );
+}
+
+// Reusable Price Tiers Editor component
+function PriceTiersEditor({ tiers, onChange }: { tiers: PriceTier[]; onChange: (tiers: PriceTier[]) => void }) {
+  const addTier = () => {
+    onChange([...tiers, { min_quantity: 1, max_quantity: null, price: 0 }]);
+  };
+
+  const removeTier = (index: number) => {
+    onChange(tiers.filter((_, i) => i !== index));
+  };
+
+  const updateTier = (index: number, field: keyof PriceTier, value: any) => {
+    const updated = [...tiers];
+    updated[index] = { ...updated[index], [field]: value };
+    onChange(updated);
+  };
+
+  return (
+    <div className="border-t border-border pt-3">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-muted-foreground">Price Tiers (optional) — set different prices for quantity ranges</p>
+        <button
+          type="button"
+          onClick={addTier}
+          className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+        >
+          <Plus className="h-3 w-3" /> Add Tier
+        </button>
+      </div>
+      {tiers.length === 0 && (
+        <p className="text-xs text-muted-foreground/60 italic">No price tiers. Default sell price will be used for all quantities.</p>
+      )}
+      <div className="space-y-2">
+        {tiers.map((tier, i) => (
+          <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-muted/30">
+            <div className="flex-1 grid grid-cols-3 gap-2">
+              <div>
+                <label className="text-[10px] text-muted-foreground block">From Qty</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={tier.min_quantity || ''}
+                  onChange={(e) => updateTier(i, 'min_quantity', parseInt(e.target.value) || 0)}
+                  className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground block">To Qty <span className="text-muted-foreground/50">(empty = ∞)</span></label>
+                <input
+                  type="number"
+                  min={tier.min_quantity || 1}
+                  value={tier.max_quantity ?? ''}
+                  onChange={(e) => updateTier(i, 'max_quantity', e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="∞"
+                  className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground block">Price (₦)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={tier.price || ''}
+                  onChange={(e) => updateTier(i, 'price', parseFloat(e.target.value) || 0)}
+                  className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeTier(i)}
+              className="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

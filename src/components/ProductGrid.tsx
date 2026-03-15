@@ -14,8 +14,6 @@ interface ProductRow {
   price: number;
   stock: number;
   low_stock_threshold: number;
-  bulk_price?: number | null;
-  bulk_min_quantity?: number | null;
 }
 
 export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void }) {
@@ -39,11 +37,24 @@ export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void })
     enabled: !!storeId,
   });
 
+  const { data: allTiers = [] } = useQuery({
+    queryKey: ['product_price_tiers', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('product_price_tiers' as any).select('*').eq('store_id', storeId).order('min_quantity');
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
   const filtered = products.filter((p) => {
     const matchCat = activeCategory === 'All' || p.category === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
+
+  const getProductTiers = (productId: string) => allTiers.filter((t: any) => t.product_id === productId);
 
   return (
     <div className="flex flex-col h-full">
@@ -74,7 +85,7 @@ export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void })
       <div className="flex-1 overflow-y-auto p-3">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
           {filtered.map((product) => (
-            <ProductTile key={product.id} product={product} onAdd={() => onAdd(product)} />
+            <ProductTile key={product.id} product={product} tiers={getProductTiers(product.id)} onAdd={() => onAdd(product)} />
           ))}
         </div>
       </div>
@@ -82,7 +93,7 @@ export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void })
   );
 }
 
-function ProductTile({ product, onAdd }: { product: ProductRow; onAdd: () => void }) {
+function ProductTile({ product, tiers, onAdd }: { product: ProductRow; tiers: any[]; onAdd: () => void }) {
   const isLowStock = product.stock <= product.low_stock_threshold;
   const isOutOfStock = product.stock <= 0;
 
@@ -109,10 +120,17 @@ function ProductTile({ product, onAdd }: { product: ProductRow; onAdd: () => voi
       <span className="font-mono-numbers text-sm font-bold text-primary mt-1">
         ₦{product.price.toLocaleString()}
       </span>
-      {product.bulk_price && product.bulk_min_quantity && (
-        <span className="text-[10px] text-green-500 font-medium">
-          ₦{product.bulk_price.toLocaleString()} for {product.bulk_min_quantity}+
-        </span>
+      {tiers.length > 0 && (
+        <div className="flex flex-col items-center gap-0.5 mt-0.5">
+          {tiers.slice(0, 2).map((t: any) => (
+            <span key={t.id} className="text-[10px] text-green-500 font-medium">
+              ₦{Number(t.price).toLocaleString()} for {t.min_quantity}{t.max_quantity ? `-${t.max_quantity}` : '+'}
+            </span>
+          ))}
+          {tiers.length > 2 && (
+            <span className="text-[10px] text-muted-foreground">+{tiers.length - 2} more tiers</span>
+          )}
+        </div>
       )}
       <span className={`text-xs mt-0.5 ${isLowStock ? 'text-warning font-medium' : 'text-muted-foreground'}`}>
         {isOutOfStock ? 'Out of stock' : `${product.stock} in stock`}
