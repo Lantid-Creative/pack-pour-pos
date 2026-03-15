@@ -50,7 +50,7 @@ export default function StaffPage() {
     enabled: !!storeId,
   });
 
-  const isStarterPlan = !subscription || subscription.plan === 'starter';
+  const isStarterPlan = !profile?.lifetime_access && (!subscription || subscription.plan === 'starter');
   const nonOwnerStaffCount = staff.filter((s: any) => s.role !== 'owner').length;
 
   const handleAddStaff = async () => {
