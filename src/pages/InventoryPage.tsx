@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Package, Plus, History, AlertTriangle, Library, PlusCircle, Pencil, X, Check, Minus } from 'lucide-react';
+import { Package, Plus, History, AlertTriangle, Library, PlusCircle, Pencil, X, Check, Minus, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductLibraryDialog from '@/components/ProductLibraryDialog';
@@ -196,16 +196,17 @@ export default function InventoryPage() {
     setSaving(false);
   };
 
-  const handleDeleteProduct = async () => {
-    if (!editingProduct) return;
-    const confirmed = window.confirm(`Delete "${editingProduct.name}"? This cannot be undone.`);
+  const handleDeleteProduct = async (product?: any) => {
+    const target = product || editingProduct;
+    if (!target) return;
+    const confirmed = window.confirm(`Delete "${target.name}"? This cannot be undone.`);
     if (!confirmed) return;
-    const { error } = await supabase.from('products').delete().eq('id', editingProduct.id);
+    const { error } = await supabase.from('products').delete().eq('id', target.id);
     if (error) {
       toast.error(error.message);
     } else {
       toast.success('Product deleted');
-      setEditingProduct(null);
+      if (editingProduct?.id === target.id) setEditingProduct(null);
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
   };
@@ -302,6 +303,10 @@ export default function InventoryPage() {
                     <button onClick={() => openEditDialog(product)}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-medium hover:text-foreground transition-colors">
                       <Pencil className="h-3 w-3" /> Edit
+                    </button>
+                    <button onClick={() => handleDeleteProduct(product)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-destructive/10 text-destructive text-xs font-medium hover:bg-destructive/20 transition-colors">
+                      <Trash2 className="h-3 w-3" /> Delete
                     </button>
                   </>
                 )}
@@ -404,6 +409,13 @@ export default function InventoryPage() {
                         className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(product)}
+                        title="Delete product"
+                        className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
