@@ -383,14 +383,14 @@ export default function InventoryPage() {
                       {!isQuickRestock && (
                         <>
                           <button
-                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('+'); }}
+                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('+'); }}
                             title="Add stock"
                             className="p-1.5 rounded-md hover:bg-primary/10 text-primary transition-colors"
                           >
                             <Plus className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickMode('-'); }}
+                            onClick={() => { setQuickRestockId(product.id); setQuickRestockQty(''); setQuickReason(''); setQuickMode('-'); }}
                             title="Remove stock"
                             className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
                           >
