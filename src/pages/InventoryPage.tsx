@@ -176,6 +176,8 @@ export default function InventoryPage() {
     setEditPrice(String(product.price));
     setEditCostPrice(String(product.cost_price));
     setEditLowThreshold(String(product.low_stock_threshold));
+    setEditBulkPrice(product.bulk_price ? String(product.bulk_price) : '');
+    setEditBulkMinQty(product.bulk_min_quantity ? String(product.bulk_min_quantity) : '');
   };
 
   const handleSaveEdit = async () => {
