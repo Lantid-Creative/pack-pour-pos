@@ -657,6 +657,21 @@ export default function InventoryPage() {
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground mb-2">Bulk Pricing (optional) — discounted price for larger quantities</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Min Qty for Bulk</label>
+                  <input type="number" min="2" value={editBulkMinQty} onChange={(e) => setEditBulkMinQty(e.target.value)} placeholder="e.g. 5"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Bulk Price (₦)</label>
+                  <input type="number" value={editBulkPrice} onChange={(e) => setEditBulkPrice(e.target.value)} placeholder="e.g. 800"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+            </div>
             <div className="flex gap-2">
               <button onClick={handleSaveEdit} disabled={saving || !editName.trim() || !editPackSize.trim()}
                 className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
