@@ -16,6 +16,7 @@ export default function InventoryPage() {
   const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [restockReason, setRestockReason] = useState('');
   const [search, setSearch] = useState('');
 
   // Edit product state
