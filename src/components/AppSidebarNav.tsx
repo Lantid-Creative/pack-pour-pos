@@ -52,7 +52,7 @@ export function AppSidebarNav() {
             <div className="h-7 w-7 rounded-md bg-sidebar-primary flex items-center justify-center">
               <Package className="h-4 w-4 text-sidebar-primary-foreground" />
             </div>
-            <span className="font-bold text-sm">BulkDrink</span>
+            <span className="font-bold text-sm">Lantid</span>
           </div>
         )}
         <button onClick={() => setCollapsed(!collapsed)} className="ml-auto h-7 w-7 rounded flex items-center justify-center hover:bg-sidebar-accent transition-colors">

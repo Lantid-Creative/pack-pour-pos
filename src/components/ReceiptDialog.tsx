@@ -39,7 +39,7 @@ export function ReceiptDialog({ sale, open, onClose }: Props) {
     enabled: !!storeId,
   });
 
-  const storeName = store?.name || 'BULKDRINK STORE';
+  const storeName = store?.name || 'LANTID STORE';
   const printerType: PrinterType = (store as any)?.printer_type || '80mm';
   const header = (store as any)?.receipt_header || '';
   const footer = (store as any)?.receipt_footer || 'Thank you for your patronage!';

@@ -41,7 +41,7 @@ export default function PaywallPage() {
             </>
           ) : (
             <p className="text-sm text-landing-muted text-center">
-              Your store owner needs to subscribe to a plan before you can continue using BulkDrink POS. Please contact your store owner.
+              Your store owner needs to subscribe to a plan before you can continue using Lantid POS. Please contact your store owner.
             </p>
           )}
 
