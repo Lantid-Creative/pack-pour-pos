@@ -175,7 +175,7 @@ export default function StaffPage() {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{(s.profiles as any)?.full_name || 'Unknown'}</span>
+                      <span className="font-medium">{s.full_name}</span>
                     </div>
                   </td>
                   <td className="py-3 px-4">
