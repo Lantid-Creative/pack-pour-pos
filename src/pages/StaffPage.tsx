@@ -201,52 +201,73 @@ export default function StaffPage() {
           ) : staff.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">No staff members yet.</div>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Name</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Role</th>
-                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              {/* Mobile card view */}
+              <div className="block md:hidden divide-y divide-border">
                 {staff.map((s: any) => (
-                  <tr key={s.id} className="border-b border-border/50 hover:bg-muted/20">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{s.full_name}</span>
+                  <div key={s.id} className="p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{s.full_name}</p>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${getRoleBadgeClass(s.role)}`}>
+                          {s.role}
+                        </span>
                       </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${getRoleBadgeClass(s.role)}`}>
-                        {s.role}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {s.role !== 'owner' && (
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEditDialog(s)}
-                            title="Edit staff"
-                            className="h-8 w-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleRemoveStaff(s)}
-                            title="Remove staff"
-                            className="h-8 w-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
+                    </div>
+                    {s.role !== 'owner' && (
+                      <div className="flex items-center gap-1 ml-2">
+                        <button onClick={() => openEditDialog(s)} className="h-8 w-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleRemoveStaff(s)} className="h-8 w-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              {/* Desktop table view */}
+              <table className="w-full text-sm hidden md:table">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Name</th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Role</th>
+                    <th className="text-right py-3 px-4 text-muted-foreground font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {staff.map((s: any) => (
+                    <tr key={s.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{s.full_name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${getRoleBadgeClass(s.role)}`}>
+                          {s.role}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        {s.role !== 'owner' && (
+                          <div className="flex items-center justify-end gap-1">
+                            <button onClick={() => openEditDialog(s)} title="Edit staff" className="h-8 w-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => handleRemoveStaff(s)} title="Remove staff" className="h-8 w-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       )}
