@@ -126,21 +126,27 @@ export default function InventoryPage() {
         return;
       }
     } else {
-      // Reduce stock directly
+      // Reduce stock with history tracking
       const product = products.find((p: any) => p.id === productId);
       if (product && qty > product.stock) {
         toast.error(`Can't remove ${qty} — only ${product.stock} in stock`);
         return;
       }
-      const { error } = await supabase
-        .from('products')
-        .update({ stock: (product?.stock || 0) - qty })
-        .eq('id', productId);
-      if (error) {
-        toast.error(error.message);
+      try {
+        const { error } = await supabase.rpc('reduce_inventory' as any, {
+          p_store_id: storeId,
+          p_product_id: productId,
+          p_quantity: qty,
+          p_removed_by: user.id,
+          p_removed_by_name: profile?.full_name || '',
+          p_reason: 'manual',
+        });
+        if (error) throw error;
+        toast.success(`-${qty} stock removed`);
+      } catch (err: any) {
+        toast.error(err.message);
         return;
       }
-      toast.success(`-${qty} stock removed`);
     }
 
     setQuickRestockId(null);
