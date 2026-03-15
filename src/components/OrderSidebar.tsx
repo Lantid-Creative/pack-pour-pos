@@ -39,7 +39,14 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   const { user, profile, storeId } = useAuth();
   const queryClient = useQueryClient();
 
-  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const getEffectivePrice = (item: CartItem) => {
+    if (item.product.bulk_price && item.product.bulk_min_quantity && item.quantity >= item.product.bulk_min_quantity) {
+      return item.product.bulk_price;
+    }
+    return item.product.price;
+  };
+
+  const total = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
 
   const updateQty = (productId: string, qty: number) => {
     if (qty <= 0) {
