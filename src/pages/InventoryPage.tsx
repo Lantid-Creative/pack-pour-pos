@@ -115,6 +115,7 @@ export default function InventoryPage() {
   const handleQuickStockChange = async (productId: string) => {
     const qty = parseInt(quickRestockQty);
     if (!qty || qty <= 0 || !user || !storeId) return;
+    if (!quickReason.trim()) { toast.error('Please enter a reason'); return; }
 
     if (quickMode === '+') {
       try {
@@ -124,7 +125,8 @@ export default function InventoryPage() {
           p_quantity: qty,
           p_added_by: user.id,
           p_added_by_name: profile?.full_name || '',
-        });
+          p_reason: quickReason.trim(),
+        } as any);
         if (error) throw error;
         toast.success(`+${qty} stock added`);
       } catch (err: any) {
@@ -132,7 +134,6 @@ export default function InventoryPage() {
         return;
       }
     } else {
-      // Reduce stock with history tracking
       const product = products.find((p: any) => p.id === productId);
       if (product && qty > product.stock) {
         toast.error(`Can't remove ${qty} — only ${product.stock} in stock`);
@@ -145,7 +146,7 @@ export default function InventoryPage() {
           p_quantity: qty,
           p_removed_by: user.id,
           p_removed_by_name: profile?.full_name || '',
-          p_reason: 'manual',
+          p_reason: quickReason.trim(),
         });
         if (error) throw error;
         toast.success(`-${qty} stock removed`);
@@ -157,6 +158,7 @@ export default function InventoryPage() {
 
     setQuickRestockId(null);
     setQuickRestockQty('');
+    setQuickReason('');
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['inflows'] });
     queryClient.invalidateQueries({ queryKey: ['outflows'] });
