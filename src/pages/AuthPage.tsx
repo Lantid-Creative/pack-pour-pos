@@ -117,7 +117,7 @@ export default function AuthPage() {
             <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-landing-purple mb-3 shadow-lg shadow-landing-purple/25">
               <Package className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white">BulkDrink POS</h1>
+            <h1 className="text-2xl font-bold text-white">Lantid POS</h1>
             <p className="text-sm text-landing-muted">Wholesale Drinks Management System</p>
           </div>
 
