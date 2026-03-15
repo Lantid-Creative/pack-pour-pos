@@ -196,16 +196,17 @@ export default function InventoryPage() {
     setSaving(false);
   };
 
-  const handleDeleteProduct = async () => {
-    if (!editingProduct) return;
-    const confirmed = window.confirm(`Delete "${editingProduct.name}"? This cannot be undone.`);
+  const handleDeleteProduct = async (product?: any) => {
+    const target = product || editingProduct;
+    if (!target) return;
+    const confirmed = window.confirm(`Delete "${target.name}"? This cannot be undone.`);
     if (!confirmed) return;
-    const { error } = await supabase.from('products').delete().eq('id', editingProduct.id);
+    const { error } = await supabase.from('products').delete().eq('id', target.id);
     if (error) {
       toast.error(error.message);
     } else {
       toast.success('Product deleted');
-      setEditingProduct(null);
+      if (editingProduct?.id === target.id) setEditingProduct(null);
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
   };
