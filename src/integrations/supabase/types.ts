@@ -111,6 +111,7 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          lifetime_access: boolean
           phone: string | null
           store_id: string | null
           user_id: string
@@ -119,6 +120,7 @@ export type Database = {
           created_at?: string
           full_name: string
           id?: string
+          lifetime_access?: boolean
           phone?: string | null
           store_id?: string | null
           user_id: string
@@ -127,6 +129,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          lifetime_access?: boolean
           phone?: string | null
           store_id?: string | null
           user_id?: string
