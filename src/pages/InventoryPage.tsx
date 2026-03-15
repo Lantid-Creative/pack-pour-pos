@@ -597,7 +597,7 @@ export default function InventoryPage() {
                   toast.error(error.message);
                 } else {
                   toast.success(`${newName.trim()} added to inventory!`);
-                  setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock('');
+                  setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock(''); setNewBulkPrice(''); setNewBulkMinQty('');
                   setShowCreateProduct(false);
                   queryClient.invalidateQueries({ queryKey: ['products'] });
                 }
