@@ -17,9 +17,34 @@ const stagger = {
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [demoLoading, setDemoLoading] = useState(false);
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
+
+  const handleTryDemo = async () => {
+    setDemoLoading(true);
+    try {
+      // Seed demo data (idempotent)
+      await supabase.functions.invoke('seed-demo');
+      // Log in as demo user
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'demo@lantid.store',
+        password: 'Demo#login#to#$TORE',
+      });
+      if (error) {
+        toast.error('Demo login failed. Please try again.');
+        console.error(error);
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.');
+      console.error(err);
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-landing-bg text-landing-fg overflow-x-hidden">
