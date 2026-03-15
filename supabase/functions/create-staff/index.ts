@@ -47,8 +47,40 @@ serve(async (req) => {
       .single();
 
     if (!callerRole || callerRole.role !== 'owner') {
-      return new Response(JSON.stringify({ error: 'Only store owners can create staff accounts' }), {
+      return new Response(JSON.stringify({ error: 'Only store owners can manage staff accounts' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Handle UPDATE action
+    if (action === 'update') {
+      if (!user_id || !role_id) {
+        return new Response(JSON.stringify({ error: 'Missing user_id or role_id' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Update profile name
+      await supabaseAdmin
+        .from('profiles')
+        .update({ full_name })
+        .eq('user_id', user_id);
+
+      // Update role
+      const { error: roleUpdateError } = await supabaseAdmin
+        .from('user_roles')
+        .update({ role })
+        .eq('id', role_id)
+        .eq('store_id', store_id);
+
+      if (roleUpdateError) {
+        return new Response(JSON.stringify({ error: roleUpdateError.message }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, message: 'Staff updated!' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
