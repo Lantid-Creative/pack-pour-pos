@@ -22,6 +22,7 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
+          reason: string
           store_id: string
         }
         Insert: {
@@ -31,6 +32,7 @@ export type Database = {
           id?: string
           product_id: string
           quantity: number
+          reason?: string
           store_id: string
         }
         Update: {
@@ -40,6 +42,7 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
+          reason?: string
           store_id?: string
         }
         Relationships: [
@@ -445,16 +448,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      add_inventory_inflow: {
-        Args: {
-          p_added_by: string
-          p_added_by_name: string
-          p_product_id: string
-          p_quantity: number
-          p_store_id: string
-        }
-        Returns: string
-      }
+      add_inventory_inflow:
+        | {
+            Args: {
+              p_added_by: string
+              p_added_by_name: string
+              p_product_id: string
+              p_quantity: number
+              p_store_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_added_by: string
+              p_added_by_name: string
+              p_product_id: string
+              p_quantity: number
+              p_reason?: string
+              p_store_id: string
+            }
+            Returns: string
+          }
       complete_sale: {
         Args: {
           p_cashier_id: string
