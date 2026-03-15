@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{ full_name: string; store_id: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string; store_id: string | null; lifetime_access: boolean } | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [storeId, setStoreId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
