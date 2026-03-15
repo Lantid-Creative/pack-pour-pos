@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Package, Plus, History, AlertTriangle, Library, PlusCircle, Pencil, X, Check, Minus } from 'lucide-react';
+import { Package, Plus, History, AlertTriangle, Library, PlusCircle, Pencil, X, Check, Minus, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductLibraryDialog from '@/components/ProductLibraryDialog';
