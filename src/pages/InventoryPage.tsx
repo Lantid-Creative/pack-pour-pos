@@ -447,8 +447,8 @@ export default function InventoryPage() {
                     <div>
                       <p className="text-sm font-medium">{(outflow.products as any)?.name || 'Product'}</p>
                       <p className="text-xs text-muted-foreground">{new Date(outflow.created_at).toLocaleDateString('en-NG')} • by {outflow.removed_by_name}</p>
-                      {outflow.reason && outflow.reason !== 'manual' && (
-                        <p className="text-xs text-muted-foreground italic mt-0.5">Reason: {outflow.reason}</p>
+                      {outflow.reason && (
+                        <p className="text-xs text-muted-foreground italic mt-0.5">"{outflow.reason}"</p>
                       )}
                     </div>
                     <span className="font-mono-numbers text-sm font-bold text-destructive">−{outflow.quantity}</span>
