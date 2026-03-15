@@ -73,7 +73,7 @@ serve(async (req) => {
       });
     }
 
-    const reference = `bulkdrink_${store_id.slice(0, 8)}_${Date.now()}`;
+    const reference = `lantid_${store_id.slice(0, 8)}_${Date.now()}`;
 
     // Initialize Paystack transaction
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {

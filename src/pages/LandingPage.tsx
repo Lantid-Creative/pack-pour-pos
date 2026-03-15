@@ -60,7 +60,7 @@ export default function LandingPage() {
             <div className="h-9 w-9 rounded-lg bg-landing-purple flex items-center justify-center shadow-lg shadow-landing-purple/25">
               <Package className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-white">BulkDrink</span>
+            <span className="text-lg font-bold text-white">Lantid</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-landing-muted">
             <a href="#features" className="hover:text-white transition-colors duration-200">Features</a>
@@ -142,7 +142,7 @@ export default function LandingPage() {
               {/* Screenshot */}
               <img
                 src={heroDashboard}
-                alt="BulkDrink POS Dashboard showing sales analytics, inventory management and real-time metrics"
+                alt="Lantid POS Dashboard showing sales analytics, inventory management and real-time metrics"
                 className="w-full"
                 loading="eager"
               />
@@ -393,7 +393,7 @@ export default function LandingPage() {
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: 'Chief Okafor', store: 'Okafor Drinks, Onitsha', text: 'Before BulkDrink, my cashiers used notebooks. Now I can see every sale from my phone. Game changer!' },
+              { name: 'Chief Okafor', store: 'Okafor Drinks, Onitsha', text: 'Before Lantid, my cashiers used notebooks. Now I can see every sale from my phone. Game changer!' },
               { name: 'Mrs. Adebayo', store: 'Ade Wholesale, Lagos', text: 'The inventory alerts alone have saved me from stock-outs three times this month. Worth every naira.' },
               { name: 'Alhaji Musa', store: 'Musa & Sons, Kano', text: 'I manage 4 staff from one dashboard. The role system means my cashiers can\'t touch inventory settings.' },
             ].map((t, i) => (
@@ -427,7 +427,7 @@ export default function LandingPage() {
             Ready to Grow Your <span className="text-landing-purple-light">Drink Business?</span>
           </motion.h2>
           <motion.p variants={fadeUp} custom={1} className="mt-4 text-lg text-landing-muted">
-            Join hundreds of Nigerian wholesale stores already using BulkDrink POS.
+            Join hundreds of Nigerian wholesale stores already using Lantid POS.
           </motion.p>
           <motion.div variants={fadeUp} custom={2} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={() => navigate('/login')} className="group px-10 py-4 rounded-xl bg-landing-purple text-white font-bold text-lg hover:bg-landing-purple-hover active:scale-[0.97] transition-all shadow-xl shadow-landing-purple/30 flex items-center gap-2">
@@ -455,14 +455,14 @@ export default function LandingPage() {
               <div className="h-8 w-8 rounded-lg bg-landing-purple flex items-center justify-center shadow-md shadow-landing-purple/20">
                 <Package className="h-4 w-4 text-white" />
               </div>
-              <span className="font-bold text-white">BulkDrink POS</span>
+              <span className="font-bold text-white">Lantid POS</span>
             </div>
             <div className="flex items-center gap-8 text-sm text-landing-muted">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
               <a href="#testimonials" className="hover:text-white transition-colors">Testimonials</a>
             </div>
-            <p className="text-xs text-landing-muted/70">© 2026 BulkDrink. All rights reserved.</p>
+            <p className="text-xs text-landing-muted/70">© 2026 Lantid. All rights reserved.</p>
           </div>
         </div>
       </footer>

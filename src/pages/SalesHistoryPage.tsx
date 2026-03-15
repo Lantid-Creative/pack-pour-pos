@@ -90,7 +90,7 @@ export default function SalesHistoryPage() {
     const rows: string[][] = [];
 
     // Report Header
-    rows.push(['BULKDRINK SALES REPORT']);
+    rows.push(['LANTID SALES REPORT']);
     rows.push([`Period: ${rangeLabel}`]);
     rows.push([`Generated: ${new Date().toLocaleString('en-NG')}`]);
     rows.push([]);
@@ -172,7 +172,7 @@ export default function SalesHistoryPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `BulkDrink-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `Lantid-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Excel report downloaded!');
@@ -193,7 +193,7 @@ export default function SalesHistoryPage() {
     doc.setTextColor(255);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('BulkDrink', 14, 16);
+    doc.text('Lantid', 14, 16);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.text('Sales Report', 14, 24);
@@ -360,11 +360,11 @@ export default function SalesHistoryPage() {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(150);
-      doc.text(`BulkDrink POS — Sales Report — Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 8);
+      doc.text(`Lantid POS — Sales Report — Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 8);
       doc.text(`Generated ${new Date().toLocaleString('en-NG')}`, pageWidth - 14, doc.internal.pageSize.height - 8, { align: 'right' });
     }
 
-    doc.save(`BulkDrink-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(`Lantid-Sales-Report-${rangeLabel.replace(/\s/g, '-')}-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success('PDF report downloaded!');
   };
 

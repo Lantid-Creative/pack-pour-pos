@@ -33,7 +33,7 @@ export function WelcomeModal() {
                 <Package className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">Welcome to BulkDrink!</h2>
+                <h2 className="text-xl font-bold text-foreground">Welcome to Lantid!</h2>
                 <p className="text-sm text-muted-foreground">Let's get your store up and running</p>
               </div>
             </div>
