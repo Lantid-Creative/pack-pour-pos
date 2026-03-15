@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { defaultProducts } from '@/lib/products';
+
 import { Store } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -48,19 +48,6 @@ export default function StoreSetupPage() {
         .from('profiles')
         .update({ store_id: store.id })
         .eq('user_id', user.id);
-
-      // Seed default products
-      const productInserts = defaultProducts.map((p) => ({
-        store_id: store.id,
-        name: p.name,
-        category: p.category,
-        pack_size: p.packSize,
-        price: p.price,
-        stock: p.stock,
-        low_stock_threshold: p.lowStockThreshold,
-      }));
-
-      await supabase.from('products').insert(productInserts);
 
       // Seed default role permissions
       await supabase.rpc('seed_role_permissions', { p_store_id: store.id });
