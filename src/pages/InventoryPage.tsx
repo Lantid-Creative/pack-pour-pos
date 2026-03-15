@@ -430,6 +430,9 @@ export default function InventoryPage() {
                     <div>
                       <p className="text-sm font-medium">{(inflow.products as any)?.name || 'Product'}</p>
                       <p className="text-xs text-muted-foreground">{new Date(inflow.created_at).toLocaleDateString('en-NG')} • by {inflow.added_by_name}</p>
+                      {inflow.reason && inflow.reason !== 'restock' && (
+                        <p className="text-xs text-muted-foreground italic mt-0.5">Reason: {inflow.reason}</p>
+                      )}
                     </div>
                     <span className="font-mono-numbers text-sm font-bold text-primary">+{inflow.quantity}</span>
                   </div>
@@ -444,6 +447,9 @@ export default function InventoryPage() {
                     <div>
                       <p className="text-sm font-medium">{(outflow.products as any)?.name || 'Product'}</p>
                       <p className="text-xs text-muted-foreground">{new Date(outflow.created_at).toLocaleDateString('en-NG')} • by {outflow.removed_by_name}</p>
+                      {outflow.reason && outflow.reason !== 'manual' && (
+                        <p className="text-xs text-muted-foreground italic mt-0.5">Reason: {outflow.reason}</p>
+                      )}
                     </div>
                     <span className="font-mono-numbers text-sm font-bold text-destructive">−{outflow.quantity}</span>
                   </div>
