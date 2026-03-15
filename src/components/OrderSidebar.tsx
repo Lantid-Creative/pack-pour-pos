@@ -86,7 +86,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       toast.success('Sale completed!');
       onCheckoutComplete?.();
-      toast.success('Sale completed!');
     } catch (err: any) {
       toast.error(err.message || 'Sale failed');
     } finally {

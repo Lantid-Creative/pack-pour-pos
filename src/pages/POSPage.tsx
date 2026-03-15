@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ProductGrid } from '@/components/ProductGrid';
 import { OrderSidebar, CartItem } from '@/components/OrderSidebar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,9 +20,11 @@ export default function POSPage() {
     }
   }, []);
 
-  document.onfullscreenchange = () => {
-    setIsFullscreen(!!document.fullscreenElement);
-  };
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
 
   const addToCart = (product: { id: string; name: string; pack_size: string; price: number }) => {
     setCart((prev) => {
