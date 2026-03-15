@@ -68,6 +68,22 @@ export default function InventoryPage() {
     enabled: !!storeId,
   });
 
+  const { data: outflows = [] } = useQuery({
+    queryKey: ['outflows', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase
+        .from('inventory_outflows' as any)
+        .select('*, products(name)')
+        .eq('store_id', storeId)
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
   const handleRestock = async () => {
     if (!selectedProduct || !quantity || parseInt(quantity) <= 0 || !user || !storeId) return;
     try {
