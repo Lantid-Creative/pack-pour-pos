@@ -14,6 +14,8 @@ interface ProductRow {
   price: number;
   stock: number;
   low_stock_threshold: number;
+  bulk_price?: number | null;
+  bulk_min_quantity?: number | null;
 }
 
 export function ProductGrid({ onAdd }: { onAdd: (product: ProductRow) => void }) {
