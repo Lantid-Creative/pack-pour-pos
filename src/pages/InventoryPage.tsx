@@ -590,6 +590,8 @@ export default function InventoryPage() {
                   cost_price: parseFloat(newCostPrice) || 0,
                   stock: parseInt(newStock) || 0,
                   low_stock_threshold: 10,
+                  bulk_price: newBulkPrice ? parseFloat(newBulkPrice) : null,
+                  bulk_min_quantity: newBulkMinQty ? parseInt(newBulkMinQty) : null,
                 } as any);
                 if (error) {
                   toast.error(error.message);
