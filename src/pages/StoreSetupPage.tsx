@@ -49,19 +49,6 @@ export default function StoreSetupPage() {
         .update({ store_id: store.id })
         .eq('user_id', user.id);
 
-      // Seed default products
-      const productInserts = defaultProducts.map((p) => ({
-        store_id: store.id,
-        name: p.name,
-        category: p.category,
-        pack_size: p.packSize,
-        price: p.price,
-        stock: p.stock,
-        low_stock_threshold: p.lowStockThreshold,
-      }));
-
-      await supabase.from('products').insert(productInserts);
-
       // Seed default role permissions
       await supabase.rpc('seed_role_permissions', { p_store_id: store.id });
 
