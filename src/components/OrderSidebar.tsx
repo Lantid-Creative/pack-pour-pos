@@ -125,13 +125,19 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             <p className="text-xs">Tap products to add</p>
           </div>
         ) : (
-          cart.map((item) => (
+          cart.map((item) => {
+            const effectivePrice = getEffectivePrice(item);
+            const isBulk = item.product.bulk_price && item.product.bulk_min_quantity && item.quantity >= item.product.bulk_min_quantity;
+            return (
             <div key={item.product.id} className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{item.product.name}</p>
                 <p className="text-xs text-muted-foreground">{item.product.pack_size}</p>
+                {isBulk && (
+                  <p className="text-[10px] font-medium text-green-500">Bulk price applied (≥{item.product.bulk_min_quantity})</p>
+                )}
                 <p className="font-mono-numbers text-sm font-semibold text-primary">
-                  ₦{(item.product.price * item.quantity).toLocaleString()}
+                  ₦{(effectivePrice * item.quantity).toLocaleString()}
                 </p>
               </div>
               <div className="flex items-center gap-1">
