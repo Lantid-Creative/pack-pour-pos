@@ -148,8 +148,8 @@ export default function StaffPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-6 space-y-6 overflow-y-auto h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Staff Management</h1>
           <p className="text-sm text-muted-foreground">Manage staff accounts and role permissions</p>
