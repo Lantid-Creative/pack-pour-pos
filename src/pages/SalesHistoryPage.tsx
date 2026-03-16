@@ -74,7 +74,8 @@ export default function SalesHistoryPage() {
     const cashRevenue = filteredSales.filter((s: any) => s.payment_method === 'cash').reduce((s: number, sale: any) => s + Number(sale.total), 0);
     const posRevenue = filteredSales.filter((s: any) => s.payment_method === 'pos').reduce((s: number, sale: any) => s + Number(sale.total), 0);
     const transferRevenue = filteredSales.filter((s: any) => s.payment_method === 'transfer').reduce((s: number, sale: any) => s + Number(sale.total), 0);
-    return { totalRevenue, cashRevenue, posRevenue, transferRevenue, count: filteredSales.length };
+    const creditRevenue = filteredSales.filter((s: any) => s.payment_method === 'credit').reduce((s: number, sale: any) => s + Number(sale.total), 0);
+    return { totalRevenue, cashRevenue, posRevenue, transferRevenue, creditRevenue, count: filteredSales.length };
   }, [filteredSales]);
 
   const rangeLabel = reportRange === 'custom' && customStart && customEnd
