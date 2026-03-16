@@ -74,7 +74,8 @@ export default function SalesHistoryPage() {
     const cashRevenue = filteredSales.filter((s: any) => s.payment_method === 'cash').reduce((s: number, sale: any) => s + Number(sale.total), 0);
     const posRevenue = filteredSales.filter((s: any) => s.payment_method === 'pos').reduce((s: number, sale: any) => s + Number(sale.total), 0);
     const transferRevenue = filteredSales.filter((s: any) => s.payment_method === 'transfer').reduce((s: number, sale: any) => s + Number(sale.total), 0);
-    return { totalRevenue, cashRevenue, posRevenue, transferRevenue, count: filteredSales.length };
+    const creditRevenue = filteredSales.filter((s: any) => s.payment_method === 'credit').reduce((s: number, sale: any) => s + Number(sale.total), 0);
+    return { totalRevenue, cashRevenue, posRevenue, transferRevenue, creditRevenue, count: filteredSales.length };
   }, [filteredSales]);
 
   const rangeLabel = reportRange === 'custom' && customStart && customEnd
@@ -447,12 +448,13 @@ export default function SalesHistoryPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <SummaryCard label="Total Sales" value={summary.count.toString()} />
         <SummaryCard label="Revenue" value={`₦${summary.totalRevenue.toLocaleString()}`} highlight />
         <SummaryCard label="Cash" value={`₦${summary.cashRevenue.toLocaleString()}`} />
         <SummaryCard label="POS" value={`₦${summary.posRevenue.toLocaleString()}`} />
         <SummaryCard label="Transfer" value={`₦${summary.transferRevenue.toLocaleString()}`} />
+        <SummaryCard label="Credit" value={`₦${summary.creditRevenue.toLocaleString()}`} />
       </div>
 
       {/* Sales Table */}
@@ -506,8 +508,14 @@ export default function SalesHistoryPage() {
                       <span className={`uppercase text-xs font-bold px-2 py-0.5 rounded-full ${
                         sale.payment_method === 'cash' ? 'bg-primary/10 text-primary' :
                         sale.payment_method === 'pos' ? 'bg-secondary/10 text-secondary-foreground' :
+                        sale.payment_method === 'credit' ? 'bg-destructive/10 text-destructive' :
                         'bg-accent/20 text-accent-foreground'
                       }`}>{sale.payment_method}</span>
+                      {sale.payment_method === 'credit' && sale.credit_status && (
+                        <span className={`ml-1 text-[10px] font-medium ${sale.credit_status === 'paid' ? 'text-green-600' : 'text-destructive'}`}>
+                          ({sale.credit_status})
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-right font-mono-numbers font-bold">₦{Number(sale.total).toLocaleString()}</td>
                   </tr>

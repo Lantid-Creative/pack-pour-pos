@@ -1,7 +1,7 @@
 import { useLocation, useNavigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
-import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon, Settings } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon, Settings, UserCheck, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { OnboardingChecklist } from '@/components/OnboardingChecklist';
@@ -11,6 +11,8 @@ const allNavItems = [
   { path: '/pos', label: 'POS Terminal', icon: ShoppingCart, permission: 'page:pos' as Permission, tourId: 'nav-pos' },
   { path: '/inventory', label: 'Inventory', icon: Package, permission: 'page:inventory' as Permission, tourId: 'nav-inventory' },
   { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission, tourId: 'nav-sales' },
+  { path: '/customers', label: 'Customers', icon: UserCheck, permission: 'page:pos' as Permission, tourId: 'nav-customers' },
+  { path: '/credit-sales', label: 'Credit Sales', icon: AlertCircle, permission: 'page:sales_history' as Permission, tourId: 'nav-credit' },
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission, tourId: 'nav-staff' },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-subscription' },
   { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-settings' },

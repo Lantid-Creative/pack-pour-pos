@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, UserPlus } from 'lucide-react';
 import { ReceiptDialog } from './ReceiptDialog';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface CartProduct {
   id: string;
@@ -18,7 +21,7 @@ export interface CartItem {
   quantity: number;
 }
 
-type PaymentMethod = 'cash' | 'pos' | 'transfer';
+type PaymentMethod = 'cash' | 'pos' | 'transfer' | 'credit';
 
 interface CompletedSale {
   id: string;
@@ -34,6 +37,10 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState<CompletedSale | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [addingCustomer, setAddingCustomer] = useState(false);
   const { user, profile, storeId } = useAuth();
   const queryClient = useQueryClient();
 
@@ -45,6 +52,18 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       const { data, error } = await supabase.from('product_price_tiers' as any).select('*').eq('store_id', storeId).order('min_quantity');
       if (error) throw error;
       return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
+  // Fetch customers for credit selection
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('customers').select('*').eq('store_id', storeId).order('name');
+      if (error) throw error;
+      return data;
     },
     enabled: !!storeId,
   });
@@ -89,8 +108,30 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     }
   };
 
+  const handleAddCustomer = async () => {
+    if (!newCustomerName.trim() || !storeId) return;
+    setAddingCustomer(true);
+    try {
+      const { data, error } = await supabase.from('customers').insert({ store_id: storeId, name: newCustomerName.trim() }).select().single();
+      if (error) throw error;
+      setSelectedCustomerId(data.id);
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setShowAddCustomer(false);
+      setNewCustomerName('');
+      toast.success('Customer added');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setAddingCustomer(false);
+    }
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0 || !user || !storeId) return;
+    if (paymentMethod === 'credit' && !selectedCustomerId) {
+      toast.error('Please select a customer for credit sale');
+      return;
+    }
     setProcessing(true);
     try {
       const items = cart.map((i) => {
@@ -109,14 +150,24 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
         p_cashier_id: user.id,
         p_cashier_name: profile?.full_name || user.email || '',
         p_total: total,
-        p_payment_method: paymentMethod,
+        p_payment_method: paymentMethod as any,
         p_items: items,
       });
 
       if (error) throw error;
 
+      const saleId = data as string;
+
+      // If credit sale, update customer_id and credit_status
+      if (paymentMethod === 'credit' && selectedCustomerId) {
+        await supabase.from('sales').update({
+          customer_id: selectedCustomerId,
+          credit_status: 'unpaid',
+        }).eq('id', saleId);
+      }
+
       const sale: CompletedSale = {
-        id: data as string,
+        id: saleId,
         items: [...cart],
         total,
         paymentMethod,
@@ -127,8 +178,10 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       setLastSale(sale);
       setShowReceipt(true);
       setCart([]);
+      setSelectedCustomerId(null);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['credit-sales'] });
       toast.success('Sale completed!');
       onCheckoutComplete?.();
     } catch (err: any) {
@@ -194,12 +247,15 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       </div>
 
       <div className="border-t border-border p-4 space-y-3">
-        <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-lg">
-          {(['cash', 'pos', 'transfer'] as PaymentMethod[]).map((method) => (
+        <div className="grid grid-cols-4 gap-1 p-1 bg-muted rounded-lg">
+          {(['cash', 'pos', 'transfer', 'credit'] as PaymentMethod[]).map((method) => (
             <button
               key={method}
-              onClick={() => setPaymentMethod(method)}
-              className={`py-2 text-xs font-bold uppercase rounded-md transition-all ${
+              onClick={() => {
+                setPaymentMethod(method);
+                if (method !== 'credit') setSelectedCustomerId(null);
+              }}
+              className={`py-2 text-[10px] sm:text-xs font-bold uppercase rounded-md transition-all ${
                 paymentMethod === method ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -207,6 +263,28 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             </button>
           ))}
         </div>
+
+        {paymentMethod === 'credit' && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Select Customer</label>
+            <select
+              value={selectedCustomerId || ''}
+              onChange={(e) => setSelectedCustomerId(e.target.value || null)}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">-- Choose customer --</option>
+              {customers.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.name}{c.phone ? ` (${c.phone})` : ''}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowAddCustomer(true)}
+              className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+            >
+              <UserPlus className="h-3 w-3" /> Add new customer
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
@@ -224,6 +302,20 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       </div>
 
       {lastSale && <ReceiptDialog sale={lastSale} open={showReceipt} onClose={() => setShowReceipt(false)} />}
+
+      <Dialog open={showAddCustomer} onOpenChange={setShowAddCustomer}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Customer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Customer name" value={newCustomerName} onChange={(e) => setNewCustomerName(e.target.value)} />
+            <Button onClick={handleAddCustomer} disabled={!newCustomerName.trim() || addingCustomer} className="w-full">
+              {addingCustomer ? 'Adding...' : 'Add Customer'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
