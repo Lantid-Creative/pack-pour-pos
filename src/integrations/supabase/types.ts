@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          payment_method: string
+          recorded_by: string
+          recorded_by_name: string
+          sale_id: string
+          store_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          recorded_by: string
+          recorded_by_name: string
+          sale_id: string
+          store_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          recorded_by?: string
+          recorded_by_name?: string
+          sale_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_payments_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_inflows: {
         Row: {
           added_by: string
@@ -334,6 +423,8 @@ export type Database = {
           cashier_id: string
           cashier_name: string
           created_at: string
+          credit_status: string | null
+          customer_id: string | null
           id: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           store_id: string
@@ -343,6 +434,8 @@ export type Database = {
           cashier_id: string
           cashier_name: string
           created_at?: string
+          credit_status?: string | null
+          customer_id?: string | null
           id?: string
           payment_method: Database["public"]["Enums"]["payment_method"]
           store_id: string
@@ -352,12 +445,21 @@ export type Database = {
           cashier_id?: string
           cashier_name?: string
           created_at?: string
+          credit_status?: string | null
+          customer_id?: string | null
           id?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
           store_id?: string
           total?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_store_id_fkey"
             columns: ["store_id"]
@@ -563,7 +665,7 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "cashier"
-      payment_method: "cash" | "pos" | "transfer"
+      payment_method: "cash" | "pos" | "transfer" | "credit"
       subscription_plan: "starter" | "business" | "enterprise"
       subscription_status: "active" | "expired" | "cancelled" | "pending"
     }
@@ -694,7 +796,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "cashier"],
-      payment_method: ["cash", "pos", "transfer"],
+      payment_method: ["cash", "pos", "transfer", "credit"],
       subscription_plan: ["starter", "business", "enterprise"],
       subscription_status: ["active", "expired", "cancelled", "pending"],
     },
