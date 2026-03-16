@@ -56,6 +56,18 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     enabled: !!storeId,
   });
 
+  // Fetch customers for credit selection
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('customers').select('*').eq('store_id', storeId).order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
   const getEffectivePrice = (item: CartItem) => {
     // Find matching tier for this product and quantity
     const productTiers = allTiers
