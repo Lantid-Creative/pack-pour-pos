@@ -108,8 +108,30 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     }
   };
 
+  const handleAddCustomer = async () => {
+    if (!newCustomerName.trim() || !storeId) return;
+    setAddingCustomer(true);
+    try {
+      const { data, error } = await supabase.from('customers').insert({ store_id: storeId, name: newCustomerName.trim() }).select().single();
+      if (error) throw error;
+      setSelectedCustomerId(data.id);
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setShowAddCustomer(false);
+      setNewCustomerName('');
+      toast.success('Customer added');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setAddingCustomer(false);
+    }
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0 || !user || !storeId) return;
+    if (paymentMethod === 'credit' && !selectedCustomerId) {
+      toast.error('Please select a customer for credit sale');
+      return;
+    }
     setProcessing(true);
     try {
       const items = cart.map((i) => {
@@ -128,14 +150,24 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
         p_cashier_id: user.id,
         p_cashier_name: profile?.full_name || user.email || '',
         p_total: total,
-        p_payment_method: paymentMethod,
+        p_payment_method: paymentMethod as any,
         p_items: items,
       });
 
       if (error) throw error;
 
+      const saleId = data as string;
+
+      // If credit sale, update customer_id and credit_status
+      if (paymentMethod === 'credit' && selectedCustomerId) {
+        await supabase.from('sales').update({
+          customer_id: selectedCustomerId,
+          credit_status: 'unpaid',
+        }).eq('id', saleId);
+      }
+
       const sale: CompletedSale = {
-        id: data as string,
+        id: saleId,
         items: [...cart],
         total,
         paymentMethod,
@@ -146,8 +178,10 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       setLastSale(sale);
       setShowReceipt(true);
       setCart([]);
+      setSelectedCustomerId(null);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['credit-sales'] });
       toast.success('Sale completed!');
       onCheckoutComplete?.();
     } catch (err: any) {
