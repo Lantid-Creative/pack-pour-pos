@@ -448,12 +448,13 @@ export default function SalesHistoryPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <SummaryCard label="Total Sales" value={summary.count.toString()} />
         <SummaryCard label="Revenue" value={`₦${summary.totalRevenue.toLocaleString()}`} highlight />
         <SummaryCard label="Cash" value={`₦${summary.cashRevenue.toLocaleString()}`} />
         <SummaryCard label="POS" value={`₦${summary.posRevenue.toLocaleString()}`} />
         <SummaryCard label="Transfer" value={`₦${summary.transferRevenue.toLocaleString()}`} />
+        <SummaryCard label="Credit" value={`₦${summary.creditRevenue.toLocaleString()}`} />
       </div>
 
       {/* Sales Table */}
