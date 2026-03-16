@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, UserPlus } from 'lucide-react';
 import { ReceiptDialog } from './ReceiptDialog';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface CartProduct {
   id: string;
@@ -18,7 +21,7 @@ export interface CartItem {
   quantity: number;
 }
 
-type PaymentMethod = 'cash' | 'pos' | 'transfer';
+type PaymentMethod = 'cash' | 'pos' | 'transfer' | 'credit';
 
 interface CompletedSale {
   id: string;
