@@ -247,12 +247,15 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       </div>
 
       <div className="border-t border-border p-4 space-y-3">
-        <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-lg">
-          {(['cash', 'pos', 'transfer'] as PaymentMethod[]).map((method) => (
+        <div className="grid grid-cols-4 gap-1 p-1 bg-muted rounded-lg">
+          {(['cash', 'pos', 'transfer', 'credit'] as PaymentMethod[]).map((method) => (
             <button
               key={method}
-              onClick={() => setPaymentMethod(method)}
-              className={`py-2 text-xs font-bold uppercase rounded-md transition-all ${
+              onClick={() => {
+                setPaymentMethod(method);
+                if (method !== 'credit') setSelectedCustomerId(null);
+              }}
+              className={`py-2 text-[10px] sm:text-xs font-bold uppercase rounded-md transition-all ${
                 paymentMethod === method ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -260,6 +263,28 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             </button>
           ))}
         </div>
+
+        {paymentMethod === 'credit' && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Select Customer</label>
+            <select
+              value={selectedCustomerId || ''}
+              onChange={(e) => setSelectedCustomerId(e.target.value || null)}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">-- Choose customer --</option>
+              {customers.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.name}{c.phone ? ` (${c.phone})` : ''}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowAddCustomer(true)}
+              className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+            >
+              <UserPlus className="h-3 w-3" /> Add new customer
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
