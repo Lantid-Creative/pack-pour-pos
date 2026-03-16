@@ -37,6 +37,10 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState<CompletedSale | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [addingCustomer, setAddingCustomer] = useState(false);
   const { user, profile, storeId } = useAuth();
   const queryClient = useQueryClient();
 
