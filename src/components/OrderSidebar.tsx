@@ -302,6 +302,20 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       </div>
 
       {lastSale && <ReceiptDialog sale={lastSale} open={showReceipt} onClose={() => setShowReceipt(false)} />}
+
+      <Dialog open={showAddCustomer} onOpenChange={setShowAddCustomer}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Customer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Customer name" value={newCustomerName} onChange={(e) => setNewCustomerName(e.target.value)} />
+            <Button onClick={handleAddCustomer} disabled={!newCustomerName.trim() || addingCustomer} className="w-full">
+              {addingCustomer ? 'Adding...' : 'Add Customer'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

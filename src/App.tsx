@@ -97,6 +97,8 @@ function AppRoutes() {
             <Route path="/pos" element={hasPermission('page:pos') ? <POSPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/inventory" element={hasPermission('page:inventory') ? <InventoryPage /> : <Navigate to="/pos" replace />} />
             <Route path="/sales" element={hasPermission('page:sales_history') ? <SalesHistoryPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/credit-sales" element={<CreditSalesPage />} />
             <Route path="/staff" element={hasPermission('page:staff') ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/settings" element={role === 'owner' ? <StoreSettingsPage /> : <Navigate to="/dashboard" replace />} />
