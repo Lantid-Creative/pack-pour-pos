@@ -46,6 +46,14 @@ export const PRINTER_CONFIGS: Record<PrinterType, {
   },
 };
 
+interface CrateInfo {
+  productId: string;
+  productName: string;
+  cratesRequired: number;
+  cratesBrought: number;
+  depositPerCrate: number;
+}
+
 interface SaleItem {
   product: { id: string; name: string; pack_size: string; price: number };
   quantity: number;
@@ -59,6 +67,7 @@ interface ReceiptProps {
     paymentMethod: string;
     cashier: string;
     date: string;
+    crateDeposits?: CrateInfo[];
   };
   storeName: string;
   address?: string;
