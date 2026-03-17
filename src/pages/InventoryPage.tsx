@@ -657,8 +657,19 @@ export default function InventoryPage() {
                     }))
                   );
                 }
+                // Insert crate tracking if crate product
+                if (newIsCrate && data) {
+                  await supabase.from('crate_tracking' as any).insert({
+                    store_id: storeId,
+                    product_id: data.id,
+                    total_crates: parseInt(newTotalCrates) || 0,
+                    filled_crates: parseInt(newFilledCrates) || 0,
+                    empty_crates: parseInt(newEmptyCrates) || 0,
+                  });
+                }
                 toast.success(`${newName.trim()} added to inventory!`);
                 setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock(''); setNewTiers([]);
+                setNewIsCrate(false); setNewCrateDeposit(''); setNewTotalCrates(''); setNewEmptyCrates(''); setNewFilledCrates('');
                 setShowCreateProduct(false);
                 queryClient.invalidateQueries({ queryKey: ['products'] });
                 queryClient.invalidateQueries({ queryKey: ['product_price_tiers'] });
