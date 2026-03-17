@@ -19,6 +19,7 @@ export default function CrateManagementPage() {
   const [editFilled, setEditFilled] = useState('');
   const [editEmpty, setEditEmpty] = useState('');
   const [savingCrate, setSavingCrate] = useState(false);
+  const [showAddDropdown, setShowAddDropdown] = useState(false);
 
   // Fetch crate deposits
   const { data: deposits = [] } = useQuery({
@@ -203,21 +204,28 @@ export default function CrateManagementPage() {
               <Package className="h-4 w-4" /> Crate Inventory
             </h3>
             {untracked.length > 0 && (
-              <div className="relative group">
-                <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all">
+              <div className="relative">
+                <button onClick={() => setShowAddDropdown(!showAddDropdown)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all">
                   <Plus className="h-3.5 w-3.5" /> Add Product
                 </button>
-                <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-lg z-10 hidden group-hover:block">
-                  {untracked.map((p) => (
-                    <button key={p.id} onClick={() => {
-                      setEditingCrate({ _isNew: true, product_id: p.id, products: p });
-                      setEditTotal('0'); setEditFilled('0'); setEditEmpty('0');
-                    }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg">
-                      {p.name} <span className="text-muted-foreground text-xs">({p.pack_size})</span>
-                    </button>
-                  ))}
-                </div>
+                {showAddDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowAddDropdown(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-lg z-20">
+                      {untracked.map((p) => (
+                        <button key={p.id} onClick={() => {
+                          setEditingCrate({ _isNew: true, product_id: p.id, products: p });
+                          setEditTotal('0'); setEditFilled('0'); setEditEmpty('0');
+                          setShowAddDropdown(false);
+                        }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg">
+                          {p.name} <span className="text-muted-foreground text-xs">({p.pack_size})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
