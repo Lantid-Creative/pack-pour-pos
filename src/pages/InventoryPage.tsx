@@ -49,6 +49,17 @@ export default function InventoryPage() {
   const [newTiers, setNewTiers] = useState<PriceTier[]>([]);
   const [creatingProduct, setCreatingProduct] = useState(false);
 
+  // Crate fields for create
+  const [newIsCrate, setNewIsCrate] = useState(false);
+  const [newCrateDeposit, setNewCrateDeposit] = useState('');
+  const [newTotalCrates, setNewTotalCrates] = useState('');
+  const [newEmptyCrates, setNewEmptyCrates] = useState('');
+  const [newFilledCrates, setNewFilledCrates] = useState('');
+
+  // Crate fields for edit
+  const [editIsCrate, setEditIsCrate] = useState(false);
+  const [editCrateDeposit, setEditCrateDeposit] = useState('');
+
   const { data: products = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
