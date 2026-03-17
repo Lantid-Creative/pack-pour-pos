@@ -370,6 +370,59 @@ export default function CrateManagementPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit Crate Inventory Dialog */}
+      <Dialog open={!!editingCrate} onOpenChange={(open) => !open && setEditingCrate(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" /> {editingCrate?._isNew ? 'Set Up' : 'Edit'} Crate Inventory
+            </DialogTitle>
+          </DialogHeader>
+          {editingCrate && (
+            <div className="space-y-4">
+              <div className="bg-muted/30 rounded-lg p-3">
+                <p className="text-sm font-semibold">{editingCrate.products?.name || (editingCrate.products as any)?.name}</p>
+                <p className="text-xs text-muted-foreground">{editingCrate.products?.pack_size || (editingCrate.products as any)?.pack_size}</p>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Total Crates</label>
+                  <input type="number" min="0" value={editTotal} onChange={(e) => setEditTotal(e.target.value)}
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Total number of crates you own for this product</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Filled Crates</label>
+                    <input type="number" min="0" value={editFilled} onChange={(e) => setEditFilled(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <p className="text-[11px] text-muted-foreground mt-0.5">With drinks inside</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Empty Crates</label>
+                    <input type="number" min="0" value={editEmpty} onChange={(e) => setEditEmpty(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <p className="text-[11px] text-muted-foreground mt-0.5">With empty bottles</p>
+                  </div>
+                </div>
+                {(parseInt(editFilled) || 0) + (parseInt(editEmpty) || 0) > (parseInt(editTotal) || 0) && (
+                  <p className="text-xs text-destructive">Filled + Empty cannot exceed Total</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setEditingCrate(null)} className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors">
+                  Cancel
+                </button>
+                <button onClick={handleSaveCrate} disabled={savingCrate}
+                  className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40">
+                  {savingCrate ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
