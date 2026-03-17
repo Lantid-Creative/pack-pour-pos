@@ -14,6 +14,11 @@ export default function CrateManagementPage() {
   const [returnDialog, setReturnDialog] = useState<any>(null);
   const [cratesReturned, setCratesReturned] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [editingCrate, setEditingCrate] = useState<any>(null);
+  const [editTotal, setEditTotal] = useState('');
+  const [editFilled, setEditFilled] = useState('');
+  const [editEmpty, setEditEmpty] = useState('');
+  const [savingCrate, setSavingCrate] = useState(false);
 
   // Fetch crate deposits
   const { data: deposits = [] } = useQuery({
