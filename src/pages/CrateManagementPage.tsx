@@ -52,8 +52,71 @@ export default function CrateManagementPage() {
     },
     enabled: !!storeId,
   });
+  // Fetch crate products without tracking entries (so admin can add them)
+  const { data: crateProducts = [] } = useQuery({
+    queryKey: ['crate-products', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('products')
+        .select('id, name, pack_size')
+        .eq('store_id', storeId)
+        .eq('is_crate_product', true);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
 
-  const filteredDeposits = deposits.filter((d: any) => {
+  // Products that have no crate_tracking entry yet
+  const untracked = crateProducts.filter(
+    (p) => !crateInventory.some((ct: any) => ct.product_id === p.id)
+  );
+
+  const openEditCrate = (ct: any) => {
+    setEditingCrate(ct);
+    setEditTotal(String(ct.total_crates));
+    setEditFilled(String(ct.filled_crates));
+    setEditEmpty(String(ct.empty_crates));
+  };
+
+  const handleSaveCrate = async () => {
+    if (!editingCrate || !storeId) return;
+    const total = parseInt(editTotal) || 0;
+    const filled = parseInt(editFilled) || 0;
+    const empty = parseInt(editEmpty) || 0;
+    if (filled + empty > total) {
+      toast.error('Filled + Empty cannot exceed Total');
+      return;
+    }
+    setSavingCrate(true);
+    try {
+      if (editingCrate._isNew) {
+        const { error } = await supabase.from('crate_tracking' as any).insert({
+          store_id: storeId,
+          product_id: editingCrate.product_id,
+          total_crates: total,
+          filled_crates: filled,
+          empty_crates: empty,
+        });
+        if (error) throw error;
+        toast.success('Crate inventory added');
+      } else {
+        const { error } = await supabase.from('crate_tracking' as any)
+          .update({ total_crates: total, filled_crates: filled, empty_crates: empty, updated_at: new Date().toISOString() })
+          .eq('id', editingCrate.id);
+        if (error) throw error;
+        toast.success('Crate inventory updated');
+      }
+      setEditingCrate(null);
+      queryClient.invalidateQueries({ queryKey: ['crate-tracking'] });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSavingCrate(false);
+    }
+  };
+
+
     if (!search) return true;
     const productName = (d.products as any)?.name || '';
     const saleId = d.sale_id || '';
