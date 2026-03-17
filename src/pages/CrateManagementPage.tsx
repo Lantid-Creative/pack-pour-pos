@@ -115,8 +115,7 @@ export default function CrateManagementPage() {
       setSavingCrate(false);
     }
   };
-
-
+  const filteredDeposits = deposits.filter((d: any) => {
     if (!search) return true;
     const productName = (d.products as any)?.name || '';
     const saleId = d.sale_id || '';
