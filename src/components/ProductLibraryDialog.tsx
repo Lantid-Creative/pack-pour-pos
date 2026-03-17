@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { productLibrary, libraryCategories, LibraryProduct } from '@/lib/productLibrary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Plus, Check, Library, Package } from 'lucide-react';
+import { Search, Plus, Check, Library, Package, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -9,8 +9,15 @@ interface ProductLibraryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
-  existingProducts: string[]; // names of products already in inventory
+  existingProducts: string[];
   onProductsAdded: () => void;
+}
+
+interface SelectedProduct {
+  idx: number;
+  stock: string;
+  price: string;
+  costPrice: string;
 }
 
 export default function ProductLibraryDialog({
@@ -18,7 +25,7 @@ export default function ProductLibraryDialog({
 }: ProductLibraryDialogProps) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selected, setSelected] = useState<Map<number, SelectedProduct>>(new Map());
   const [adding, setAdding] = useState(false);
 
   // Custom product form
@@ -27,6 +34,8 @@ export default function ProductLibraryDialog({
   const [customCategory, setCustomCategory] = useState('Soft Drink');
   const [customPackSize, setCustomPackSize] = useState('');
   const [customPrice, setCustomPrice] = useState('');
+  const [customCostPrice, setCustomCostPrice] = useState('');
+  const [customStock, setCustomStock] = useState('');
 
   const existingSet = useMemo(() => new Set(existingProducts.map(n => n.toLowerCase())), [existingProducts]);
 
@@ -42,9 +51,18 @@ export default function ProductLibraryDialog({
 
   const toggle = (idx: number) => {
     setSelected(prev => {
-      const next = new Set(prev);
+      const next = new Map(prev);
       if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
+      else next.set(idx, { idx, stock: '', price: '', costPrice: '' });
+      return next;
+    });
+  };
+
+  const updateSelected = (idx: number, field: 'stock' | 'price' | 'costPrice', value: string) => {
+    setSelected(prev => {
+      const next = new Map(prev);
+      const item = next.get(idx);
+      if (item) next.set(idx, { ...item, [field]: value });
       return next;
     });
   };
@@ -53,15 +71,16 @@ export default function ProductLibraryDialog({
     if (selected.size === 0) return;
     setAdding(true);
 
-    const products = Array.from(selected).map(idx => {
-      const p = productLibrary[idx];
+    const products = Array.from(selected.values()).map(sel => {
+      const p = productLibrary[sel.idx];
       return {
         store_id: storeId,
         name: p.name,
         category: p.category,
         pack_size: p.packSize,
-        price: 0,
-        stock: 0,
+        price: parseFloat(sel.price) || 0,
+        cost_price: parseFloat(sel.costPrice) || 0,
+        stock: parseInt(sel.stock) || 0,
         low_stock_threshold: 10,
       };
     });
@@ -72,7 +91,7 @@ export default function ProductLibraryDialog({
       toast.error(error.message);
     } else {
       toast.success(`${products.length} product${products.length > 1 ? 's' : ''} added to inventory!`);
-      setSelected(new Set());
+      setSelected(new Map());
       onProductsAdded();
       onOpenChange(false);
     }
@@ -91,7 +110,8 @@ export default function ProductLibraryDialog({
       category: customCategory,
       pack_size: customPackSize.trim(),
       price: parseFloat(customPrice) || 0,
-      stock: 0,
+      cost_price: parseFloat(customCostPrice) || 0,
+      stock: parseInt(customStock) || 0,
       low_stock_threshold: 10,
     } as any);
 
@@ -99,9 +119,7 @@ export default function ProductLibraryDialog({
       toast.error(error.message);
     } else {
       toast.success(`${customName.trim()} added to inventory!`);
-      setCustomName('');
-      setCustomPackSize('');
-      setCustomPrice('');
+      setCustomName(''); setCustomPackSize(''); setCustomPrice(''); setCustomCostPrice(''); setCustomStock('');
       setShowCustom(false);
       onProductsAdded();
       onOpenChange(false);
@@ -119,7 +137,7 @@ export default function ProductLibraryDialog({
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground -mt-1">
-          Select products to add to your inventory. Each product is a specific brand, size, and pack.
+          Select products, set prices & stock, then add to inventory.
         </p>
 
         {/* Search + Categories */}
@@ -154,40 +172,64 @@ export default function ProductLibraryDialog({
         {/* Product Grid */}
         <div className="flex-1 overflow-y-auto min-h-0 -mx-1 px-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-2">
-            {filtered.map((p, idx) => {
+            {filtered.map((p) => {
               const realIdx = productLibrary.indexOf(p);
               const isSelected = selected.has(realIdx);
               const alreadyExists = existingSet.has(p.name.toLowerCase());
+              const sel = selected.get(realIdx);
 
               return (
-                <button
+                <div
                   key={`${p.name}-${p.packSize}`}
-                  onClick={() => !alreadyExists && toggle(realIdx)}
-                  disabled={alreadyExists}
-                  className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-all ${
+                  className={`rounded-lg border text-left transition-all ${
                     alreadyExists
-                      ? 'border-border/50 bg-muted/30 opacity-50 cursor-not-allowed'
+                      ? 'border-border/50 bg-muted/30 opacity-50'
                       : isSelected
                         ? 'border-primary bg-primary/5 ring-1 ring-primary'
                         : 'border-border hover:border-primary/40 hover:bg-muted/20'
                   }`}
                 >
-                  <div className={`mt-0.5 h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-all ${
-                    isSelected
-                      ? 'bg-primary border-primary'
-                      : alreadyExists
-                        ? 'bg-muted border-border'
-                        : 'border-input'
-                  }`}>
-                    {(isSelected || alreadyExists) && <Check className="h-3 w-3 text-primary-foreground" />}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.packSize}</p>
-                    <p className="text-xs text-muted-foreground italic mt-0.5">Set price in inventory after adding</p>
-                    {alreadyExists && <p className="text-xs text-muted-foreground italic">Already in inventory</p>}
-                  </div>
-                </button>
+                  <button
+                    onClick={() => !alreadyExists && toggle(realIdx)}
+                    disabled={alreadyExists}
+                    className="flex items-start gap-3 p-3 w-full text-left"
+                  >
+                    <div className={`mt-0.5 h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-all ${
+                      isSelected
+                        ? 'bg-primary border-primary'
+                        : alreadyExists
+                          ? 'bg-muted border-border'
+                          : 'border-input'
+                    }`}>
+                      {(isSelected || alreadyExists) && <Check className="h-3 w-3 text-primary-foreground" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.packSize}</p>
+                      {alreadyExists && <p className="text-xs text-muted-foreground italic">Already in inventory</p>}
+                    </div>
+                  </button>
+                  {/* Inline price/stock fields when selected */}
+                  {isSelected && sel && (
+                    <div className="px-3 pb-3 grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block">Cost (₦)</label>
+                        <input type="number" min="0" value={sel.costPrice} onChange={e => updateSelected(realIdx, 'costPrice', e.target.value)}
+                          placeholder="0" className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block">Sell (₦)</label>
+                        <input type="number" min="0" value={sel.price} onChange={e => updateSelected(realIdx, 'price', e.target.value)}
+                          placeholder="0" className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block">Stock</label>
+                        <input type="number" min="0" value={sel.stock} onChange={e => updateSelected(realIdx, 'stock', e.target.value)}
+                          placeholder="0" className="w-full px-2 py-1.5 rounded border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -203,49 +245,31 @@ export default function ProductLibraryDialog({
           <div className="bg-muted/30 rounded-lg p-4 space-y-3 border border-border">
             <p className="text-sm font-semibold text-foreground">Add Custom Product</p>
             <div className="grid grid-cols-2 gap-3">
-              <input
-                placeholder="Product name (e.g. Fanta Apple 50cl)"
-                value={customName}
-                onChange={e => setCustomName(e.target.value)}
-                className="col-span-2 px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <select
-                value={customCategory}
-                onChange={e => setCustomCategory(e.target.value)}
-                className="px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
+              <input placeholder="Product name" value={customName} onChange={e => setCustomName(e.target.value)}
+                className="col-span-2 px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <select value={customCategory} onChange={e => setCustomCategory(e.target.value)}
+                className="px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 {libraryCategories.filter(c => c !== 'All').map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-              <input
-                placeholder="Pack size (e.g. Crate (24 bottles))"
-                value={customPackSize}
-                onChange={e => setCustomPackSize(e.target.value)}
-                className="px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <input
-                type="number"
-                placeholder="Price per pack (₦)"
-                value={customPrice}
-                onChange={e => setCustomPrice(e.target.value)}
-                className="px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <button
-                onClick={handleAddCustom}
-                disabled={adding}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
-              >
+              <input placeholder="Pack size" value={customPackSize} onChange={e => setCustomPackSize(e.target.value)}
+                className="px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="number" placeholder="Cost price (₦)" value={customCostPrice} onChange={e => setCustomCostPrice(e.target.value)}
+                className="px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="number" placeholder="Sell price (₦)" value={customPrice} onChange={e => setCustomPrice(e.target.value)}
+                className="px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="number" placeholder="Initial stock" value={customStock} onChange={e => setCustomStock(e.target.value)}
+                className="px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <button onClick={handleAddCustom} disabled={adding}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40">
                 {adding ? 'Adding...' : 'Add Custom'}
               </button>
             </div>
             <button onClick={() => setShowCustom(false)} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
           </div>
         ) : (
-          <button
-            onClick={() => setShowCustom(true)}
-            className="text-sm text-primary hover:underline flex items-center gap-1"
-          >
+          <button onClick={() => setShowCustom(true)} className="text-sm text-primary hover:underline flex items-center gap-1">
             <Package className="h-3.5 w-3.5" /> Can't find a product? Add custom
           </button>
         )}

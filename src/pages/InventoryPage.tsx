@@ -18,12 +18,8 @@ interface PriceTier {
 export default function InventoryPage() {
   const { storeId, user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const [showRestock, setShowRestock] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [restockReason, setRestockReason] = useState('');
   const [search, setSearch] = useState('');
 
   // Edit product state
@@ -107,30 +103,6 @@ export default function InventoryPage() {
     enabled: !!storeId,
   });
 
-  const handleRestock = async () => {
-    if (!selectedProduct || !quantity || parseInt(quantity) <= 0 || !user || !storeId) return;
-    if (!restockReason.trim()) { toast.error('Please enter a reason'); return; }
-    try {
-      const { error } = await supabase.rpc('add_inventory_inflow', {
-        p_store_id: storeId,
-        p_product_id: selectedProduct,
-        p_quantity: parseInt(quantity),
-        p_added_by: user.id,
-        p_added_by_name: profile?.full_name || '',
-        p_reason: restockReason.trim(),
-      } as any);
-      if (error) throw error;
-      toast.success('Stock updated!');
-      setSelectedProduct('');
-      setQuantity('');
-      setRestockReason('');
-      setShowRestock(false);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inflows'] });
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  };
 
   const handleQuickStockChange = async (productId: string) => {
     const qty = parseInt(quickRestockQty);
@@ -279,9 +251,6 @@ export default function InventoryPage() {
           </button>
           <button onClick={() => setShowCreateProduct(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-foreground font-semibold text-sm hover:bg-muted active:scale-[0.98] transition-all">
             <PlusCircle className="h-4 w-4" /> Create
-          </button>
-          <button onClick={() => setShowRestock(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all">
-            <Plus className="h-4 w-4" /> Restock
           </button>
         </div>
       </div>
@@ -547,36 +516,6 @@ export default function InventoryPage() {
         </div>
       )}
 
-      {/* Bulk Restock Dialog */}
-      <Dialog open={showRestock} onOpenChange={setShowRestock}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Restock Product</DialogTitle></DialogHeader>
-          <div className="space-y-4 mt-2">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Product</label>
-              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm">
-                <option value="">Select a product...</option>
-                {products.map((p: any) => (<option key={p.id} value={p.id}>{p.name} — {p.pack_size} (Stock: {p.stock})</option>))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Quantity (packs)</label>
-              <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Enter quantity"
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Reason</label>
-              <input type="text" value={restockReason} onChange={(e) => setRestockReason(e.target.value)} placeholder="e.g. New supply from distributor"
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
-            </div>
-            <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0 || !restockReason.trim()}
-              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-              Add Stock
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Create Product Dialog */}
       <Dialog open={showCreateProduct} onOpenChange={setShowCreateProduct}>
