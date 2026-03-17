@@ -18,12 +18,8 @@ interface PriceTier {
 export default function InventoryPage() {
   const { storeId, user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const [showRestock, setShowRestock] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [restockReason, setRestockReason] = useState('');
   const [search, setSearch] = useState('');
 
   // Edit product state
