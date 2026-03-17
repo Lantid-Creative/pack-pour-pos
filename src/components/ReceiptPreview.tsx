@@ -163,6 +163,32 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       {/* Separator */}
       <div style={{ borderTop: isA4 ? '2px solid #000' : '1px dashed #000', margin: `${isA4 ? 12 : 6}px 0` }} />
 
+      {/* Crate Deposits */}
+      {sale.crateDeposits && sale.crateDeposits.length > 0 && (
+        <>
+          {sale.crateDeposits.map((cd, i) => {
+            const owed = Math.max(0, cd.cratesRequired - cd.cratesBrought);
+            if (owed <= 0) return null;
+            return (
+              <div key={i} style={{ fontSize: `${config.fontSizeSmall}px`, marginBottom: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Crate deposit: {cd.productName}</span>
+                  <span style={{ fontWeight: 'bold' }}>₦{(owed * cd.depositPerCrate).toLocaleString()}</span>
+                </div>
+                <div style={{ fontSize: `${config.fontSizeSmall - 1}px`, color: '#666' }}>
+                  {cd.cratesBrought}/{cd.cratesRequired} crates returned • {owed} owed
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ borderTop: isA4 ? '1px solid #ccc' : '1px dashed #000', margin: `${isA4 ? 8 : 4}px 0` }} />
+          <div style={{ fontSize: `${config.fontSizeSmall}px`, color: '#666', textAlign: 'center', marginBottom: '4px' }}>
+            ⚠ Keep this receipt to claim crate deposit refund
+          </div>
+          <div style={{ borderTop: isA4 ? '1px solid #ccc' : '1px dashed #000', margin: `${isA4 ? 8 : 4}px 0` }} />
+        </>
+      )}
+
       {/* Total */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: `${config.fontSizeLarge}px` }}>
         <span>TOTAL</span>

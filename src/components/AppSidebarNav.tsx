@@ -13,6 +13,7 @@ const allNavItems = [
   { path: '/sales', label: 'Sales History', icon: History, permission: 'page:sales_history' as Permission, tourId: 'nav-sales' },
   { path: '/customers', label: 'Customers', icon: UserCheck, permission: 'page:pos' as Permission, tourId: 'nav-customers' },
   { path: '/credit-sales', label: 'Credit Sales', icon: AlertCircle, permission: 'page:sales_history' as Permission, tourId: 'nav-credit' },
+  { path: '/crates', label: 'Crates', icon: PackageOpen, permission: 'page:pos' as Permission, tourId: 'nav-crates' },
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission, tourId: 'nav-staff' },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-subscription' },
   { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-settings' },
