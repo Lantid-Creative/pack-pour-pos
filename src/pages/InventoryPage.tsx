@@ -637,6 +637,8 @@ export default function InventoryPage() {
                   cost_price: parseFloat(newCostPrice) || 0,
                   stock: parseInt(newStock) || 0,
                   low_stock_threshold: 10,
+                  is_crate_product: newIsCrate,
+                  crate_deposit_amount: newIsCrate ? (parseFloat(newCrateDeposit) || 0) : 0,
                 } as any).select('id').single();
                 if (error) {
                   toast.error(error.message);
