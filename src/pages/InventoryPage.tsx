@@ -103,30 +103,6 @@ export default function InventoryPage() {
     enabled: !!storeId,
   });
 
-  const handleRestock = async () => {
-    if (!selectedProduct || !quantity || parseInt(quantity) <= 0 || !user || !storeId) return;
-    if (!restockReason.trim()) { toast.error('Please enter a reason'); return; }
-    try {
-      const { error } = await supabase.rpc('add_inventory_inflow', {
-        p_store_id: storeId,
-        p_product_id: selectedProduct,
-        p_quantity: parseInt(quantity),
-        p_added_by: user.id,
-        p_added_by_name: profile?.full_name || '',
-        p_reason: restockReason.trim(),
-      } as any);
-      if (error) throw error;
-      toast.success('Stock updated!');
-      setSelectedProduct('');
-      setQuantity('');
-      setRestockReason('');
-      setShowRestock(false);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['inflows'] });
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  };
 
   const handleQuickStockChange = async (productId: string) => {
     const qty = parseInt(quickRestockQty);
