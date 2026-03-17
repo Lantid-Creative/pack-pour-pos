@@ -175,6 +175,8 @@ export default function InventoryPage() {
     setEditPrice(String(product.price));
     setEditCostPrice(String(product.cost_price));
     setEditLowThreshold(String(product.low_stock_threshold));
+    setEditIsCrate(!!product.is_crate_product);
+    setEditCrateDeposit(String(product.crate_deposit_amount || 0));
     // Load existing tiers for this product
     const productTiers = allTiers.filter((t: any) => t.product_id === product.id).map((t: any) => ({
       id: t.id,
