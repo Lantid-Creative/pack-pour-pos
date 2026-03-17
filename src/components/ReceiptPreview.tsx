@@ -46,6 +46,14 @@ export const PRINTER_CONFIGS: Record<PrinterType, {
   },
 };
 
+interface CrateInfo {
+  productId: string;
+  productName: string;
+  cratesRequired: number;
+  cratesBrought: number;
+  depositPerCrate: number;
+}
+
 interface SaleItem {
   product: { id: string; name: string; pack_size: string; price: number };
   quantity: number;
@@ -59,6 +67,7 @@ interface ReceiptProps {
     paymentMethod: string;
     cashier: string;
     date: string;
+    crateDeposits?: CrateInfo[];
   };
   storeName: string;
   address?: string;
@@ -154,6 +163,32 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       {/* Separator */}
       <div style={{ borderTop: isA4 ? '2px solid #000' : '1px dashed #000', margin: `${isA4 ? 12 : 6}px 0` }} />
 
+      {/* Crate Deposits */}
+      {sale.crateDeposits && sale.crateDeposits.length > 0 && (
+        <>
+          {sale.crateDeposits.map((cd, i) => {
+            const owed = Math.max(0, cd.cratesRequired - cd.cratesBrought);
+            if (owed <= 0) return null;
+            return (
+              <div key={i} style={{ fontSize: `${config.fontSizeSmall}px`, marginBottom: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Crate deposit: {cd.productName}</span>
+                  <span style={{ fontWeight: 'bold' }}>₦{(owed * cd.depositPerCrate).toLocaleString()}</span>
+                </div>
+                <div style={{ fontSize: `${config.fontSizeSmall - 1}px`, color: '#666' }}>
+                  {cd.cratesBrought}/{cd.cratesRequired} crates returned • {owed} owed
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ borderTop: isA4 ? '1px solid #ccc' : '1px dashed #000', margin: `${isA4 ? 8 : 4}px 0` }} />
+          <div style={{ fontSize: `${config.fontSizeSmall}px`, color: '#666', textAlign: 'center', marginBottom: '4px' }}>
+            ⚠ Keep this receipt to claim crate deposit refund
+          </div>
+          <div style={{ borderTop: isA4 ? '1px solid #ccc' : '1px dashed #000', margin: `${isA4 ? 8 : 4}px 0` }} />
+        </>
+      )}
+
       {/* Total */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: `${config.fontSizeLarge}px` }}>
         <span>TOTAL</span>
@@ -236,6 +271,17 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
     ${sep}
     ${itemsHTML}
     ${sepBold}
+    ${props.sale.crateDeposits && props.sale.crateDeposits.length > 0 ? props.sale.crateDeposits.map(cd => {
+      const owed = Math.max(0, cd.cratesRequired - cd.cratesBrought);
+      if (owed <= 0) return '';
+      return `<div style="font-size:${config.fontSizeSmall}px;margin-bottom:4px">
+        <div style="display:flex;justify-content:space-between">
+          <span>Crate deposit: ${cd.productName}</span>
+          <span style="font-weight:bold">₦${(owed * cd.depositPerCrate).toLocaleString()}</span>
+        </div>
+        <div style="font-size:${config.fontSizeSmall - 1}px;color:#666">${cd.cratesBrought}/${cd.cratesRequired} crates returned • ${owed} owed</div>
+      </div>`;
+    }).join('') + `${sep}<div style="font-size:${config.fontSizeSmall}px;color:#666;text-align:center;margin-bottom:4px">⚠ Keep this receipt to claim crate deposit refund</div>${sep}` : ''}
     <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:${config.fontSizeLarge}px">
       <span>TOTAL</span><span>₦${props.sale.total.toLocaleString()}</span>
     </div>

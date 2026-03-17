@@ -49,6 +49,17 @@ export default function InventoryPage() {
   const [newTiers, setNewTiers] = useState<PriceTier[]>([]);
   const [creatingProduct, setCreatingProduct] = useState(false);
 
+  // Crate fields for create
+  const [newIsCrate, setNewIsCrate] = useState(false);
+  const [newCrateDeposit, setNewCrateDeposit] = useState('');
+  const [newTotalCrates, setNewTotalCrates] = useState('');
+  const [newEmptyCrates, setNewEmptyCrates] = useState('');
+  const [newFilledCrates, setNewFilledCrates] = useState('');
+
+  // Crate fields for edit
+  const [editIsCrate, setEditIsCrate] = useState(false);
+  const [editCrateDeposit, setEditCrateDeposit] = useState('');
+
   const { data: products = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
@@ -164,6 +175,8 @@ export default function InventoryPage() {
     setEditPrice(String(product.price));
     setEditCostPrice(String(product.cost_price));
     setEditLowThreshold(String(product.low_stock_threshold));
+    setEditIsCrate(!!product.is_crate_product);
+    setEditCrateDeposit(String(product.crate_deposit_amount || 0));
     // Load existing tiers for this product
     const productTiers = allTiers.filter((t: any) => t.product_id === product.id).map((t: any) => ({
       id: t.id,
@@ -188,6 +201,8 @@ export default function InventoryPage() {
       low_stock_threshold: parseInt(editLowThreshold) || 10,
       bulk_price: null,
       bulk_min_quantity: null,
+      is_crate_product: editIsCrate,
+      crate_deposit_amount: editIsCrate ? (parseFloat(editCrateDeposit) || 0) : 0,
     } as any).eq('id', editingProduct.id);
 
     if (error) {
@@ -565,6 +580,46 @@ export default function InventoryPage() {
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
+            {/* Crate Product Toggle */}
+            <div className="border-t border-border pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Crate Product?</p>
+                  <p className="text-xs text-muted-foreground">Enable if this product comes in returnable crates</p>
+                </div>
+                <button type="button" onClick={() => setNewIsCrate(!newIsCrate)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${newIsCrate ? 'bg-primary' : 'bg-muted'}`}>
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${newIsCrate ? 'translate-x-5' : ''}`} />
+                </button>
+              </div>
+              {newIsCrate && (
+                <div className="space-y-3 pl-0 bg-primary/5 rounded-lg p-3">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Deposit per Crate (₦)</label>
+                    <input type="number" value={newCrateDeposit} onChange={(e) => setNewCrateDeposit(e.target.value)} placeholder="e.g. 500"
+                      className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <p className="text-xs text-muted-foreground mt-1">Amount charged when customer doesn't return empty crate</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1 block">Total Crates</label>
+                      <input type="number" value={newTotalCrates} onChange={(e) => setNewTotalCrates(e.target.value)} placeholder="0"
+                        className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1 block">Filled</label>
+                      <input type="number" value={newFilledCrates} onChange={(e) => setNewFilledCrates(e.target.value)} placeholder="0"
+                        className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1 block">Empty</label>
+                      <input type="number" value={newEmptyCrates} onChange={(e) => setNewEmptyCrates(e.target.value)} placeholder="0"
+                        className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <PriceTiersEditor tiers={newTiers} onChange={setNewTiers} />
             <button
               onClick={async () => {
@@ -582,6 +637,8 @@ export default function InventoryPage() {
                   cost_price: parseFloat(newCostPrice) || 0,
                   stock: parseInt(newStock) || 0,
                   low_stock_threshold: 10,
+                  is_crate_product: newIsCrate,
+                  crate_deposit_amount: newIsCrate ? (parseFloat(newCrateDeposit) || 0) : 0,
                 } as any).select('id').single();
                 if (error) {
                   toast.error(error.message);
@@ -600,8 +657,19 @@ export default function InventoryPage() {
                     }))
                   );
                 }
+                // Insert crate tracking if crate product
+                if (newIsCrate && data) {
+                  await supabase.from('crate_tracking' as any).insert({
+                    store_id: storeId,
+                    product_id: data.id,
+                    total_crates: parseInt(newTotalCrates) || 0,
+                    filled_crates: parseInt(newFilledCrates) || 0,
+                    empty_crates: parseInt(newEmptyCrates) || 0,
+                  });
+                }
                 toast.success(`${newName.trim()} added to inventory!`);
                 setNewName(''); setNewPackSize(''); setNewPrice(''); setNewCostPrice(''); setNewStock(''); setNewTiers([]);
+                setNewIsCrate(false); setNewCrateDeposit(''); setNewTotalCrates(''); setNewEmptyCrates(''); setNewFilledCrates('');
                 setShowCreateProduct(false);
                 queryClient.invalidateQueries({ queryKey: ['products'] });
                 queryClient.invalidateQueries({ queryKey: ['product_price_tiers'] });
@@ -660,6 +728,26 @@ export default function InventoryPage() {
                 <input type="number" value={editLowThreshold} onChange={(e) => setEditLowThreshold(e.target.value)}
                   className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
+            </div>
+            {/* Crate Product Toggle */}
+            <div className="border-t border-border pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Crate Product?</p>
+                  <p className="text-xs text-muted-foreground">Enable if this product comes in returnable crates</p>
+                </div>
+                <button type="button" onClick={() => setEditIsCrate(!editIsCrate)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${editIsCrate ? 'bg-primary' : 'bg-muted'}`}>
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${editIsCrate ? 'translate-x-5' : ''}`} />
+                </button>
+              </div>
+              {editIsCrate && (
+                <div className="bg-primary/5 rounded-lg p-3">
+                  <label className="text-sm font-medium text-foreground mb-1 block">Deposit per Crate (₦)</label>
+                  <input type="number" value={editCrateDeposit} onChange={(e) => setEditCrateDeposit(e.target.value)} placeholder="e.g. 500"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              )}
             </div>
             <PriceTiersEditor tiers={editTiers} onChange={setEditTiers} />
             <div className="flex gap-2">

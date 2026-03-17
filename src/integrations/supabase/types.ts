@@ -14,6 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
+      crate_deposits: {
+        Row: {
+          crates_brought: number
+          crates_owed: number
+          crates_required: number
+          created_at: string
+          deposit_amount: number
+          id: string
+          product_id: string
+          returned_at: string | null
+          returned_by: string | null
+          returned_by_name: string | null
+          sale_id: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          crates_brought?: number
+          crates_owed?: number
+          crates_required?: number
+          created_at?: string
+          deposit_amount?: number
+          id?: string
+          product_id: string
+          returned_at?: string | null
+          returned_by?: string | null
+          returned_by_name?: string | null
+          sale_id: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          crates_brought?: number
+          crates_owed?: number
+          crates_required?: number
+          created_at?: string
+          deposit_amount?: number
+          id?: string
+          product_id?: string
+          returned_at?: string | null
+          returned_by?: string | null
+          returned_by_name?: string | null
+          sale_id?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crate_deposits_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crate_deposits_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crate_deposits_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crate_tracking: {
+        Row: {
+          empty_crates: number
+          filled_crates: number
+          id: string
+          product_id: string
+          store_id: string
+          total_crates: number
+          updated_at: string
+        }
+        Insert: {
+          empty_crates?: number
+          filled_crates?: number
+          id?: string
+          product_id: string
+          store_id: string
+          total_crates?: number
+          updated_at?: string
+        }
+        Update: {
+          empty_crates?: number
+          filled_crates?: number
+          id?: string
+          product_id?: string
+          store_id?: string
+          total_crates?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crate_tracking_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crate_tracking_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_payments: {
         Row: {
           amount: number
@@ -250,8 +365,10 @@ export type Database = {
           bulk_price: number | null
           category: string
           cost_price: number
+          crate_deposit_amount: number
           created_at: string
           id: string
+          is_crate_product: boolean
           low_stock_threshold: number
           name: string
           pack_size: string
@@ -264,8 +381,10 @@ export type Database = {
           bulk_price?: number | null
           category: string
           cost_price?: number
+          crate_deposit_amount?: number
           created_at?: string
           id?: string
+          is_crate_product?: boolean
           low_stock_threshold?: number
           name: string
           pack_size: string
@@ -278,8 +397,10 @@ export type Database = {
           bulk_price?: number | null
           category?: string
           cost_price?: number
+          crate_deposit_amount?: number
           created_at?: string
           id?: string
+          is_crate_product?: boolean
           low_stock_threshold?: number
           name?: string
           pack_size?: string
