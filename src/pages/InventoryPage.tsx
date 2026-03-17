@@ -201,6 +201,8 @@ export default function InventoryPage() {
       low_stock_threshold: parseInt(editLowThreshold) || 10,
       bulk_price: null,
       bulk_min_quantity: null,
+      is_crate_product: editIsCrate,
+      crate_deposit_amount: editIsCrate ? (parseFloat(editCrateDeposit) || 0) : 0,
     } as any).eq('id', editingProduct.id);
 
     if (error) {
