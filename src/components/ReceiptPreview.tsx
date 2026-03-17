@@ -271,6 +271,17 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
     ${sep}
     ${itemsHTML}
     ${sepBold}
+    ${props.sale.crateDeposits && props.sale.crateDeposits.length > 0 ? props.sale.crateDeposits.map(cd => {
+      const owed = Math.max(0, cd.cratesRequired - cd.cratesBrought);
+      if (owed <= 0) return '';
+      return `<div style="font-size:${config.fontSizeSmall}px;margin-bottom:4px">
+        <div style="display:flex;justify-content:space-between">
+          <span>Crate deposit: ${cd.productName}</span>
+          <span style="font-weight:bold">₦${(owed * cd.depositPerCrate).toLocaleString()}</span>
+        </div>
+        <div style="font-size:${config.fontSizeSmall - 1}px;color:#666">${cd.cratesBrought}/${cd.cratesRequired} crates returned • ${owed} owed</div>
+      </div>`;
+    }).join('') + `${sep}<div style="font-size:${config.fontSizeSmall}px;color:#666;text-align:center;margin-bottom:4px">⚠ Keep this receipt to claim crate deposit refund</div>${sep}` : ''}
     <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:${config.fontSizeLarge}px">
       <span>TOTAL</span><span>₦${props.sale.total.toLocaleString()}</span>
     </div>
