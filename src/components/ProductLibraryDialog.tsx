@@ -53,7 +53,7 @@ export default function ProductLibraryDialog({
     setSelected(prev => {
       const next = new Map(prev);
       if (next.has(idx)) next.delete(idx);
-      else next.add(idx, { idx, stock: '', price: '', costPrice: '' });
+      else next.set(idx, { idx, stock: '', price: '', costPrice: '' });
       return next;
     });
   };
