@@ -516,36 +516,6 @@ export default function InventoryPage() {
         </div>
       )}
 
-      {/* Bulk Restock Dialog */}
-      <Dialog open={showRestock} onOpenChange={setShowRestock}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Restock Product</DialogTitle></DialogHeader>
-          <div className="space-y-4 mt-2">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Product</label>
-              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm">
-                <option value="">Select a product...</option>
-                {products.map((p: any) => (<option key={p.id} value={p.id}>{p.name} — {p.pack_size} (Stock: {p.stock})</option>))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Quantity (packs)</label>
-              <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Enter quantity"
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1 block">Reason</label>
-              <input type="text" value={restockReason} onChange={(e) => setRestockReason(e.target.value)} placeholder="e.g. New supply from distributor"
-                className="w-full px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
-            </div>
-            <button onClick={handleRestock} disabled={!selectedProduct || !quantity || parseInt(quantity) <= 0 || !restockReason.trim()}
-              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-              Add Stock
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Create Product Dialog */}
       <Dialog open={showCreateProduct} onOpenChange={setShowCreateProduct}>
