@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, Package, ShoppingCart, PackageOpen, Users, CreditCard, BarChart3, Settings, BookOpen, ArrowLeft, Play } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { AnimatedProductTour } from '@/components/AnimatedProductTour';
 import { useOnboarding, TourStep } from '@/contexts/OnboardingContext';
 import { useAuth } from '@/contexts/AuthContext';
 
