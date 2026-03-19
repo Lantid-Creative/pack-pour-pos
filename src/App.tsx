@@ -60,6 +60,7 @@ function AppRoutes() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<AuthPage />} />
+            <Route path="/how-to" element={<HowToPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
