@@ -3,7 +3,6 @@ import { ChevronDown, ChevronRight, Package, ShoppingCart, PackageOpen, Users, C
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AnimatedProductTour } from '@/components/AnimatedProductTour';
-import { useOnboarding, TourStep } from '@/contexts/OnboardingContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface GuideStep {
