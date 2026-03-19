@@ -261,10 +261,10 @@ export default function InventoryPage() {
           <p className="text-sm text-muted-foreground">Manage stock levels, prices, and products</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setShowLibrary(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-primary/10 active:scale-[0.98] transition-all">
+          <button id="tour-library-btn" onClick={() => setShowLibrary(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-primary/10 active:scale-[0.98] transition-all">
             <Library className="h-4 w-4" /> Library
           </button>
-          <button onClick={() => setShowCreateProduct(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-foreground font-semibold text-sm hover:bg-muted active:scale-[0.98] transition-all">
+          <button id="tour-create-product-btn" onClick={() => setShowCreateProduct(true)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-foreground font-semibold text-sm hover:bg-muted active:scale-[0.98] transition-all">
             <PlusCircle className="h-4 w-4" /> Create
           </button>
         </div>
