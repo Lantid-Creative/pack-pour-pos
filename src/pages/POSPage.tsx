@@ -43,7 +43,7 @@ export default function POSPage() {
     <div className="flex flex-col md:flex-row h-full bg-background">
       {/* Header */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="h-12 border-b border-border flex items-center px-4 bg-card shrink-0">
+        <div id="tour-pos-header" className="h-12 border-b border-border flex items-center px-4 bg-card shrink-0">
           <span className="text-sm font-semibold text-foreground">POS Terminal</span>
           <span className="ml-auto flex items-center gap-3">
             <span className="text-xs text-muted-foreground hidden sm:inline">

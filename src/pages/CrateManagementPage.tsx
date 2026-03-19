@@ -282,7 +282,7 @@ export default function CrateManagementPage() {
       </div>
 
       {/* Deposits list */}
-      <div className="space-y-2">
+      <div id="tour-crate-deposits" className="space-y-2">
         {filteredDeposits.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             No crate deposits found.
