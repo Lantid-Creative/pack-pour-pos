@@ -198,7 +198,7 @@ export default function CrateManagementPage() {
 
       {/* Crate Inventory Overview (admin only) */}
       {isAdmin && (
-        <div className="bg-card border border-border rounded-lg p-4">
+        <div id="tour-crate-inventory" className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               <Package className="h-4 w-4" /> Crate Inventory

@@ -295,7 +295,7 @@ export default function DashboardPage() {
           <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Overview of your store performance</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div id="tour-time-range" className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
             {(['today', 'week', 'month', 'all', 'custom'] as TimeRange[]).map((r) => (
               <button

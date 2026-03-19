@@ -170,7 +170,7 @@ export default function StaffPage() {
       </div>
 
       {/* Tab selector */}
-      <div className="flex gap-1 p-1 rounded-lg bg-muted w-fit">
+      <div id="tour-staff-tabs" className="flex gap-1 p-1 rounded-lg bg-muted w-fit">
         <button
           onClick={() => setActiveTab('staff')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${

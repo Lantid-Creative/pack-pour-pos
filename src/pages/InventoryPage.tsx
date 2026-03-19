@@ -270,7 +270,7 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <input type="text" placeholder="Search inventory..." value={search} onChange={(e) => setSearch(e.target.value)}
+      <input id="tour-inventory-search" type="text" placeholder="Search inventory..." value={search} onChange={(e) => setSearch(e.target.value)}
         className="w-full max-w-md px-3 py-2 rounded-md border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
 
       {/* Mobile card view */}
