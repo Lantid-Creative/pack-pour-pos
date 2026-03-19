@@ -30,6 +30,7 @@ const PaywallPage = lazy(() => import("./pages/PaywallPage"));
 const CustomersPage = lazy(() => import("./pages/CustomersPage"));
 const CreditSalesPage = lazy(() => import("./pages/CreditSalesPage"));
 const CrateManagementPage = lazy(() => import("./pages/CrateManagementPage"));
+const HowToPage = lazy(() => import("./pages/HowToPage"));
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ function AppRoutes() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<AuthPage />} />
+            <Route path="/how-to" element={<HowToPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
@@ -104,6 +106,7 @@ function AppRoutes() {
             <Route path="/staff" element={hasPermission('page:staff') ? <StaffPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/subscription" element={role === 'owner' ? <SubscriptionPage /> : <Navigate to="/dashboard" replace />} />
             <Route path="/settings" element={role === 'owner' ? <StoreSettingsPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/how-to" element={<HowToPage />} />
           </Route>
           <Route path="/setup" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />
           <Route path="/login" element={<Navigate to={hasPermission('page:dashboard') ? '/dashboard' : '/pos'} replace />} />

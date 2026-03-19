@@ -1,7 +1,7 @@
 import { useLocation, useNavigate, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
-import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon, Settings, UserCheck, AlertCircle, PackageOpen } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, History, LogOut, ChevronLeft, ChevronRight, Users, CreditCard, Sun, Moon, Settings, UserCheck, AlertCircle, PackageOpen, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { OnboardingChecklist } from '@/components/OnboardingChecklist';
@@ -17,6 +17,7 @@ const allNavItems = [
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission, tourId: 'nav-staff' },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-subscription' },
   { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-settings' },
+  { path: '/how-to', label: 'How To', icon: BookOpen, permission: 'page:pos' as Permission, tourId: 'nav-howto' },
 ];
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
