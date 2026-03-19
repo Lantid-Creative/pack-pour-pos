@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AnimatedProductTour } from '@/components/AnimatedProductTour';
 import { useAuth } from '@/contexts/AuthContext';
+import type { TourStep } from '@/contexts/OnboardingContext';
 
 interface GuideStep {
   step: number;
