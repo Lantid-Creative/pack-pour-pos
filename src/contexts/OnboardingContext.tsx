@@ -252,6 +252,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
 export function useOnboarding() {
   const ctx = useContext(OnboardingContext);
-  if (!ctx) throw new Error('useOnboarding must be used within OnboardingProvider');
+  if (ctx === undefined) {
+    throw new Error('useOnboarding must be used within OnboardingProvider');
+  }
   return ctx;
 }
