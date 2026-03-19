@@ -21,11 +21,13 @@ interface OnboardingContextType {
   tourActive: boolean;
   tourStep: number;
   startTour: () => void;
+  startGuideTour: (steps: TourStep[], navigateTo?: string) => void;
   nextTourStep: () => void;
   prevTourStep: () => void;
   endTour: () => void;
   tourSteps: TourStep[];
   isOnboardingDone: boolean;
+  guideTourRoute: string | null;
 }
 
 export interface TourStep {
