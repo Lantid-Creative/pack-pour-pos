@@ -5,7 +5,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
 import { PageTransition } from '@/components/PageTransition';
 import { AlertTriangle, X, LayoutDashboard, ShoppingCart, Package, History, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
 const mobileNavItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'page:dashboard' as Permission },
