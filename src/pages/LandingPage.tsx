@@ -66,6 +66,7 @@ export default function LandingPage() {
             <a href="#features" className="hover:text-white transition-colors duration-200">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors duration-200">How It Works</a>
             <a href="#pricing" className="hover:text-white transition-colors duration-200">Pricing</a>
+            <button onClick={() => navigate('/how-to')} className="hover:text-white transition-colors duration-200">How To Guide</button>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/login')} className="text-sm font-medium text-landing-muted hover:text-white transition-colors">

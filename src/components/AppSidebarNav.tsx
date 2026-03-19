@@ -17,6 +17,7 @@ const allNavItems = [
   { path: '/staff', label: 'Staff', icon: Users, permission: 'page:staff' as Permission, tourId: 'nav-staff' },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-subscription' },
   { path: '/settings', label: 'Store Settings', icon: Settings, permission: 'page:staff' as Permission, ownerOnly: true, tourId: 'nav-settings' },
+  { path: '/how-to', label: 'How To', icon: BookOpen, permission: 'page:pos' as Permission, tourId: 'nav-howto' },
 ];
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
