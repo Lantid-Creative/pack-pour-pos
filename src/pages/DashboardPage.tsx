@@ -295,7 +295,7 @@ export default function DashboardPage() {
           <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Overview of your store performance</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div id="tour-time-range" className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
             {(['today', 'week', 'month', 'all', 'custom'] as TimeRange[]).map((r) => (
               <button
@@ -342,7 +342,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Key Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div id="tour-metrics-row" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <MetricCard
           icon={DollarSign}
           label={`Revenue (${rangeLabels[timeRange]})`}

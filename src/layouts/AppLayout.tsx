@@ -5,7 +5,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { usePermissions, Permission } from '@/hooks/usePermissions';
 import { PageTransition } from '@/components/PageTransition';
 import { AlertTriangle, X, LayoutDashboard, ShoppingCart, Package, History, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 
 const mobileNavItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: 'page:dashboard' as Permission },
@@ -22,6 +23,21 @@ export default function AppLayout() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [dismissed, setDismissed] = useState(false);
+  const { startGuideTour } = useOnboarding();
+
+  // Check for guide tour state from navigation
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.guideTour) {
+      // Small delay to let the target page render its elements
+      const timer = setTimeout(() => {
+        startGuideTour(state.guideTour);
+      }, 500);
+      // Clear the state so it doesn't re-trigger
+      window.history.replaceState({}, '');
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, startGuideTour]);
 
   const daysLeft = trialEndsAt
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))

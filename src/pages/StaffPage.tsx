@@ -160,6 +160,7 @@ export default function StaffPage() {
           </div>
         ) : (
           <button
+            id="tour-add-staff-btn"
             onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
           >
@@ -169,7 +170,7 @@ export default function StaffPage() {
       </div>
 
       {/* Tab selector */}
-      <div className="flex gap-1 p-1 rounded-lg bg-muted w-fit">
+      <div id="tour-staff-tabs" className="flex gap-1 p-1 rounded-lg bg-muted w-fit">
         <button
           onClick={() => setActiveTab('staff')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${

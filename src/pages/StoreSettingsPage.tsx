@@ -113,7 +113,7 @@ export default function StoreSettingsPage() {
         {/* Left Column: Settings Form */}
         <div className="space-y-6">
           {/* Store Details */}
-          <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+          <div id="tour-store-details" className="bg-card border border-border rounded-xl p-5 space-y-4">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
               <Store className="h-5 w-5 text-primary" /> Store Details
             </h2>

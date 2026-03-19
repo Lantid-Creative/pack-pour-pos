@@ -21,11 +21,13 @@ interface OnboardingContextType {
   tourActive: boolean;
   tourStep: number;
   startTour: () => void;
+  startGuideTour: (steps: TourStep[], navigateTo?: string) => void;
   nextTourStep: () => void;
   prevTourStep: () => void;
   endTour: () => void;
   tourSteps: TourStep[];
   isOnboardingDone: boolean;
+  guideTourRoute: string | null;
 }
 
 export interface TourStep {
@@ -89,6 +91,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [tourActive, setTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [initialized, setInitialized] = useState(false);
+  const [customTourSteps, setCustomTourSteps] = useState<TourStep[] | null>(null);
+  const [guideTourRoute, setGuideTourRoute] = useState<string | null>(null);
 
   // Load state from localStorage
   useEffect(() => {
@@ -188,19 +192,33 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const startTour = useCallback(() => {
     setShowWelcome(false);
+    setCustomTourSteps(null);
+    setGuideTourRoute(null);
     setTourStep(0);
     setTourActive(true);
   }, []);
 
+  const startGuideTour = useCallback((steps: TourStep[], navigateTo?: string) => {
+    setShowWelcome(false);
+    setCustomTourSteps(steps);
+    setGuideTourRoute(navigateTo || null);
+    setTourStep(0);
+    setTourActive(true);
+  }, []);
+
+  const activeTourSteps = customTourSteps || TOUR_STEPS;
+
   const nextTourStep = useCallback(() => {
     setTourStep(prev => {
-      if (prev >= TOUR_STEPS.length - 1) {
+      if (prev >= activeTourSteps.length - 1) {
         setTourActive(false);
+        setCustomTourSteps(null);
+        setGuideTourRoute(null);
         return 0;
       }
       return prev + 1;
     });
-  }, []);
+  }, [activeTourSteps.length]);
 
   const prevTourStep = useCallback(() => {
     setTourStep(prev => Math.max(0, prev - 1));
@@ -209,6 +227,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const endTour = useCallback(() => {
     setTourActive(false);
     setTourStep(0);
+    setCustomTourSteps(null);
+    setGuideTourRoute(null);
   }, []);
 
   const completedCount = steps.filter(s => s.completed).length;
@@ -220,9 +240,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     <OnboardingContext.Provider value={{
       showWelcome, dismissWelcome, steps, completeStep,
       completedCount, totalSteps, progress,
-      tourActive, tourStep, startTour, nextTourStep, prevTourStep, endTour,
-      tourSteps: TOUR_STEPS,
+      tourActive, tourStep, startTour, startGuideTour, nextTourStep, prevTourStep, endTour,
+      tourSteps: activeTourSteps,
       isOnboardingDone,
+      guideTourRoute,
     }}>
       {children}
     </OnboardingContext.Provider>
