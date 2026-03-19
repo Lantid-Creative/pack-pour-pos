@@ -206,15 +206,19 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setTourActive(true);
   }, []);
 
+  const activeTourSteps = customTourSteps || TOUR_STEPS;
+
   const nextTourStep = useCallback(() => {
     setTourStep(prev => {
-      if (prev >= TOUR_STEPS.length - 1) {
+      if (prev >= activeTourSteps.length - 1) {
         setTourActive(false);
+        setCustomTourSteps(null);
+        setGuideTourRoute(null);
         return 0;
       }
       return prev + 1;
     });
-  }, []);
+  }, [activeTourSteps.length]);
 
   const prevTourStep = useCallback(() => {
     setTourStep(prev => Math.max(0, prev - 1));
@@ -223,6 +227,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const endTour = useCallback(() => {
     setTourActive(false);
     setTourStep(0);
+    setCustomTourSteps(null);
+    setGuideTourRoute(null);
   }, []);
 
   const completedCount = steps.filter(s => s.completed).length;
