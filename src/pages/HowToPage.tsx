@@ -268,7 +268,7 @@ export default function HowToPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const onboarding = user ? null : undefined; // Only try to use onboarding context if logged in
+  
 
   const handleStartTour = (guide: Guide) => {
     if (!guide.tourSteps || !guide.tourRoute) return;
