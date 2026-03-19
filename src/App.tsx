@@ -30,6 +30,7 @@ const PaywallPage = lazy(() => import("./pages/PaywallPage"));
 const CustomersPage = lazy(() => import("./pages/CustomersPage"));
 const CreditSalesPage = lazy(() => import("./pages/CreditSalesPage"));
 const CrateManagementPage = lazy(() => import("./pages/CrateManagementPage"));
+const HowToPage = lazy(() => import("./pages/HowToPage"));
 
 const queryClient = new QueryClient();
 
