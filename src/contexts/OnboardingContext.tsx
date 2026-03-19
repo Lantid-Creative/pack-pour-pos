@@ -192,6 +192,16 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const startTour = useCallback(() => {
     setShowWelcome(false);
+    setCustomTourSteps(null);
+    setGuideTourRoute(null);
+    setTourStep(0);
+    setTourActive(true);
+  }, []);
+
+  const startGuideTour = useCallback((steps: TourStep[], navigateTo?: string) => {
+    setShowWelcome(false);
+    setCustomTourSteps(steps);
+    setGuideTourRoute(navigateTo || null);
     setTourStep(0);
     setTourActive(true);
   }, []);
