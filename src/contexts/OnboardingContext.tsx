@@ -240,9 +240,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     <OnboardingContext.Provider value={{
       showWelcome, dismissWelcome, steps, completeStep,
       completedCount, totalSteps, progress,
-      tourActive, tourStep, startTour, nextTourStep, prevTourStep, endTour,
-      tourSteps: TOUR_STEPS,
+      tourActive, tourStep, startTour, startGuideTour, nextTourStep, prevTourStep, endTour,
+      tourSteps: activeTourSteps,
       isOnboardingDone,
+      guideTourRoute,
     }}>
       {children}
     </OnboardingContext.Provider>
