@@ -91,6 +91,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [tourActive, setTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [initialized, setInitialized] = useState(false);
+  const [customTourSteps, setCustomTourSteps] = useState<TourStep[] | null>(null);
+  const [guideTourRoute, setGuideTourRoute] = useState<string | null>(null);
 
   // Load state from localStorage
   useEffect(() => {
