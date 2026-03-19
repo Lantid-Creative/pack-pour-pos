@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, Package, ShoppingCart, PackageOpen, Users, CreditCard, BarChart3, Settings, BookOpen, ArrowLeft, Play } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useOnboarding, TourStep } from '@/contexts/OnboardingContext';
+import { AnimatedProductTour } from '@/components/AnimatedProductTour';
 import { useAuth } from '@/contexts/AuthContext';
+import type { TourStep } from '@/contexts/OnboardingContext';
 
 interface GuideStep {
   step: number;
@@ -267,7 +268,7 @@ export default function HowToPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const onboarding = user ? null : undefined; // Only try to use onboarding context if logged in
+  
 
   const handleStartTour = (guide: Guide) => {
     if (!guide.tourSteps || !guide.tourRoute) return;
@@ -301,10 +302,16 @@ export default function HowToPage() {
         <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Learn How to Use Lantid</h2>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-            Step-by-step guides for everything you need to do on the platform. Click any topic to see the instructions, or use the <strong>interactive walkthrough</strong> to be guided through the real interface.
+            See the platform in action below, then explore step-by-step guides for every feature.
           </p>
         </div>
 
+        {/* Animated Product Tour */}
+        <div className="mb-10">
+          <AnimatedProductTour />
+        </div>
+
+        <h3 className="text-lg font-bold text-foreground mb-4">Step-by-Step Guides</h3>
         <div className="space-y-3">
           {guides.map((guide) => (
             <GuideCard key={guide.id} guide={guide} onStartTour={handleStartTour} />
