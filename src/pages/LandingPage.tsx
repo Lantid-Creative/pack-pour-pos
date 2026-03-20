@@ -125,29 +125,7 @@ export default function LandingPage() {
             style={{ opacity: heroOpacity, scale: heroScale }}
             className="mt-12 relative mx-auto w-full max-w-5xl"
           >
-            {/* Browser chrome */}
-            <div className="rounded-xl border border-landing-border/60 bg-landing-card/80 backdrop-blur-sm shadow-2xl shadow-black/40 overflow-hidden">
-              {/* Title bar */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-landing-border/40 bg-landing-bg/50">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-500/70" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500/70" />
-                  <div className="h-3 w-3 rounded-full bg-green-500/70" />
-                </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1 rounded-md bg-landing-bg/60 border border-landing-border/30 text-xs text-landing-muted font-mono">
-                    lantid.store/dashboard
-                  </div>
-                </div>
-              </div>
-              {/* Screenshot */}
-              <img
-                src={heroDashboard}
-                alt="Lantid POS Dashboard showing sales analytics, inventory management and real-time metrics"
-                className="w-full"
-                loading="eager"
-              />
-            </div>
+            <AnimatedProductTour />
 
             {/* Floating accent cards */}
             <motion.div
