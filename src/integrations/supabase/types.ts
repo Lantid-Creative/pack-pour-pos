@@ -539,6 +539,48 @@ export type Database = {
           },
         ]
       }
+      sale_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          payment_method: string
+          sale_id: string
+          store_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_method: string
+          sale_id: string
+          store_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_method?: string
+          sale_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_payments_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           cashier_id: string
@@ -786,7 +828,7 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "cashier"
-      payment_method: "cash" | "pos" | "transfer" | "credit"
+      payment_method: "cash" | "pos" | "transfer" | "credit" | "split"
       subscription_plan: "starter" | "business" | "enterprise"
       subscription_status: "active" | "expired" | "cancelled" | "pending"
     }
@@ -917,7 +959,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "cashier"],
-      payment_method: ["cash", "pos", "transfer", "credit"],
+      payment_method: ["cash", "pos", "transfer", "credit", "split"],
       subscription_plan: ["starter", "business", "enterprise"],
       subscription_status: ["active", "expired", "cancelled", "pending"],
     },
