@@ -305,7 +305,9 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
     <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:${config.fontSizeLarge}px">
       <span>TOTAL</span><span>₦${props.sale.total.toLocaleString()}</span>
     </div>
-    <div style="text-align:center;font-size:${config.fontSizeSmall}px;text-transform:uppercase;margin-top:8px">Paid via: ${props.sale.paymentMethod}</div>
+    ${props.sale.paymentSplits && props.sale.paymentSplits.length > 0
+      ? `<div style="margin-top:8px"><div style="text-align:center;font-size:${config.fontSizeSmall}px;text-transform:uppercase;font-weight:bold;margin-bottom:4px">Split Payment</div>${props.sale.paymentSplits.map(sp => `<div style="display:flex;justify-content:space-between;font-size:${config.fontSizeSmall}px"><span style="text-transform:uppercase">${sp.method}</span><span>₦${sp.amount.toLocaleString()}</span></div>`).join('')}</div>`
+      : `<div style="text-align:center;font-size:${config.fontSizeSmall}px;text-transform:uppercase;margin-top:8px">Paid via: ${props.sale.paymentMethod}</div>`}
     ${sep}
     ${props.footer ? `<div style="text-align:center;font-size:${config.fontSizeSmall}px;color:#666">${props.footer}</div>` : ''}
     </body></html>`;

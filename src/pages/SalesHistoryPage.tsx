@@ -50,7 +50,27 @@ export default function SalesHistoryPage() {
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+
+      // Fetch split payment details for split sales
+      const splitSaleIds = (data || []).filter((s: any) => s.payment_method === 'split').map((s: any) => s.id);
+      let splitPaymentsMap: Record<string, any[]> = {};
+      if (splitSaleIds.length > 0) {
+        const { data: splits } = await supabase
+          .from('sale_payments' as any)
+          .select('*')
+          .in('sale_id', splitSaleIds);
+        if (splits) {
+          for (const sp of splits as any[]) {
+            if (!splitPaymentsMap[sp.sale_id]) splitPaymentsMap[sp.sale_id] = [];
+            splitPaymentsMap[sp.sale_id].push(sp);
+          }
+        }
+      }
+
+      return (data || []).map((s: any) => ({
+        ...s,
+        payment_splits: splitPaymentsMap[s.id] || [],
+      }));
     },
     enabled: !!storeId,
   });
