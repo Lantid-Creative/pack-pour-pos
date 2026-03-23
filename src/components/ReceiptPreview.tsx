@@ -196,9 +196,23 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       </div>
 
       {/* Payment */}
-      <div style={{ textAlign: 'center', fontSize: `${config.fontSizeSmall}px`, textTransform: 'uppercase', marginTop: '8px' }}>
-        Paid via: {sale.paymentMethod}
-      </div>
+      {sale.paymentSplits && sale.paymentSplits.length > 0 ? (
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ textAlign: 'center', fontSize: `${config.fontSizeSmall}px`, textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>
+            Split Payment
+          </div>
+          {sale.paymentSplits.map((sp, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: `${config.fontSizeSmall}px` }}>
+              <span style={{ textTransform: 'uppercase' }}>{sp.method}</span>
+              <span>₦{sp.amount.toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', fontSize: `${config.fontSizeSmall}px`, textTransform: 'uppercase', marginTop: '8px' }}>
+          Paid via: {sale.paymentMethod}
+        </div>
+      )}
 
       {/* Separator */}
       <div style={{ borderTop: isA4 ? '1px solid #ccc' : '1px dashed #000', margin: `${isA4 ? 12 : 6}px 0` }} />
