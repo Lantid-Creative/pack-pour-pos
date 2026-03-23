@@ -59,6 +59,11 @@ interface SaleItem {
   quantity: number;
 }
 
+interface PaymentSplit {
+  method: string;
+  amount: number;
+}
+
 interface ReceiptProps {
   sale: {
     id: string;
@@ -68,6 +73,7 @@ interface ReceiptProps {
     cashier: string;
     date: string;
     crateDeposits?: CrateInfo[];
+    paymentSplits?: PaymentSplit[];
   };
   storeName: string;
   address?: string;
