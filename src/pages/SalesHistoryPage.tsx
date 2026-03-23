@@ -525,16 +525,29 @@ export default function SalesHistoryPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`uppercase text-xs font-bold px-2 py-0.5 rounded-full ${
-                        sale.payment_method === 'cash' ? 'bg-primary/10 text-primary' :
-                        sale.payment_method === 'pos' ? 'bg-secondary/10 text-secondary-foreground' :
-                        sale.payment_method === 'credit' ? 'bg-destructive/10 text-destructive' :
-                        'bg-accent/20 text-accent-foreground'
-                      }`}>{sale.payment_method}</span>
-                      {sale.payment_method === 'credit' && sale.credit_status && (
-                        <span className={`ml-1 text-[10px] font-medium ${sale.credit_status === 'paid' ? 'text-green-600' : 'text-destructive'}`}>
-                          ({sale.credit_status})
-                        </span>
+                      {sale.payment_method === 'split' && sale.payment_splits?.length > 0 ? (
+                        <div className="space-y-0.5">
+                          <span className="uppercase text-xs font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground">split</span>
+                          {sale.payment_splits.map((sp: any, i: number) => (
+                            <div key={i} className="text-[10px] text-muted-foreground">
+                              {sp.payment_method.toUpperCase()}: ₦{Number(sp.amount).toLocaleString()}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <span className={`uppercase text-xs font-bold px-2 py-0.5 rounded-full ${
+                            sale.payment_method === 'cash' ? 'bg-primary/10 text-primary' :
+                            sale.payment_method === 'pos' ? 'bg-secondary/10 text-secondary-foreground' :
+                            sale.payment_method === 'credit' ? 'bg-destructive/10 text-destructive' :
+                            'bg-accent/20 text-accent-foreground'
+                          }`}>{sale.payment_method}</span>
+                          {sale.payment_method === 'credit' && sale.credit_status && (
+                            <span className={`ml-1 text-[10px] font-medium ${sale.credit_status === 'paid' ? 'text-green-600' : 'text-destructive'}`}>
+                              ({sale.credit_status})
+                            </span>
+                          )}
+                        </>
                       )}
                     </td>
                     <td className="py-3 px-4 text-right font-mono-numbers font-bold">₦{Number(sale.total).toLocaleString()}</td>
