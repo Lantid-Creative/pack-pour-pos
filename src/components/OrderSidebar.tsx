@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Minus, Plus, Trash2, ShoppingCart, UserPlus, Package } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, UserPlus, Package, Split } from 'lucide-react';
 import { ReceiptDialog } from './ReceiptDialog';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -23,6 +23,11 @@ export interface CartItem {
 
 type PaymentMethod = 'cash' | 'pos' | 'transfer' | 'credit';
 
+interface PaymentSplit {
+  method: PaymentMethod;
+  amount: number;
+}
+
 interface CrateInfo {
   productId: string;
   productName: string;
@@ -35,14 +40,20 @@ interface CompletedSale {
   id: string;
   items: CartItem[];
   total: number;
-  paymentMethod: PaymentMethod;
+  paymentMethod: string;
   cashier: string;
   date: string;
   crateDeposits?: CrateInfo[];
+  paymentSplits?: PaymentSplit[];
 }
 
 export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: CartItem[]; setCart: (c: CartItem[]) => void; onCheckoutComplete?: () => void }) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
+  const [isSplitPayment, setIsSplitPayment] = useState(false);
+  const [paymentSplits, setPaymentSplits] = useState<PaymentSplit[]>([
+    { method: 'cash', amount: 0 },
+    { method: 'transfer', amount: 0 },
+  ]);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastSale, setLastSale] = useState<CompletedSale | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -53,13 +64,12 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
 
   // Crate state
   const [showCrateDialog, setShowCrateDialog] = useState(false);
-  const [crateInfoMap, setCrateInfoMap] = useState<Record<string, number>>({}); // productId -> cratesBrought
+  const [crateInfoMap, setCrateInfoMap] = useState<Record<string, number>>({});
   const [pendingCheckout, setPendingCheckout] = useState(false);
 
   const { user, profile, storeId } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch all price tiers for the store
   const { data: allTiers = [] } = useQuery({
     queryKey: ['product_price_tiers', storeId],
     queryFn: async () => {
@@ -71,7 +81,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     enabled: !!storeId,
   });
 
-  // Fetch full product data to check crate info
   const { data: allProducts = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
@@ -83,7 +92,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     enabled: !!storeId,
   });
 
-  // Fetch customers for credit selection
   const { data: customers = [] } = useQuery({
     queryKey: ['customers', storeId],
     queryFn: async () => {
@@ -95,7 +103,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     enabled: !!storeId,
   });
 
-  // Identify crate products in cart
   const crateProductsInCart = useMemo(() => {
     return cart.filter(item => {
       const prod = allProducts.find((p: any) => p.id === item.product.id);
@@ -115,13 +122,10 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     const productTiers = allTiers
       .filter((t: any) => t.product_id === item.product.id)
       .sort((a: any, b: any) => b.min_quantity - a.min_quantity);
-
     for (const tier of productTiers) {
       const minOk = item.quantity >= tier.min_quantity;
       const maxOk = !tier.max_quantity || item.quantity <= tier.max_quantity;
-      if (minOk && maxOk) {
-        return Number(tier.price);
-      }
+      if (minOk && maxOk) return Number(tier.price);
     }
     return item.product.price;
   };
@@ -130,7 +134,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     const productTiers = allTiers
       .filter((t: any) => t.product_id === item.product.id)
       .sort((a: any, b: any) => b.min_quantity - a.min_quantity);
-
     for (const tier of productTiers) {
       const minOk = item.quantity >= tier.min_quantity;
       const maxOk = !tier.max_quantity || item.quantity <= tier.max_quantity;
@@ -139,7 +142,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     return null;
   };
 
-  // Calculate crate deposit total
   const crateDepositTotal = useMemo(() => {
     let total = 0;
     for (const cp of crateProductsInCart) {
@@ -153,10 +155,44 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   const subtotal = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
   const total = subtotal + crateDepositTotal;
 
+  // Split payment helpers
+  const splitTotal = paymentSplits.reduce((s, p) => s + p.amount, 0);
+  const splitRemaining = total - splitTotal;
+  const hasCreditSplit = paymentSplits.some(s => s.method === 'credit' && s.amount > 0);
+  const needsCustomerForSplit = isSplitPayment && hasCreditSplit;
+
+  const availableSplitMethods: PaymentMethod[] = ['cash', 'pos', 'transfer', 'credit'];
+
+  const addSplitMethod = () => {
+    const usedMethods = paymentSplits.map(s => s.method);
+    const nextMethod = availableSplitMethods.find(m => !usedMethods.includes(m));
+    if (nextMethod) {
+      setPaymentSplits([...paymentSplits, { method: nextMethod, amount: 0 }]);
+    }
+  };
+
+  const removeSplitMethod = (index: number) => {
+    if (paymentSplits.length <= 2) return;
+    setPaymentSplits(paymentSplits.filter((_, i) => i !== index));
+  };
+
+  const updateSplitMethod = (index: number, method: PaymentMethod) => {
+    setPaymentSplits(paymentSplits.map((s, i) => i === index ? { ...s, method } : s));
+  };
+
+  const updateSplitAmount = (index: number, amount: number) => {
+    setPaymentSplits(paymentSplits.map((s, i) => i === index ? { ...s, amount } : s));
+  };
+
+  const fillRemainingToSplit = (index: number) => {
+    const othersTotal = paymentSplits.reduce((s, p, i) => i === index ? s : s + p.amount, 0);
+    const remaining = total - othersTotal;
+    updateSplitAmount(index, Math.max(0, remaining));
+  };
+
   const updateQty = (productId: string, qty: number) => {
     if (qty <= 0) {
       setCart(cart.filter((i) => i.product.id !== productId));
-      // Clear crate info for removed product
       setCrateInfoMap(prev => { const n = { ...prev }; delete n[productId]; return n; });
     } else {
       setCart(cart.map((i) => (i.product.id === productId ? { ...i, quantity: qty } : i)));
@@ -183,12 +219,30 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
 
   const initiateCheckout = () => {
     if (cart.length === 0 || !user || !storeId) return;
-    if (paymentMethod === 'credit' && !selectedCustomerId) {
+
+    // Validate credit needs customer
+    if (!isSplitPayment && paymentMethod === 'credit' && !selectedCustomerId) {
       toast.error('Please select a customer for credit sale');
       return;
     }
+    if (needsCustomerForSplit && !selectedCustomerId) {
+      toast.error('Please select a customer for the credit portion');
+      return;
+    }
 
-    // If there are crate products, show crate dialog first
+    // Validate split amounts
+    if (isSplitPayment) {
+      if (Math.abs(splitRemaining) > 0.01) {
+        toast.error(`Split amounts must equal ₦${total.toLocaleString()}. Remaining: ₦${splitRemaining.toLocaleString()}`);
+        return;
+      }
+      const activeSplits = paymentSplits.filter(s => s.amount > 0);
+      if (activeSplits.length < 2) {
+        toast.error('Split payment requires at least 2 methods with amounts');
+        return;
+      }
+    }
+
     if (crateProductsInCart.length > 0) {
       setShowCrateDialog(true);
       return;
@@ -213,12 +267,15 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
         };
       });
 
+      // Determine the primary payment method
+      const primaryMethod = isSplitPayment ? 'split' : paymentMethod;
+
       const { data, error } = await supabase.rpc('complete_sale', {
         p_store_id: storeId,
         p_cashier_id: user.id,
         p_cashier_name: profile?.full_name || user.email || '',
         p_total: total,
-        p_payment_method: paymentMethod as any,
+        p_payment_method: primaryMethod as any,
         p_items: items,
       });
 
@@ -226,8 +283,24 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
 
       const saleId = data as string;
 
-      // If credit sale, update customer_id and credit_status
-      if (paymentMethod === 'credit' && selectedCustomerId) {
+      // Record split payment details
+      const activeSplits = isSplitPayment ? paymentSplits.filter(s => s.amount > 0) : [];
+      if (isSplitPayment && activeSplits.length > 0) {
+        const splitInserts = activeSplits.map(s => ({
+          sale_id: saleId,
+          store_id: storeId,
+          payment_method: s.method,
+          amount: s.amount,
+        }));
+        await supabase.from('sale_payments' as any).insert(splitInserts);
+      }
+
+      // If credit (single or split with credit), update customer and credit status
+      const isCredit = (!isSplitPayment && paymentMethod === 'credit') || (isSplitPayment && hasCreditSplit);
+      if (isCredit && selectedCustomerId) {
+        const creditAmount = isSplitPayment
+          ? paymentSplits.find(s => s.method === 'credit')?.amount || 0
+          : total;
         await supabase.from('sales').update({
           customer_id: selectedCustomerId,
           credit_status: 'unpaid',
@@ -254,7 +327,6 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
           });
         }
 
-        // Update crate tracking - reduce filled, increase empty for brought
         if (brought > 0) {
           const { data: existing } = await supabase.from('crate_tracking' as any)
             .select('*')
@@ -286,10 +358,11 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
         id: saleId,
         items: [...cart],
         total,
-        paymentMethod,
+        paymentMethod: primaryMethod,
         cashier: profile?.full_name || '',
         date: new Date().toLocaleDateString('en-NG'),
         crateDeposits: crateDepositsData.length > 0 ? crateDepositsData : undefined,
+        paymentSplits: isSplitPayment ? activeSplits : undefined,
       };
 
       setLastSale(sale);
@@ -298,6 +371,8 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       setCart([]);
       setCrateInfoMap({});
       setSelectedCustomerId(null);
+      setIsSplitPayment(false);
+      setPaymentSplits([{ method: 'cash', amount: 0 }, { method: 'transfer', amount: 0 }]);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       queryClient.invalidateQueries({ queryKey: ['credit-sales'] });
@@ -372,24 +447,111 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
       </div>
 
       <div className="border-t border-border p-4 space-y-3">
-        <div className="grid grid-cols-4 gap-1 p-1 bg-muted rounded-lg">
-          {(['cash', 'pos', 'transfer', 'credit'] as PaymentMethod[]).map((method) => (
-            <button
-              key={method}
-              onClick={() => {
-                setPaymentMethod(method);
-                if (method !== 'credit') setSelectedCustomerId(null);
-              }}
-              className={`py-2 text-[10px] sm:text-xs font-bold uppercase rounded-md transition-all ${
-                paymentMethod === method ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {method}
-            </button>
-          ))}
+        {/* Payment mode toggle */}
+        <div className="flex items-center gap-2 mb-1">
+          <button
+            onClick={() => { setIsSplitPayment(false); }}
+            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${
+              !isSplitPayment ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Single Payment
+          </button>
+          <button
+            onClick={() => { setIsSplitPayment(true); }}
+            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1 ${
+              isSplitPayment ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Split className="h-3 w-3" /> Split Payment
+          </button>
         </div>
 
-        {paymentMethod === 'credit' && (
+        {!isSplitPayment ? (
+          /* Single payment method selector */
+          <div className="grid grid-cols-4 gap-1 p-1 bg-muted rounded-lg">
+            {(['cash', 'pos', 'transfer', 'credit'] as PaymentMethod[]).map((method) => (
+              <button
+                key={method}
+                onClick={() => {
+                  setPaymentMethod(method);
+                  if (method !== 'credit') setSelectedCustomerId(null);
+                }}
+                className={`py-2 text-[10px] sm:text-xs font-bold uppercase rounded-md transition-all ${
+                  paymentMethod === method ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {method}
+              </button>
+            ))}
+          </div>
+        ) : (
+          /* Split payment UI */
+          <div className="space-y-2 bg-muted/30 rounded-lg p-3 border border-border">
+            <p className="text-xs font-medium text-muted-foreground mb-1">Split total: ₦{total.toLocaleString()}</p>
+            {paymentSplits.map((split, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <select
+                  value={split.method}
+                  onChange={(e) => updateSplitMethod(index, e.target.value as PaymentMethod)}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs font-medium flex-shrink-0 w-24"
+                >
+                  {availableSplitMethods.map(m => (
+                    <option key={m} value={m} disabled={paymentSplits.some((s, i) => i !== index && s.method === m)}>
+                      {m.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative flex-1">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₦</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={total}
+                    value={split.amount || ''}
+                    onChange={(e) => updateSplitAmount(index, parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                    className="w-full h-8 rounded-md border border-input bg-background pl-6 pr-2 text-xs font-mono-numbers focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <button
+                  onClick={() => fillRemainingToSplit(index)}
+                  className="text-[10px] text-primary font-medium hover:underline whitespace-nowrap"
+                  title="Fill remaining amount"
+                >
+                  Fill
+                </button>
+                {paymentSplits.length > 2 && (
+                  <button
+                    onClick={() => removeSplitMethod(index)}
+                    className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+            {paymentSplits.length < 4 && (
+              <button
+                onClick={addSplitMethod}
+                className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+              >
+                <Plus className="h-3 w-3" /> Add method
+              </button>
+            )}
+            {Math.abs(splitRemaining) > 0.01 && (
+              <p className={`text-xs font-medium ${splitRemaining > 0 ? 'text-warning' : 'text-destructive'}`}>
+                {splitRemaining > 0 ? `₦${splitRemaining.toLocaleString()} remaining` : `₦${Math.abs(splitRemaining).toLocaleString()} over`}
+              </p>
+            )}
+            {Math.abs(splitRemaining) <= 0.01 && splitTotal > 0 && (
+              <p className="text-xs font-medium text-green-500">✓ Fully allocated</p>
+            )}
+          </div>
+        )}
+
+        {/* Customer selector for credit */}
+        {((!isSplitPayment && paymentMethod === 'credit') || needsCustomerForSplit) && (
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">Select Customer</label>
             <select
@@ -448,7 +610,7 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
 
       {lastSale && <ReceiptDialog sale={lastSale} open={showReceipt} onClose={() => setShowReceipt(false)} />}
 
-      {/* Crate Dialog - ask how many empties customer brought */}
+      {/* Crate Dialog */}
       <Dialog open={showCrateDialog} onOpenChange={setShowCrateDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
