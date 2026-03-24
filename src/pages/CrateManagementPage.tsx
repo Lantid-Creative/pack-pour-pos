@@ -196,73 +196,76 @@ export default function CrateManagementPage() {
         <p className="text-sm text-muted-foreground">Track crate deposits, returns, and inventory</p>
       </div>
 
-      {/* Crate Inventory Overview (admin only) */}
-      {isAdmin && (
-        <div id="tour-crate-inventory" className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <Package className="h-4 w-4" /> Crate Inventory
-            </h3>
-            {untracked.length > 0 && (
-              <div className="relative">
-                <button onClick={() => setShowAddDropdown(!showAddDropdown)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all">
-                  <Plus className="h-3.5 w-3.5" /> Add Product
-                </button>
-                {showAddDropdown && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowAddDropdown(false)} />
-                    <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-lg z-20">
-                      {untracked.map((p) => (
-                        <button key={p.id} onClick={() => {
-                          setEditingCrate({ _isNew: true, product_id: p.id, products: p });
-                          setEditTotal('0'); setEditFilled('0'); setEditEmpty('0');
-                          setShowAddDropdown(false);
-                        }}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg">
-                          {p.name} <span className="text-muted-foreground text-xs">({p.pack_size})</span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-          {crateInventory.length === 0 && untracked.length === 0 && (
-            <p className="text-sm text-muted-foreground py-4 text-center">No crate products yet. Mark a product as a crate product in Inventory to get started.</p>
+      {/* Crate Inventory Overview */}
+      <div id="tour-crate-inventory" className="bg-card border border-border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <Package className="h-4 w-4" /> Crate Inventory
+          </h3>
+          {isAdmin && untracked.length > 0 && (
+            <div className="relative">
+              <button onClick={() => setShowAddDropdown(!showAddDropdown)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all">
+                <Plus className="h-3.5 w-3.5" /> Add Product
+              </button>
+              {showAddDropdown && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowAddDropdown(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-lg z-20">
+                    {untracked.map((p) => (
+                      <button key={p.id} onClick={() => {
+                        setEditingCrate({ _isNew: true, product_id: p.id, products: p });
+                        setEditTotal('0'); setEditFilled('0'); setEditEmpty('0');
+                        setShowAddDropdown(false);
+                      }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg">
+                        {p.name} <span className="text-muted-foreground text-xs">({p.pack_size})</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           )}
-          {crateInventory.length === 0 && untracked.length > 0 && (
-            <p className="text-sm text-muted-foreground py-4 text-center">Click "Add Product" above to set up crate inventory for your crate products.</p>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {crateInventory.map((ct: any) => (
-              <div key={ct.id} className="rounded-lg border border-border p-3 bg-muted/20 relative group/card">
+        </div>
+        {crateInventory.length === 0 && untracked.length === 0 && (
+          <p className="text-sm text-muted-foreground py-4 text-center">No crate products yet. Mark a product as a crate product in Inventory to get started.</p>
+        )}
+        {crateInventory.length === 0 && untracked.length > 0 && isAdmin && (
+          <p className="text-sm text-muted-foreground py-4 text-center">Click "Add Product" above to set up crate inventory for your crate products.</p>
+        )}
+        {crateInventory.length === 0 && untracked.length > 0 && !isAdmin && (
+          <p className="text-sm text-muted-foreground py-4 text-center">No crate inventory set up yet. Contact your admin to set up crate tracking.</p>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {crateInventory.map((ct: any) => (
+            <div key={ct.id} className="rounded-lg border border-border p-3 bg-muted/20 relative group/card">
+              {isAdmin && (
                 <button onClick={() => openEditCrate(ct)}
                   className="absolute top-2 right-2 p-1.5 rounded-md bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover/card:opacity-100 transition-all">
                   <Pencil className="h-3.5 w-3.5" />
                 </button>
-                <p className="text-sm font-semibold text-foreground">{(ct.products as any)?.name}</p>
-                <p className="text-xs text-muted-foreground mb-2">{(ct.products as any)?.pack_size}</p>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{ct.total_crates}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">Total</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-primary">{ct.filled_crates}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">Filled</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-accent-foreground">{ct.empty_crates}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">Empty</p>
-                  </div>
+              )}
+              <p className="text-sm font-semibold text-foreground">{(ct.products as any)?.name}</p>
+              <p className="text-xs text-muted-foreground mb-2">{(ct.products as any)?.pack_size}</p>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <p className="text-lg font-bold text-foreground">{ct.total_crates}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Total</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-primary">{ct.filled_crates}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Filled</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-accent-foreground">{ct.empty_crates}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Empty</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
