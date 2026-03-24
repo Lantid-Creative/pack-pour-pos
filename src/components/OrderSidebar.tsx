@@ -618,7 +618,32 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
               <Package className="h-5 w-5 text-warning" /> Crate Return Check
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">How many empty crates did the customer bring?</p>
+          <p className="text-sm text-muted-foreground">Did the customer bring empty crates?</p>
+
+          {/* Quick action: brought all crates */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const allBrought: Record<string, number> = {};
+                crateProductsInCart.forEach(cp => { allBrought[cp.productId] = cp.quantity; });
+                setCrateInfoMap(allBrought);
+              }}
+              className="flex-1 py-2 rounded-lg border border-primary text-primary text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              ✓ Yes, brought all crates
+            </button>
+            <button
+              onClick={() => {
+                const noneBrought: Record<string, number> = {};
+                crateProductsInCart.forEach(cp => { noneBrought[cp.productId] = 0; });
+                setCrateInfoMap(noneBrought);
+              }}
+              className="flex-1 py-2 rounded-lg border border-destructive text-destructive text-xs font-bold hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            >
+              ✗ No crates brought
+            </button>
+          </div>
+
           <div className="space-y-3">
             {crateProductsInCart.map((cp) => {
               const brought = crateInfoMap[cp.productId] || 0;
@@ -635,7 +660,7 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
                     <p className="text-xs text-muted-foreground">Deposit: ₦{cp.depositPerCrate.toLocaleString()}/crate</p>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground block mb-1">Empty crates brought</label>
+                    <label className="text-xs text-muted-foreground block mb-1">Empty crates brought (or enter specific number)</label>
                     <input
                       type="number"
                       min="0"
@@ -655,7 +680,7 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
                     </p>
                   )}
                   {owed === 0 && (
-                    <p className="text-xs text-primary font-medium">All crates accounted for ✓</p>
+                    <p className="text-xs text-primary font-medium">All crates accounted for — no deposit ✓</p>
                   )}
                 </div>
               );
@@ -665,6 +690,11 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
               <div className="flex items-center justify-between pt-2 border-t border-border">
                 <span className="text-sm font-bold text-foreground">Total Crate Deposit</span>
                 <span className="font-mono-numbers text-lg font-bold text-warning">₦{crateDepositTotal.toLocaleString()}</span>
+              </div>
+            )}
+            {crateDepositTotal === 0 && crateProductsInCart.length > 0 && (
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <span className="text-sm font-bold text-primary">No deposit charged ✓</span>
               </div>
             )}
 
