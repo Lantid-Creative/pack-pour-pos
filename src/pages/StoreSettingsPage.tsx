@@ -189,6 +189,9 @@ export default function StoreSettingsPage() {
             </div>
           </div>
 
+          {/* Surcharge Settings */}
+          <SurchargeSettings />
+
           <div className="flex gap-3">
             <button onClick={handleSave} disabled={saving}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40">
