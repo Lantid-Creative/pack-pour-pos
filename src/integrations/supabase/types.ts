@@ -645,6 +645,7 @@ export type Database = {
           receipt_header: string
           receipt_show_address: boolean
           receipt_show_phone: boolean
+          surcharges_enabled: boolean
           trial_ends_at: string
         }
         Insert: {
@@ -659,6 +660,7 @@ export type Database = {
           receipt_header?: string
           receipt_show_address?: boolean
           receipt_show_phone?: boolean
+          surcharges_enabled?: boolean
           trial_ends_at?: string
         }
         Update: {
@@ -673,6 +675,7 @@ export type Database = {
           receipt_header?: string
           receipt_show_address?: boolean
           receipt_show_phone?: boolean
+          surcharges_enabled?: boolean
           trial_ends_at?: string
         }
         Relationships: []
@@ -723,6 +726,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "subscriptions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surcharges: {
+        Row: {
+          charge_amount: number
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string
+          max_amount: number
+          min_amount: number
+          store_id: string
+        }
+        Insert: {
+          charge_amount?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string
+          max_amount?: number
+          min_amount?: number
+          store_id: string
+        }
+        Update: {
+          charge_amount?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string
+          max_amount?: number
+          min_amount?: number
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surcharges_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
