@@ -49,7 +49,7 @@ export function SurchargeSettings() {
         .eq('store_id', storeId)
         .order('min_amount');
       if (error) throw error;
-      return (data || []) as Surcharge[];
+      return (data || []) as unknown as Surcharge[];
     },
     enabled: !!storeId,
   });
