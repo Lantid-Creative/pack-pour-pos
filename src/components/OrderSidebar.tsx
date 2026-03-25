@@ -81,6 +81,28 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     enabled: !!storeId,
   });
 
+  const { data: storeSettings } = useQuery({
+    queryKey: ['store-settings', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data, error } = await supabase.from('stores').select('*').eq('id', storeId).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
+  const { data: surchargeRules = [] } = useQuery({
+    queryKey: ['surcharges', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('surcharges' as any).select('*').eq('store_id', storeId).eq('enabled', true).order('min_amount');
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
   const { data: allProducts = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
