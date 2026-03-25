@@ -175,7 +175,16 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   }, [crateProductsInCart, crateInfoMap]);
 
   const subtotal = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
-  const total = subtotal + crateDepositTotal;
+
+  // Surcharge calculation
+  const surchargesEnabled = (storeSettings as any)?.surcharges_enabled ?? false;
+  const applicableSurcharges = useMemo(() => {
+    if (!surchargesEnabled || subtotal === 0) return [];
+    return surchargeRules.filter((r: any) => subtotal >= Number(r.min_amount) && subtotal <= Number(r.max_amount));
+  }, [surchargesEnabled, subtotal, surchargeRules]);
+  const surchargeTotal = applicableSurcharges.reduce((sum: number, r: any) => sum + Number(r.charge_amount), 0);
+
+  const total = subtotal + crateDepositTotal + surchargeTotal;
 
   // Split payment helpers
   const splitTotal = paymentSplits.reduce((s, p) => s + p.amount, 0);
