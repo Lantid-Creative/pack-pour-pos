@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Settings, Printer, Store, Eye, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { ReceiptPreview, PRINTER_CONFIGS, type PrinterType } from '@/components/ReceiptPreview';
+import { SurchargeSettings } from '@/components/SurchargeSettings';
 
 export default function StoreSettingsPage() {
   const { storeId, role } = useAuth();
