@@ -281,11 +281,13 @@ export default function LandingPage() {
                 className="w-full h-full object-cover"
                 poster=""
                 playsInline
+                muted
+                loop
                 onPlay={() => setVideoPlaying(true)}
                 onPause={() => setVideoPlaying(false)}
                 onEnded={() => setVideoPlaying(false)}
               >
-                {/* Replace src with your rendered video URL */}
+                <source src="https://lzlvdmaxumamhhjgwfsb.supabase.co/storage/v1/object/public/videos/lantid-walkthrough.mp4" type="video/mp4" />
                 <source src="/lantid-walkthrough.mp4" type="video/mp4" />
               </video>
 

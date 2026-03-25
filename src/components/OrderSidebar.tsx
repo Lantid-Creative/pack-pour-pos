@@ -81,6 +81,28 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
     enabled: !!storeId,
   });
 
+  const { data: storeSettings } = useQuery({
+    queryKey: ['store-settings', storeId],
+    queryFn: async () => {
+      if (!storeId) return null;
+      const { data, error } = await supabase.from('stores').select('*').eq('id', storeId).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
+  const { data: surchargeRules = [] } = useQuery({
+    queryKey: ['surcharges', storeId],
+    queryFn: async () => {
+      if (!storeId) return [];
+      const { data, error } = await supabase.from('surcharges' as any).select('*').eq('store_id', storeId).eq('enabled', true).order('min_amount');
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!storeId,
+  });
+
   const { data: allProducts = [] } = useQuery({
     queryKey: ['products', storeId],
     queryFn: async () => {
@@ -153,7 +175,16 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
   }, [crateProductsInCart, crateInfoMap]);
 
   const subtotal = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
-  const total = subtotal + crateDepositTotal;
+
+  // Surcharge calculation
+  const surchargesEnabled = (storeSettings as any)?.surcharges_enabled ?? false;
+  const applicableSurcharges = useMemo(() => {
+    if (!surchargesEnabled || subtotal === 0) return [];
+    return surchargeRules.filter((r: any) => subtotal >= Number(r.min_amount) && subtotal <= Number(r.max_amount));
+  }, [surchargesEnabled, subtotal, surchargeRules]);
+  const surchargeTotal = applicableSurcharges.reduce((sum: number, r: any) => sum + Number(r.charge_amount), 0);
+
+  const total = subtotal + crateDepositTotal + surchargeTotal;
 
   // Split payment helpers
   const splitTotal = paymentSplits.reduce((s, p) => s + p.amount, 0);
@@ -593,6 +624,12 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             <span className="font-mono-numbers text-base font-semibold text-warning">₦{crateDepositTotal.toLocaleString()}</span>
           </div>
         )}
+        {surchargeTotal > 0 && applicableSurcharges.map((r: any) => (
+          <div key={r.id} className="flex items-center justify-between">
+            <span className="text-sm font-medium text-accent">{r.label || 'Other Charges'}</span>
+            <span className="font-mono-numbers text-base font-semibold text-accent">₦{Number(r.charge_amount).toLocaleString()}</span>
+          </div>
+        ))}
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
           <span className="font-mono-numbers text-2xl font-bold text-foreground">₦{total.toLocaleString()}</span>
