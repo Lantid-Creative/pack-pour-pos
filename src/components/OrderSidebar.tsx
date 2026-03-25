@@ -624,6 +624,12 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             <span className="font-mono-numbers text-base font-semibold text-warning">₦{crateDepositTotal.toLocaleString()}</span>
           </div>
         )}
+        {surchargeTotal > 0 && applicableSurcharges.map((r: any) => (
+          <div key={r.id} className="flex items-center justify-between">
+            <span className="text-sm font-medium text-accent">{r.label || 'Other Charges'}</span>
+            <span className="font-mono-numbers text-base font-semibold text-accent">₦{Number(r.charge_amount).toLocaleString()}</span>
+          </div>
+        ))}
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
           <span className="font-mono-numbers text-2xl font-bold text-foreground">₦{total.toLocaleString()}</span>
