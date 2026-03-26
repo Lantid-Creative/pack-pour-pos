@@ -295,13 +295,13 @@ export default function DashboardPage() {
           <h1 className="text-xl md:text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Overview of your store performance</p>
         </div>
-        <div id="tour-time-range" className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+        <div id="tour-time-range" className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted overflow-x-auto w-full sm:w-auto">
             {(['today', 'week', 'month', 'all', 'custom'] as TimeRange[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setTimeRange(r)}
-                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
                   timeRange === r
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
