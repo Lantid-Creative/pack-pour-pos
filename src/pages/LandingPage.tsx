@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import {
   Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard,
-  ArrowRight, Check, Zap, Star, Play, Eye, PackageOpen, TrendingUp,
+  ArrowRight, Check, Zap, Star, Eye, PackageOpen, TrendingUp,
   ChevronRight, Menu, X,
 } from 'lucide-react';
 import { AnimatedProductTour } from '@/components/AnimatedProductTour';
@@ -66,37 +66,19 @@ export default function LandingPage() {
   const [demoLoading, setDemoLoading] = useState(false);
   const [activeFeature, setActiveFeature] = useState('pos');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleTryDemo = async () => {
     setDemoLoading(true);
     try {
-      await supabase.functions.invoke('seed-demo');
-      const { error } = await supabase.auth.signInWithPassword({
-        email: 'demo@lantid.store',
-        password: 'Demo#login#to#$TORE',
-      });
-      if (error) {
-        toast.error('Demo login failed. Please try again.');
-      } else {
-        navigate('/dashboard');
+      const { data } = await supabase.functions.invoke('seed-demo');
+      if (data?.email && data?.password) {
+        await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+        navigate('/pos');
       }
-    } catch {
-      toast.error('Something went wrong. Please try again.');
+    } catch (e) {
+      console.error(e);
     } finally {
       setDemoLoading(false);
-    }
-  };
-
-  const handlePlayVideo = () => {
-    if (videoRef.current) {
-      if (videoPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setVideoPlaying(!videoPlaying);
     }
   };
 
@@ -274,37 +256,9 @@ export default function LandingPage() {
             transition={{ duration: 0.7 }}
             className="relative rounded-3xl overflow-hidden border border-landing-border/50 bg-landing-card shadow-2xl shadow-black/40 group"
           >
-            {/* Video player */}
-            <div className="relative aspect-video bg-landing-bg">
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                poster=""
-                playsInline
-                muted
-                loop
-                onPlay={() => setVideoPlaying(true)}
-                onPause={() => setVideoPlaying(false)}
-                onEnded={() => setVideoPlaying(false)}
-              >
-                <source src="https://lzlvdmaxumamhhjgwfsb.supabase.co/storage/v1/object/public/videos/lantid-walkthrough.mp4" type="video/mp4" />
-                <source src="/lantid-walkthrough.mp4" type="video/mp4" />
-              </video>
-
-              {/* Play overlay */}
-              {!videoPlaying && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="absolute inset-0 flex items-center justify-center bg-landing-bg/60 cursor-pointer"
-                  onClick={handlePlayVideo}
-                >
-                  <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-landing-purple flex items-center justify-center shadow-2xl shadow-landing-purple/40 group-hover:scale-110 transition-transform">
-                    <Play className="h-8 w-8 md:h-10 md:w-10 text-white ml-1" />
-                  </div>
-                  <p className="absolute bottom-8 text-sm text-landing-muted font-medium">Watch the 60-second walkthrough</p>
-                </motion.div>
-              )}
+            {/* Product Tour Demo */}
+            <div className="relative aspect-video bg-landing-bg flex items-center justify-center p-6 md:p-10">
+              <AnimatedProductTour />
             </div>
           </motion.div>
         </div>
