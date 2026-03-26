@@ -529,21 +529,107 @@ export default function LandingPage() {
       </section>
 
       {/* ─── FOOTER ─── */}
-      <footer className="border-t border-landing-border/40 py-12 px-6 bg-landing-bg">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-landing-purple flex items-center justify-center shadow-md shadow-landing-purple/20">
-                <Package className="h-4 w-4 text-white" />
+      <footer className="border-t border-landing-border/40 bg-landing-bg">
+        {/* Newsletter / CTA strip */}
+        <div className="border-b border-landing-border/40 py-16 px-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="max-w-md">
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                Ready to streamline your store?
+              </h3>
+              <p className="text-landing-muted text-sm">
+                Join hundreds of Nigerian wholesalers and retailers already using Lantid to manage their business.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-8 py-3.5 rounded-full bg-landing-purple text-white font-semibold hover:bg-landing-purple-hover transition-colors text-sm"
+            >
+              Get started free
+            </button>
+          </div>
+        </div>
+
+        {/* Main footer grid */}
+        <div className="py-12 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+              {/* Brand column */}
+              <div className="col-span-2 md:col-span-1">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="h-8 w-8 rounded-lg bg-landing-purple flex items-center justify-center shadow-md shadow-landing-purple/20">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="font-bold text-white text-lg">Lantid</span>
+                </div>
+                <p className="text-landing-muted text-xs leading-relaxed">
+                  The all-in-one POS and inventory management platform built for Nigerian wholesale and retail businesses.
+                </p>
               </div>
-              <span className="font-bold text-white">Lantid</span>
+
+              {/* Products */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-4">Products</h4>
+                <ul className="space-y-2.5">
+                  {['Point of Sale', 'Inventory', 'Analytics', 'Staff Management', 'Crate Tracking'].map(item => (
+                    <li key={item}>
+                      <a href="#features" className="text-landing-muted text-xs hover:text-white transition-colors">{item}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Business Types */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-4">Business Types</h4>
+                <ul className="space-y-2.5">
+                  {['Wholesale Stores', 'Beverage Distributors', 'Retail Shops', 'Mini Marts', 'Provision Stores'].map(item => (
+                    <li key={item}>
+                      <span className="text-landing-muted text-xs">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Resources */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-4">Resources</h4>
+                <ul className="space-y-2.5">
+                  {[
+                    { label: 'How It Works', href: '#features' },
+                    { label: 'Pricing', href: '#pricing' },
+                    { label: 'Try Demo', href: '#', onClick: true },
+                  ].map(item => (
+                    <li key={item.label}>
+                      <a href={item.href} className="text-landing-muted text-xs hover:text-white transition-colors">{item.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Contact */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-4">Contact</h4>
+                <ul className="space-y-2.5">
+                  <li>
+                    <a href="https://www.lantid.store" target="_blank" rel="noopener noreferrer" className="text-landing-muted text-xs hover:text-white transition-colors">lantid.store</a>
+                  </li>
+                  <li>
+                    <a href="mailto:hello@lantid.store" className="text-landing-muted text-xs hover:text-white transition-colors">hello@lantid.store</a>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="flex items-center gap-8 text-sm text-landing-muted">
-              <a href="#features" className="hover:text-white transition-colors">Features</a>
-              <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-              <a href="https://www.lantid.store" className="hover:text-white transition-colors">lantid.store</a>
+
+            {/* Bottom bar */}
+            <div className="border-t border-landing-border/40 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-xs text-landing-muted/60">© {new Date().getFullYear()} Lantid. All rights reserved.</p>
+              <div className="flex items-center gap-6 text-xs text-landing-muted/60">
+                <span className="hover:text-landing-muted transition-colors cursor-pointer">Privacy Policy</span>
+                <span className="hover:text-landing-muted transition-colors cursor-pointer">Terms of Service</span>
+                <span className="text-landing-muted/40">Made in Nigeria 🇳🇬</span>
+              </div>
             </div>
-            <p className="text-xs text-landing-muted/60">© 2026 Lantid. All rights reserved.</p>
           </div>
         </div>
       </footer>
