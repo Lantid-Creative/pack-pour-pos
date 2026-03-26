@@ -17,6 +17,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refetchSubscription: () => Promise<void>;
+  refetchProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -82,6 +83,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storeId) {
       await checkSubscriptionStatus(storeId, profile?.lifetime_access ?? false);
     }
+  };
+
+  const refetchProfile = async () => {
+    if (!user) return;
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('full_name, store_id, lifetime_access')
+      .eq('user_id', user.id)
+      .single();
+    if (profileData) setProfile(profileData);
   };
 
   const fetchUserData = async (userId: string) => {
@@ -204,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, profile, role, storeId, loading,
       subscriptionActive, trialEndsAt, isTrialing,
-      signIn, signUp, signOut, refetchSubscription
+      signIn, signUp, signOut, refetchSubscription, refetchProfile
     }}>
       {children}
     </AuthContext.Provider>
