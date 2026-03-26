@@ -177,6 +177,23 @@ const guides: Guide[] = [
     ],
   },
   {
+    id: 'surcharges',
+    title: 'Set Up Other Charges / Surcharges',
+    icon: CreditCard,
+    description: 'Add automatic fees to orders based on the transaction amount.',
+    tourRoute: '/settings',
+    tourSteps: [
+      { targetId: 'nav-settings', title: 'Open Store Settings', description: 'Click "Store Settings" in the sidebar to access surcharge configuration.', position: 'right' },
+    ],
+    steps: [
+      { step: 1, title: 'Go to Store Settings', description: 'Click "Store Settings" in the sidebar (owner only).' },
+      { step: 2, title: 'Enable Surcharges', description: 'Find the "Other Charges / Surcharges" section and turn on the master toggle to enable the feature.' },
+      { step: 3, title: 'Add a Surcharge Rule', description: 'Click "Add Surcharge" to create a new rule. Enter a label (e.g. "Service Fee"), the minimum and maximum order amounts the rule applies to, and the fixed charge amount.' },
+      { step: 4, title: 'How It Works', description: 'When a POS order total falls within the min–max range of an enabled rule, the surcharge is automatically added to the total at checkout.' },
+      { step: 5, title: 'Manage Rules', description: 'You can toggle individual rules on/off, edit amounts, or delete rules you no longer need. Multiple rules can be active at once.' },
+    ],
+  },
+  {
     id: 'store-settings',
     title: 'Configure Store Settings',
     icon: Settings,
