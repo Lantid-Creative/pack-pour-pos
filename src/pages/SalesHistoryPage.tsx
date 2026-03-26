@@ -398,25 +398,25 @@ export default function SalesHistoryPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
+    <div className="p-4 md:p-6 space-y-5 md:space-y-6 overflow-y-auto h-full">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Sales History</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Sales History</h1>
           <p className="text-sm text-muted-foreground">View and export sales reports</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <FileSpreadsheet className="h-4 w-4" /> Export CSV
+            <FileSpreadsheet className="h-4 w-4" /> <span className="hidden sm:inline">Export</span> CSV
           </button>
           <button
             onClick={exportPDF}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
           >
-            <FileText className="h-4 w-4" /> Export PDF
+            <FileText className="h-4 w-4" /> <span className="hidden sm:inline">Export</span> PDF
           </button>
         </div>
       </div>
