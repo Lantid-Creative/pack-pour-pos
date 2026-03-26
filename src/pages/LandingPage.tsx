@@ -274,37 +274,9 @@ export default function LandingPage() {
             transition={{ duration: 0.7 }}
             className="relative rounded-3xl overflow-hidden border border-landing-border/50 bg-landing-card shadow-2xl shadow-black/40 group"
           >
-            {/* Video player */}
-            <div className="relative aspect-video bg-landing-bg">
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                poster=""
-                playsInline
-                muted
-                loop
-                onPlay={() => setVideoPlaying(true)}
-                onPause={() => setVideoPlaying(false)}
-                onEnded={() => setVideoPlaying(false)}
-              >
-                <source src="https://lzlvdmaxumamhhjgwfsb.supabase.co/storage/v1/object/public/videos/lantid-walkthrough.mp4" type="video/mp4" />
-                <source src="/lantid-walkthrough.mp4" type="video/mp4" />
-              </video>
-
-              {/* Play overlay */}
-              {!videoPlaying && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="absolute inset-0 flex items-center justify-center bg-landing-bg/60 cursor-pointer"
-                  onClick={handlePlayVideo}
-                >
-                  <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-landing-purple flex items-center justify-center shadow-2xl shadow-landing-purple/40 group-hover:scale-110 transition-transform">
-                    <Play className="h-8 w-8 md:h-10 md:w-10 text-white ml-1" />
-                  </div>
-                  <p className="absolute bottom-8 text-sm text-landing-muted font-medium">Watch the 60-second walkthrough</p>
-                </motion.div>
-              )}
+            {/* Product Tour Demo */}
+            <div className="relative aspect-video bg-landing-bg flex items-center justify-center p-6 md:p-10">
+              <AnimatedProductTour activeTab="pos" />
             </div>
           </motion.div>
         </div>
