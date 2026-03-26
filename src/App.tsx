@@ -31,6 +31,8 @@ const CustomersPage = lazy(() => import("./pages/CustomersPage"));
 const CreditSalesPage = lazy(() => import("./pages/CreditSalesPage"));
 const CrateManagementPage = lazy(() => import("./pages/CrateManagementPage"));
 const HowToPage = lazy(() => import("./pages/HowToPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
 
 const queryClient = new QueryClient();
 
@@ -61,6 +63,8 @@ function AppRoutes() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/how-to" element={<HowToPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>

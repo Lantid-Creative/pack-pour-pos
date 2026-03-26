@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import {
   Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard,
@@ -625,8 +625,8 @@ export default function LandingPage() {
             <div className="border-t border-landing-border/40 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-xs text-landing-muted/60">© {new Date().getFullYear()} Lantid. All rights reserved.</p>
               <div className="flex items-center gap-6 text-xs text-landing-muted/60">
-                <span className="hover:text-landing-muted transition-colors cursor-pointer">Privacy Policy</span>
-                <span className="hover:text-landing-muted transition-colors cursor-pointer">Terms of Service</span>
+                <Link to="/privacy" className="hover:text-landing-muted transition-colors">Privacy Policy</Link>
+                <Link to="/terms" className="hover:text-landing-muted transition-colors">Terms of Service</Link>
                 <span className="text-landing-muted/40">Made in Nigeria 🇳🇬</span>
               </div>
             </div>
