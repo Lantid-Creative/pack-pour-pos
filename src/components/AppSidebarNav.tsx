@@ -84,10 +84,13 @@ export function AppSidebarNav() {
 
       <div className="border-t border-sidebar-border p-3 space-y-1">
         {!collapsed && (
-          <div className="mb-2">
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-full text-left mb-2 rounded-md px-2 py-1.5 hover:bg-sidebar-accent transition-colors"
+          >
             <p className="text-xs font-medium truncate">{profile?.full_name}</p>
             <p className="text-xs text-sidebar-foreground/50 capitalize">{role}</p>
-          </div>
+          </button>
         )}
         <ThemeToggle collapsed={collapsed} />
         <button onClick={handleSignOut}
