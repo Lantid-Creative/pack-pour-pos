@@ -66,39 +66,8 @@ export default function LandingPage() {
   const [demoLoading, setDemoLoading] = useState(false);
   const [activeFeature, setActiveFeature] = useState('pos');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleTryDemo = async () => {
-    setDemoLoading(true);
-    try {
-      await supabase.functions.invoke('seed-demo');
-      const { error } = await supabase.auth.signInWithPassword({
-        email: 'demo@lantid.store',
-        password: 'Demo#login#to#$TORE',
-      });
-      if (error) {
-        toast.error('Demo login failed. Please try again.');
-      } else {
-        navigate('/dashboard');
-      }
-    } catch {
-      toast.error('Something went wrong. Please try again.');
-    } finally {
-      setDemoLoading(false);
-    }
-  };
-
-  const handlePlayVideo = () => {
-    if (videoRef.current) {
-      if (videoPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setVideoPlaying(!videoPlaying);
-    }
-  };
 
   const currentFeature = features.find(f => f.id === activeFeature) || features[0];
 
