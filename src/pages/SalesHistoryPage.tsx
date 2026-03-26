@@ -613,9 +613,9 @@ export default function SalesHistoryPage() {
 
 function SummaryCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`p-3 rounded-xl border text-center ${highlight ? 'border-primary/30 bg-primary/5' : 'border-border bg-card'}`}>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`text-lg font-bold font-mono-numbers ${highlight ? 'text-primary' : 'text-foreground'}`}>{value}</p>
+    <div className={`p-2.5 md:p-3 rounded-xl border text-center ${highlight ? 'border-primary/30 bg-primary/5' : 'border-border bg-card'}`}>
+      <p className="text-[10px] md:text-xs text-muted-foreground truncate">{label}</p>
+      <p className={`text-sm md:text-lg font-bold font-mono-numbers ${highlight ? 'text-primary' : 'text-foreground'}`}>{value}</p>
     </div>
   );
 }

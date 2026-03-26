@@ -115,13 +115,13 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="p-4 md:p-6 space-y-5 md:space-y-6 overflow-y-auto h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Customers</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Customers</h1>
           <p className="text-sm text-muted-foreground">{customers.length} customer{customers.length !== 1 ? 's' : ''} registered</p>
         </div>
-        <Button onClick={openAdd} className="gap-2">
+        <Button onClick={openAdd} className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" /> Add Customer
         </Button>
       </div>
