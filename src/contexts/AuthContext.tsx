@@ -17,6 +17,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string, phone?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refetchSubscription: () => Promise<void>;
+  refetchProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
