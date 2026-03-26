@@ -68,6 +68,19 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleTryDemo = async () => {
+    setDemoLoading(true);
+    try {
+      const { data } = await supabase.functions.invoke('seed-demo');
+      if (data?.email && data?.password) {
+        await supabase.auth.signInWithPassword({ email: data.email, password: data.password });
+        navigate('/pos');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   const currentFeature = features.find(f => f.id === activeFeature) || features[0];
 
