@@ -211,21 +211,6 @@ const guides: Guide[] = [
       { step: 5, title: 'Save Changes', description: 'Click "Save" to apply your changes.' },
     ],
   },
-    icon: Settings,
-    description: 'Customize your store name, receipt layout, and other preferences.',
-    tourRoute: '/settings',
-    tourSteps: [
-      { targetId: 'nav-settings', title: 'Open Store Settings', description: 'Click "Store Settings" in the sidebar (owner only).', position: 'right' },
-      { targetId: 'tour-store-details', title: 'Store Details', description: 'Update your store name, address, and phone number here. You can also customize receipt headers, footers, and choose your printer type.', position: 'right' },
-    ],
-    steps: [
-      { step: 1, title: 'Go to Store Settings', description: 'Click "Store Settings" in the sidebar (owner only).' },
-      { step: 2, title: 'Update Store Info', description: 'Change your store name, address, and phone number.' },
-      { step: 3, title: 'Customize Receipts', description: 'Set a custom receipt header and footer message. Toggle whether to show address and phone on receipts.' },
-      { step: 4, title: 'Printer Setup', description: 'Select your printer type (thermal or regular) for receipt printing.' },
-      { step: 5, title: 'Save Changes', description: 'Click "Save" to apply your changes.' },
-    ],
-  },
 ];
 
 function GuideCard({ guide, onStartTour }: { guide: Guide; onStartTour: (guide: Guide) => void }) {
