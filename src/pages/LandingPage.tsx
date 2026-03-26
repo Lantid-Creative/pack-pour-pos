@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import {
   Package, ShoppingCart, BarChart3, Users, Shield, Printer, CreditCard,
-  ArrowRight, Check, Zap, Star, Play, Eye, PackageOpen, TrendingUp,
+  ArrowRight, Check, Zap, Star, Eye, PackageOpen, TrendingUp,
   ChevronRight, Menu, X,
 } from 'lucide-react';
 import { AnimatedProductTour } from '@/components/AnimatedProductTour';
