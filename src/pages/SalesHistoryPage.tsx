@@ -468,7 +468,7 @@ export default function SalesHistoryPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3">
         <SummaryCard label="Total Sales" value={summary.count.toString()} />
         <SummaryCard label="Revenue" value={`₦${summary.totalRevenue.toLocaleString()}`} highlight />
         <SummaryCard label="Cash" value={`₦${summary.cashRevenue.toLocaleString()}`} />
