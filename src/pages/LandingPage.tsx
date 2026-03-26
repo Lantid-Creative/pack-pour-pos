@@ -276,7 +276,7 @@ export default function LandingPage() {
           >
             {/* Product Tour Demo */}
             <div className="relative aspect-video bg-landing-bg flex items-center justify-center p-6 md:p-10">
-              <AnimatedProductTour activeTab="pos" />
+              <AnimatedProductTour />
             </div>
           </motion.div>
         </div>
