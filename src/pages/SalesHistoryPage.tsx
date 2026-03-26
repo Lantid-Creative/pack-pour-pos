@@ -477,86 +477,135 @@ export default function SalesHistoryPage() {
         <SummaryCard label="Credit" value={`₦${summary.creditRevenue.toLocaleString()}`} />
       </div>
 
-      {/* Sales Table */}
+      {/* Sales List */}
       {filteredSales.length === 0 ? (
-        <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
+        <div className="bg-card border border-border rounded-xl p-8 md:p-12 text-center text-muted-foreground">
           <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-50" />
           <p className="text-lg font-medium">No sales for this period</p>
           <p className="text-sm">Try selecting a different date range</p>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">
-              {filteredSales.length} transaction{filteredSales.length !== 1 ? 's' : ''}
-            </span>
-            <span className="text-xs text-muted-foreground">{rangeLabel}</span>
+        <>
+          {/* Mobile card view */}
+          <div className="block md:hidden space-y-2">
+            <p className="text-xs text-muted-foreground">{filteredSales.length} transaction{filteredSales.length !== 1 ? 's' : ''} · {rangeLabel}</p>
+            {filteredSales.map((sale: any) => (
+              <div key={sale.id} className="bg-card border border-border rounded-lg p-3 space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-mono-numbers text-xs font-medium text-muted-foreground">#{sale.id.slice(-6)}</span>
+                      <span className={`uppercase text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        sale.payment_method === 'cash' ? 'bg-primary/10 text-primary' :
+                        sale.payment_method === 'pos' ? 'bg-secondary/10 text-secondary-foreground' :
+                        sale.payment_method === 'credit' ? 'bg-destructive/10 text-destructive' :
+                        sale.payment_method === 'split' ? 'bg-accent/20 text-accent-foreground' :
+                        'bg-accent/20 text-accent-foreground'
+                      }`}>{sale.payment_method}</span>
+                      {sale.payment_method === 'credit' && sale.credit_status && (
+                        <span className={`text-[10px] font-medium ${sale.credit_status === 'paid' ? 'text-green-600' : 'text-destructive'}`}>
+                          ({sale.credit_status})
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(sale.created_at).toLocaleDateString('en-NG')} · {new Date(sale.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })} · {sale.cashier_name}
+                    </p>
+                  </div>
+                  <p className="font-mono-numbers font-bold text-sm text-foreground ml-2">₦{Number(sale.total).toLocaleString()}</p>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {(sale.sale_items || []).map((item: any, i: number) => (
+                    <span key={i}>{i > 0 && ', '}{item.quantity}x {item.product_name}</span>
+                  ))}
+                </div>
+                {sale.payment_method === 'split' && sale.payment_splits?.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {sale.payment_splits.map((sp: any, i: number) => (
+                      <span key={i} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                        {sp.payment_method.toUpperCase()}: ₦{Number(sp.amount).toLocaleString()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Sale ID</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Date</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Cashier</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Items</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Payment</th>
-                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSales.map((sale: any) => (
-                  <tr key={sale.id} className="border-b border-border/50 hover:bg-muted/20">
-                    <td className="py-3 px-4 font-mono-numbers text-xs font-medium">{sale.id.slice(-6)}</td>
-                    <td className="py-3 px-4">
-                      <div>
-                        <div>{new Date(sale.created_at).toLocaleDateString('en-NG')}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(sale.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}
+
+          {/* Desktop table view */}
+          <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">
+                {filteredSales.length} transaction{filteredSales.length !== 1 ? 's' : ''}
+              </span>
+              <span className="text-xs text-muted-foreground">{rangeLabel}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Sale ID</th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Date</th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Cashier</th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Items</th>
+                    <th className="text-left py-3 px-4 text-muted-foreground font-medium">Payment</th>
+                    <th className="text-right py-3 px-4 text-muted-foreground font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSales.map((sale: any) => (
+                    <tr key={sale.id} className="border-b border-border/50 hover:bg-muted/20">
+                      <td className="py-3 px-4 font-mono-numbers text-xs font-medium">{sale.id.slice(-6)}</td>
+                      <td className="py-3 px-4">
+                        <div>
+                          <div>{new Date(sale.created_at).toLocaleDateString('en-NG')}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(sale.created_at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">{sale.cashier_name}</td>
-                    <td className="py-3 px-4">
-                      <div className="space-y-0.5">
-                        {(sale.sale_items || []).map((item: any, i: number) => (
-                          <div key={i} className="text-xs">{item.quantity}x {item.product_name}</div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      {sale.payment_method === 'split' && sale.payment_splits?.length > 0 ? (
+                      </td>
+                      <td className="py-3 px-4">{sale.cashier_name}</td>
+                      <td className="py-3 px-4">
                         <div className="space-y-0.5">
-                          <span className="uppercase text-xs font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground">split</span>
-                          {sale.payment_splits.map((sp: any, i: number) => (
-                            <div key={i} className="text-[10px] text-muted-foreground">
-                              {sp.payment_method.toUpperCase()}: ₦{Number(sp.amount).toLocaleString()}
-                            </div>
+                          {(sale.sale_items || []).map((item: any, i: number) => (
+                            <div key={i} className="text-xs">{item.quantity}x {item.product_name}</div>
                           ))}
                         </div>
-                      ) : (
-                        <>
-                          <span className={`uppercase text-xs font-bold px-2 py-0.5 rounded-full ${
-                            sale.payment_method === 'cash' ? 'bg-primary/10 text-primary' :
-                            sale.payment_method === 'pos' ? 'bg-secondary/10 text-secondary-foreground' :
-                            sale.payment_method === 'credit' ? 'bg-destructive/10 text-destructive' :
-                            'bg-accent/20 text-accent-foreground'
-                          }`}>{sale.payment_method}</span>
-                          {sale.payment_method === 'credit' && sale.credit_status && (
-                            <span className={`ml-1 text-[10px] font-medium ${sale.credit_status === 'paid' ? 'text-green-600' : 'text-destructive'}`}>
-                              ({sale.credit_status})
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono-numbers font-bold">₦{Number(sale.total).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="py-3 px-4">
+                        {sale.payment_method === 'split' && sale.payment_splits?.length > 0 ? (
+                          <div className="space-y-0.5">
+                            <span className="uppercase text-xs font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground">split</span>
+                            {sale.payment_splits.map((sp: any, i: number) => (
+                              <div key={i} className="text-[10px] text-muted-foreground">
+                                {sp.payment_method.toUpperCase()}: ₦{Number(sp.amount).toLocaleString()}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <>
+                            <span className={`uppercase text-xs font-bold px-2 py-0.5 rounded-full ${
+                              sale.payment_method === 'cash' ? 'bg-primary/10 text-primary' :
+                              sale.payment_method === 'pos' ? 'bg-secondary/10 text-secondary-foreground' :
+                              sale.payment_method === 'credit' ? 'bg-destructive/10 text-destructive' :
+                              'bg-accent/20 text-accent-foreground'
+                            }`}>{sale.payment_method}</span>
+                            {sale.payment_method === 'credit' && sale.credit_status && (
+                              <span className={`ml-1 text-[10px] font-medium ${sale.credit_status === 'paid' ? 'text-green-600' : 'text-destructive'}`}>
+                                ({sale.credit_status})
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono-numbers font-bold">₦{Number(sale.total).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
