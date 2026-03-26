@@ -85,6 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refetchProfile = async () => {
+    if (!user) return;
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('full_name, store_id, lifetime_access')
+      .eq('user_id', user.id)
+      .single();
+    if (profileData) setProfile(profileData);
+  };
+
   const fetchUserData = async (userId: string) => {
     // Get profile
     const { data: profileData } = await supabase
