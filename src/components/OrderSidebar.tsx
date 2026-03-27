@@ -176,16 +176,44 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
 
   const subtotal = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
 
-  // Surcharge calculation — exempt cash payments
+  // Surcharge calculation — exempt cash payments, apply per non-cash split amount
   const surchargesEnabled = (storeSettings as any)?.surcharges_enabled ?? false;
   const isCashOnly = !isSplitPayment && paymentMethod === 'cash';
   const isSplitCashOnly = isSplitPayment && paymentSplits.every(s => s.amount === 0 || s.method === 'cash');
   const surchargeExempt = isCashOnly || isSplitCashOnly;
-  const applicableSurcharges = useMemo(() => {
-    if (!surchargesEnabled || subtotal === 0 || surchargeExempt) return [];
-    return surchargeRules.filter((r: any) => subtotal >= Number(r.min_amount) && subtotal <= Number(r.max_amount));
-  }, [surchargesEnabled, subtotal, surchargeRules, surchargeExempt]);
-  const surchargeTotal = applicableSurcharges.reduce((sum: number, r: any) => sum + Number(r.charge_amount), 0);
+
+  // For split payments, calculate surcharges per non-cash split amount individually
+  const { applicableSurcharges, surchargeTotal } = useMemo(() => {
+    if (!surchargesEnabled || subtotal === 0 || surchargeExempt) {
+      return { applicableSurcharges: [] as any[], surchargeTotal: 0 };
+    }
+
+    if (isSplitPayment) {
+      // Each non-cash split gets its own surcharge based on its amount
+      let total = 0;
+      const matched: any[] = [];
+      for (const split of paymentSplits) {
+        if (split.method === 'cash' || split.amount <= 0) continue;
+        const matching = surchargeRules.filter((r: any) =>
+          split.amount >= Number(r.min_amount) && split.amount <= Number(r.max_amount)
+        );
+        for (const r of matching) {
+          total += Number(r.charge_amount);
+          matched.push({ ...r, _splitMethod: split.method, _splitAmount: split.amount });
+        }
+      }
+      return { applicableSurcharges: matched, surchargeTotal: total };
+    }
+
+    // Single non-cash payment: match against subtotal
+    const matching = surchargeRules.filter((r: any) =>
+      subtotal >= Number(r.min_amount) && subtotal <= Number(r.max_amount)
+    );
+    return {
+      applicableSurcharges: matching,
+      surchargeTotal: matching.reduce((sum: number, r: any) => sum + Number(r.charge_amount), 0),
+    };
+  }, [surchargesEnabled, subtotal, surchargeRules, surchargeExempt, isSplitPayment, paymentSplits]);
 
   const total = subtotal + crateDepositTotal + surchargeTotal;
 
@@ -627,9 +655,11 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
             <span className="font-mono-numbers text-base font-semibold text-warning">₦{crateDepositTotal.toLocaleString()}</span>
           </div>
         )}
-        {surchargeTotal > 0 && applicableSurcharges.map((r: any) => (
-          <div key={r.id} className="flex items-center justify-between">
-            <span className="text-sm font-medium text-accent">{r.label || 'Other Charges'}</span>
+        {surchargeTotal > 0 && applicableSurcharges.map((r: any, idx: number) => (
+          <div key={`${r.id}-${idx}`} className="flex items-center justify-between">
+            <span className="text-sm font-medium text-accent">
+              {r.label || 'Other Charges'}{r._splitMethod ? ` (${r._splitMethod})` : ''}
+            </span>
             <span className="font-mono-numbers text-base font-semibold text-accent">₦{Number(r.charge_amount).toLocaleString()}</span>
           </div>
         ))}
