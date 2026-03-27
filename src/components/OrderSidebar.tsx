@@ -176,12 +176,15 @@ export function OrderSidebar({ cart, setCart, onCheckoutComplete }: { cart: Cart
 
   const subtotal = cart.reduce((sum, item) => sum + getEffectivePrice(item) * item.quantity, 0);
 
-  // Surcharge calculation
+  // Surcharge calculation — exempt cash payments
   const surchargesEnabled = (storeSettings as any)?.surcharges_enabled ?? false;
+  const isCashOnly = !isSplitPayment && paymentMethod === 'cash';
+  const isSplitCashOnly = isSplitPayment && paymentSplits.every(s => s.amount === 0 || s.method === 'cash');
+  const surchargeExempt = isCashOnly || isSplitCashOnly;
   const applicableSurcharges = useMemo(() => {
-    if (!surchargesEnabled || subtotal === 0) return [];
+    if (!surchargesEnabled || subtotal === 0 || surchargeExempt) return [];
     return surchargeRules.filter((r: any) => subtotal >= Number(r.min_amount) && subtotal <= Number(r.max_amount));
-  }, [surchargesEnabled, subtotal, surchargeRules]);
+  }, [surchargesEnabled, subtotal, surchargeRules, surchargeExempt]);
   const surchargeTotal = applicableSurcharges.reduce((sum: number, r: any) => sum + Number(r.charge_amount), 0);
 
   const total = subtotal + crateDepositTotal + surchargeTotal;
