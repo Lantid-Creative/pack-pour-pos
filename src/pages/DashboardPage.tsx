@@ -475,10 +475,11 @@ export default function DashboardPage() {
         {/* Payment Breakdown */}
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="font-semibold mb-4 text-foreground">Payment Methods</h3>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             <PaymentCard icon={Banknote} label="Cash" amount={stats.cashRevenue} />
             <PaymentCard icon={CreditCard} label="POS" amount={stats.posRevenue} />
             <PaymentCard icon={ArrowRightLeft} label="Transfer" amount={stats.transferRevenue} />
+            <PaymentCard icon={DollarSign} label="Credit" amount={stats.creditRevenue} />
           </div>
           {stats.totalRevenue > 0 && (
             <div className="h-48">
