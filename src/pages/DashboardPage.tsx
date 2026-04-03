@@ -201,6 +201,7 @@ export default function DashboardPage() {
     { name: 'Cash', value: stats.cashRevenue, color: 'hsl(var(--primary))' },
     { name: 'POS', value: stats.posRevenue, color: 'hsl(var(--accent))' },
     { name: 'Transfer', value: stats.transferRevenue, color: 'hsl(38, 92%, 50%)' },
+    { name: 'Credit', value: stats.creditRevenue, color: 'hsl(0, 84%, 60%)' },
   ];
 
 
