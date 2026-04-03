@@ -126,6 +126,7 @@ export default function DashboardPage() {
     const cashSales = sales.filter((s: any) => s.payment_method === 'cash');
     const posSales = sales.filter((s: any) => s.payment_method === 'pos');
     const transferSales = sales.filter((s: any) => s.payment_method === 'transfer');
+    const creditSales = sales.filter((s: any) => s.payment_method === 'credit');
 
     // Profit calculation from sale_items
     let totalCOGS = 0;
