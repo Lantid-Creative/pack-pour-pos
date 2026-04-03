@@ -183,6 +183,7 @@ export default function DashboardPage() {
       cashRevenue: cashSales.reduce((s: number, sale: any) => s + Number(sale.total), 0),
       posRevenue: posSales.reduce((s: number, sale: any) => s + Number(sale.total), 0),
       transferRevenue: transferSales.reduce((s: number, sale: any) => s + Number(sale.total), 0),
+      creditRevenue: creditSales.reduce((s: number, sale: any) => s + Number(sale.total), 0),
       topProduct: topProduct ? topProduct[0] : 'N/A',
       topProductQty: topProduct ? topProduct[1] : 0,
       lowStock,
