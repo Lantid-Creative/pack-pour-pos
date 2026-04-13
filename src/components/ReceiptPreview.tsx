@@ -92,6 +92,7 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       style={{
         fontFamily: isA4 ? "'Segoe UI', Arial, sans-serif" : "'Courier New', monospace",
         fontSize: `${config.fontSize}px`,
+        lineHeight: '1.4',
         padding: `${config.padding}px`,
         color: '#000',
         background: '#fff',
