@@ -85,16 +85,19 @@ interface ReceiptProps {
 
 function getReceiptTheme(printerType: PrinterType) {
   const isA4 = printerType === 'A4';
+  const isThermal = !isA4;
 
   return {
     isA4,
+    isThermal,
     fontFamily: isA4 ? "'Segoe UI', Arial, sans-serif" : "Arial, Helvetica, sans-serif",
+    fontWeight: isThermal ? 700 : 400,
     text: '#000000',
     muted: isA4 ? '#666666' : '#000000',
     border: '#000000',
     softBorder: isA4 ? '#e5e7eb' : '#000000',
     separator: isA4 ? '1px solid #ccc' : '1px solid #000',
-    separatorBold: isA4 ? '2px solid #000' : '1px solid #000',
+    separatorBold: isA4 ? '2px solid #000' : '2px solid #000',
     lineHeight: '1.4',
     letterSpacing: isA4 ? 'normal' : '0.2px',
   };
@@ -109,6 +112,7 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       style={{
         fontFamily: theme.fontFamily,
         fontSize: `${config.fontSize}px`,
+        fontWeight: theme.fontWeight,
         lineHeight: theme.lineHeight,
         letterSpacing: theme.letterSpacing,
         padding: `${config.padding}px`,
@@ -287,6 +291,7 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
       body {
         font-family: ${theme.fontFamily};
         font-size: ${config.fontSize}px;
+        font-weight: ${theme.fontWeight};
         line-height: ${theme.lineHeight};
         letter-spacing: ${theme.letterSpacing};
         padding: ${theme.isA4 ? '0' : '2mm'};
