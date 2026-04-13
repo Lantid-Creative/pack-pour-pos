@@ -30,6 +30,7 @@ export default function StoreSetupPage() {
           address: address.trim(),
           phone: storePhone.trim() || null,
           owner_id: user.id,
+          printer_type: '58mm',
         })
         .select()
         .single();
