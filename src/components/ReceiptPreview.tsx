@@ -274,7 +274,7 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
   return `<html><head><title>Receipt</title>
     <style>
       @page { margin: ${isA4 ? '15mm' : '0'}; size: ${isA4 ? 'A4' : `${config.bodyWidth / 3.78}mm auto`}; }
-      body { font-family: ${isA4 ? "'Segoe UI',Arial,sans-serif" : "'Courier New',monospace"}; font-size:${config.fontSize}px; padding:${config.padding}px; width:${config.bodyWidth}px; margin:0 auto; color:#000; }
+      body { font-family: ${isA4 ? "'Segoe UI',Arial,sans-serif" : "'Courier New',monospace"}; font-size:${config.fontSize}px; padding:${config.padding}px; width:${config.bodyWidth}px; margin:0 auto; color:#000; -webkit-print-color-adjust: exact; line-height: 1.4; }
       @media print { body { padding:${isA4 ? '0' : `${config.padding}px`}; } }
     </style></head><body>
     <div style="text-align:center;margin-bottom:${isA4 ? 16 : 8}px">

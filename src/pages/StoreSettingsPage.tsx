@@ -45,7 +45,7 @@ export default function StoreSettingsPage() {
       setStoreName(store.name || '');
       setAddress(store.address || '');
       setPhone(store.phone || '');
-      setPrinterType((store as any).printer_type || '80mm');
+      setPrinterType((store as any).printer_type || '58mm');
       setReceiptHeader((store as any).receipt_header || '');
       setReceiptFooter((store as any).receipt_footer || 'Thank you for your patronage!');
       setShowAddress((store as any).receipt_show_address ?? true);
