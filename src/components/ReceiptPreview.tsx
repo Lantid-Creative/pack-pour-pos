@@ -291,6 +291,7 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
       body {
         font-family: ${theme.fontFamily};
         font-size: ${config.fontSize}px;
+        font-weight: ${theme.fontWeight};
         line-height: ${theme.lineHeight};
         letter-spacing: ${theme.letterSpacing};
         padding: ${theme.isA4 ? '0' : '2mm'};
