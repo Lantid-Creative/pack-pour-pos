@@ -18,7 +18,7 @@ export default function StoreSettingsPage() {
   const [phone, setPhone] = useState('');
 
   // Receipt settings
-  const [printerType, setPrinterType] = useState<PrinterType>('80mm');
+  const [printerType, setPrinterType] = useState<PrinterType>('58mm');
   const [receiptHeader, setReceiptHeader] = useState('');
   const [receiptFooter, setReceiptFooter] = useState('Thank you for your patronage!');
   const [showAddress, setShowAddress] = useState(true);
