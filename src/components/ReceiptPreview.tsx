@@ -16,11 +16,11 @@ export const PRINTER_CONFIGS: Record<PrinterType, {
     paperWidth: '58mm (~32 chars)',
     description: 'Small POS printers',
     bodyWidth: 220,
-    previewWidth: 220,
-    fontSize: 11,
-    fontSizeSmall: 9,
-    fontSizeLarge: 13,
-    padding: 8,
+    previewWidth: 240,
+    fontSize: 13,
+    fontSizeSmall: 11,
+    fontSizeLarge: 15,
+    padding: 6,
   },
   '80mm': {
     label: '80mm Thermal',
@@ -92,6 +92,7 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       style={{
         fontFamily: isA4 ? "'Segoe UI', Arial, sans-serif" : "'Courier New', monospace",
         fontSize: `${config.fontSize}px`,
+        lineHeight: '1.4',
         padding: `${config.padding}px`,
         color: '#000',
         background: '#fff',
@@ -274,7 +275,7 @@ export function getReceiptPrintHTML(props: ReceiptProps): string {
   return `<html><head><title>Receipt</title>
     <style>
       @page { margin: ${isA4 ? '15mm' : '0'}; size: ${isA4 ? 'A4' : `${config.bodyWidth / 3.78}mm auto`}; }
-      body { font-family: ${isA4 ? "'Segoe UI',Arial,sans-serif" : "'Courier New',monospace"}; font-size:${config.fontSize}px; padding:${config.padding}px; width:${config.bodyWidth}px; margin:0 auto; color:#000; }
+      body { font-family: ${isA4 ? "'Segoe UI',Arial,sans-serif" : "'Courier New',monospace"}; font-size:${config.fontSize}px; padding:${config.padding}px; width:${config.bodyWidth}px; margin:0 auto; color:#000; -webkit-print-color-adjust: exact; line-height: 1.4; }
       @media print { body { padding:${isA4 ? '0' : `${config.padding}px`}; } }
     </style></head><body>
     <div style="text-align:center;margin-bottom:${isA4 ? 16 : 8}px">
