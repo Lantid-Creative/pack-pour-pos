@@ -112,6 +112,7 @@ export function ReceiptPreview({ sale, storeName, address, phone, header, footer
       style={{
         fontFamily: theme.fontFamily,
         fontSize: `${config.fontSize}px`,
+        fontWeight: theme.fontWeight,
         lineHeight: theme.lineHeight,
         letterSpacing: theme.letterSpacing,
         padding: `${config.padding}px`,
